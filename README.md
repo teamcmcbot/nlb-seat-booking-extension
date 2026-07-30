@@ -13,6 +13,36 @@ session.
 
 ![NLB Seat Helper screenshot](screenshots/nlb-seat-booking-extension.png)
 
+## Install the latest release
+
+No Node.js or development tools are required.
+
+1. Open the
+   [latest NLB Seat Helper release](https://github.com/teamcmcbot/nlb-seat-booking-extension/releases/latest).
+2. Expand **Assets** and download **`nlb-seat-helper.zip`**.
+   Do not download GitHub's automatically generated **Source code** archives.
+3. Extract the ZIP to a permanent folder.
+4. Open `chrome://extensions` in Chrome.
+5. Enable **Developer mode**.
+6. Select **Load unpacked**.
+7. Choose the extracted folder that directly contains `manifest.json`.
+8. Sign in to NLB and open or refresh
+   `https://www.nlb.gov.sg/seatbooking/`.
+
+Chrome requires Developer mode because this extension is distributed outside
+the Chrome Web Store.
+
+### Update an installed release
+
+1. Download and extract the newest `nlb-seat-helper.zip`.
+2. Replace the files inside the same permanent extension folder used during
+   installation.
+3. Open `chrome://extensions` and click **Reload** on NLB Seat Helper.
+4. Refresh the NLB Seat Booking tab.
+
+Keeping the same installation folder avoids creating a separate unpacked
+installation and preserves the extension's existing Chrome storage.
+
 ## Features
 
 ### Account and quota
@@ -101,9 +131,9 @@ and are not persisted by the extension.
 
 - Google Chrome or another Chromium browser that supports Manifest V3.
 - An active NLB account session on the NLB Seat Booking website.
-- Node.js and npm to build from source.
+- Node.js and npm only when building from source.
 
-## Build
+## Build from source
 
 Install dependencies and create the production extension:
 
@@ -120,12 +150,13 @@ Available scripts:
 npm run typecheck  # TypeScript validation
 npm run build      # Typecheck and create a production build
 npm run dev        # Rebuild dist/ whenever source files change
+npm run package    # Build and create nlb-seat-helper.zip
 ```
 
 `npm run dev` is optional. A completed `npm run build` produces a working
 extension without a development process running.
 
-## Load in Chrome
+## Load a development build in Chrome
 
 1. Open `chrome://extensions`.
 2. Enable **Developer mode**.
@@ -137,6 +168,10 @@ After rebuilding:
 
 1. Click **Reload** for NLB Seat Helper on `chrome://extensions`.
 2. Refresh the NLB Seat Booking tab.
+
+Maintainers can follow
+[Creating a GitHub Release](docs/releasing.md) to package and publish a
+versioned download.
 
 ## Usage
 
