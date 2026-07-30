@@ -1,8 +1,17 @@
 # NLB Seat Helper
 
-A Chrome extension that adds favourite-seat availability and booking tools to
-the [NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/) website. It runs
-inside the existing NLB page and uses the tab's signed-in session.
+A Chrome extension that makes it easier to book your favourite seats on the [NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/)
+website. It runs inside the existing NLB page and uses the tab's signed-in
+session.
+
+## At a glance
+
+- Save your favourite seats and easily check their availability for the selected date.
+- Cleaner UI/UX to browse the seat plan on the same page.
+- Book multiple seats and time slots together, such as 10am-12pm and
+  2pm-4pm.
+
+![NLB Seat Helper screenshot](screenshots/nlb-seat-booking-extension.png)
 
 ## Features
 
