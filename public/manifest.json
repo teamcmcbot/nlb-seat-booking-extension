@@ -1,0 +1,15 @@
+{
+  "manifest_version": 3,
+  "name": "NLB Seat Helper",
+  "description": "A clearer interface for NLB seat availability and booking.",
+  "version": "0.1.0",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://www.nlb.gov.sg/seatbooking/*"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}

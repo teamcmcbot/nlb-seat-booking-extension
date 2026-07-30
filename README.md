@@ -1,0 +1,167 @@
+# NLB Seat Helper
+
+A Chrome extension that adds favourite-seat availability and booking tools to
+the [NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/) website. It runs
+inside the existing NLB page and uses the tab's signed-in session.
+
+## Features
+
+### Account and quota
+
+- Shows the signed-in NLB user ID.
+- Shows remaining versus total Study Area quota for the current and next day.
+- Shows the quota for the selected date.
+- Refreshes account quota and booking information after a booking run.
+- Formats quota in hours and minutes, including `0h` when exhausted.
+
+### Libraries, areas, dates, and times
+
+- Extracts the current library, area, seat, and booking rules from NLB's
+  `GetAccountInfo` response.
+- Excludes `facilityId: 2` discussion rooms and breakout rooms.
+- Remembers the last selected library and area in Chrome storage.
+- Respects NLB's configured advance-booking days and release time.
+- Uses each area's opening time, closing time, booking interval, and minimum
+  and maximum booking durations.
+- Removes elapsed same-day slots. For example, at 12pm only slots beginning
+  after 12pm are displayed and checked.
+- Defaults Duration to the selected date's remaining quota when it is greater
+  than zero; otherwise it defaults to four hours, capped by the area's rules
+  and remaining opening hours.
+
+### Favourite seats and seat plan
+
+- Stores favourite seats per area in Chrome storage.
+- Provides seat-number search so large areas do not need to render every seat.
+- Displays NLB's seat-plan image when available, preferring the `-sp` map.
+- Opens the seat plan in a full-screen viewer when clicked.
+
+### Availability
+
+- Checks availability only when **Check availability** or **Refresh** is
+  clicked; there is no automatic availability refresh.
+- Calls NLB's `SearchAvailableAreas` once per currently bookable interval.
+- Runs requests sequentially to reduce load on the NLB service.
+- Stops an individual request after six seconds.
+- Retries a transient `429` or `5xx` response once after a short delay.
+- Keeps successful interval results when another interval fails and marks the
+  scan as incomplete.
+- Extracts NLB's internal seat code from the availability response for use by
+  the booking endpoint.
+
+Timeline colors:
+
+- Green: available and selectable.
+- Blue with a check mark: selected for a new booking.
+- Purple: already booked by the signed-in user.
+- Amber: available, but blocked by another booking at the same time.
+- Red: unavailable.
+
+### Booking
+
+- Limits selected intervals to the remaining quota for the selected date.
+- Prevents selecting multiple seats for overlapping times.
+- Prevents selecting times that overlap an active existing booking.
+- Ignores canceled bookings such as `AutoPartialCancel` when checking
+  conflicts.
+- Supports selections across different favourite seats and non-consecutive
+  times.
+- Can combine adjacent intervals for the same seat into a continuous booking
+  or submit every interval separately.
+- Shows a review step before any booking requests are sent.
+- Sends confirmed requests sequentially to NLB's `bookings/Book` endpoint.
+- Displays pending, booking, successful, and failed status for every request.
+
+## Privacy and permissions
+
+The extension requests only Chrome's `storage` permission.
+
+It does not request cookie permissions or read browser cookies directly.
+Requests use the NLB page's existing signed-in session with
+`credentials: "include"`.
+
+Chrome storage contains only:
+
+- favourite seat selections; and
+- the last selected library and area.
+
+Account details, quotas, bookings, and availability results remain in memory
+and are not persisted by the extension.
+
+## Requirements
+
+- Google Chrome or another Chromium browser that supports Manifest V3.
+- An active NLB account session on the NLB Seat Booking website.
+- Node.js and npm to build from source.
+
+## Build
+
+Install dependencies and create the production extension:
+
+```bash
+npm install
+npm run build
+```
+
+The unpacked extension is generated in `dist/`.
+
+Available scripts:
+
+```bash
+npm run typecheck  # TypeScript validation
+npm run build      # Typecheck and create a production build
+npm run dev        # Rebuild dist/ whenever source files change
+```
+
+`npm run dev` is optional. A completed `npm run build` produces a working
+extension without a development process running.
+
+## Load in Chrome
+
+1. Open `chrome://extensions`.
+2. Enable **Developer mode**.
+3. Select **Load unpacked**.
+4. Choose this project's `dist` directory.
+5. Open or refresh `https://www.nlb.gov.sg/seatbooking/`.
+
+After rebuilding:
+
+1. Click **Reload** for NLB Seat Helper on `chrome://extensions`.
+2. Refresh the NLB Seat Booking tab.
+
+## Usage
+
+1. Sign in to NLB and open the Seat Booking page.
+2. Select a library, a specific area, and an available date.
+3. Open **Manage** and choose favourite seats.
+4. Choose the preferred Start and Duration values.
+5. Click **Check availability**.
+6. Select green intervals without exceeding the displayed quota.
+7. Choose whether adjacent intervals should be combined or booked separately.
+8. Click **Book**, review the generated requests, and confirm.
+9. Review the per-request booking status and refreshed quota.
+
+## Project structure
+
+```text
+public/manifest.json          Manifest V3 extension definition
+src/api/                      NLB account, availability, and booking requests
+src/components/               Favourite-seat and booking interface
+src/content/                  Injected application shell and styles
+src/models/                   Normalized account, catalog, and booking types
+src/services/                 Parsing, rules, persistence, conflicts, and plans
+vite.config.ts                Content-script production build
+```
+
+## Compatibility note
+
+This project integrates with the API responses and client-side rules used by
+the current NLB Seat Booking website. NLB can change those endpoints or
+response formats, so the extension may require updates when the website
+changes.
+
+Holiday closures, holiday-eve operating hours, branch exclusions, and
+extended-hours areas still require live API verification. See
+[Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md) for
+the current behavior, known gaps, test matrix, and proposed acceptance
+criteria.
