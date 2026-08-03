@@ -173,6 +173,19 @@ Maintainers can follow
 [Creating a GitHub Release](docs/releasing.md) to package and publish a
 versioned download.
 
+## Technical documentation
+
+- [NLB Seat Booking API Notes](docs/nlb-api.md) documents every endpoint used
+  by the extension, request parameters and bodies, consumed response schemas,
+  sanitized JSON, field-level usage, and observed booking lifecycle behavior.
+- [Extension Architecture and Behavior](docs/extension-architecture.md)
+  explains catalog normalization, date and interval rules, availability
+  scans, seat matching, conflict handling, booking plans, persistence, and
+  failure behavior.
+- [Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md)
+  tracks the fields, unknowns, and live tests needed for special operating
+  days.
+
 ## Usage
 
 1. Sign in to NLB and open the Seat Booking page.

@@ -1,0 +1,388 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/teamcmcbot/nlb-seat-booking-extension/docs/schemas/get-account-info.consumed.schema.json",
+  "title": "GetAccountInfo fields consumed by NLB Seat Helper",
+  "description": "A compatibility schema for the subset of the observed NLB response used by the extension. It is not an official NLB schema and intentionally permits additional properties.",
+  "type": "object",
+  "required": [
+    "settings"
+  ],
+  "properties": {
+    "accountInfo": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/accountInfo"
+        }
+      ]
+    },
+    "action": {},
+    "branchId": {
+      "type": [
+        "integer",
+        "string",
+        "null"
+      ]
+    },
+    "settings": {
+      "$ref": "#/$defs/settings"
+    }
+  },
+  "additionalProperties": true,
+  "$defs": {
+    "quota": {
+      "type": "object",
+      "required": [
+        "name",
+        "code",
+        "quotaInMinutes",
+        "remainingQuotaInMinutes"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "code": {
+          "type": "string"
+        },
+        "quotaInMinutes": {
+          "type": "number"
+        },
+        "remainingQuotaInMinutes": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": true
+    },
+    "advancedQuota": {
+      "type": "object",
+      "required": [
+        "bookingDateTime",
+        "advancedDailyBookingQuotas"
+      ],
+      "properties": {
+        "bookingDateTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "advancedDailyBookingQuotas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quota"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "booking": {
+      "type": "object",
+      "required": [
+        "bookingId",
+        "branchId",
+        "lastAction",
+        "seat",
+        "area",
+        "startTime",
+        "endTime"
+      ],
+      "properties": {
+        "bookingId": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "bookingRefId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bookingTimeslotInMinutes": {
+          "type": "number"
+        },
+        "branchId": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "facilityId": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "lastAction": {
+          "type": "string"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "seat": {
+          "type": "string"
+        },
+        "area": {
+          "type": "string"
+        },
+        "floor": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "branchName": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "mapUrls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "canCancelStatus": {
+          "type": "boolean"
+        },
+        "canCheckInStatus": {
+          "type": "boolean"
+        },
+        "canExtendStatus": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "accountInfo": {
+      "type": "object",
+      "required": [
+        "userId"
+      ],
+      "properties": {
+        "userId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowAdvanceBooking": {
+          "type": "boolean"
+        },
+        "dailyBookingQuotas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/quota"
+          }
+        },
+        "advancedBookingQuotas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/advancedQuota"
+          }
+        },
+        "bookings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/booking"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "seat": {
+      "type": "object",
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "isDisabled": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": true
+    },
+    "area": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "facilityId",
+        "seats"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "floor": {
+          "type": [
+            "integer",
+            "string",
+            "null"
+          ]
+        },
+        "facilityId": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "facilityCode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "openingTime": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "closingTime": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "bookingTimeslotInMinutes": {
+          "type": "number"
+        },
+        "minBookingMinutes": {
+          "type": "number"
+        },
+        "maxBookingMinutes": {
+          "type": "number"
+        },
+        "areaMapUrls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "mapUrls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "seats": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/seat"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "branch": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "areas"
+      ],
+      "properties": {
+        "id": {
+          "type": [
+            "integer",
+            "string"
+          ]
+        },
+        "name": {
+          "type": "string"
+        },
+        "areas": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/area"
+          }
+        }
+      },
+      "additionalProperties": true
+    },
+    "system": {
+      "type": "object",
+      "properties": {
+        "advanceBookingDays": {
+          "type": "number"
+        },
+        "bookingReleaseTime": {
+          "type": "string"
+        },
+        "privilegeUserBookingReleaseTime": {
+          "type": "string"
+        },
+        "checkInStartTimeInMinutes": {
+          "type": "number"
+        },
+        "checkInEndTimeInMinutes": {
+          "type": "number"
+        },
+        "quotaDeductionBlockMinutes": {
+          "type": "number"
+        }
+      },
+      "additionalProperties": true
+    },
+    "settings": {
+      "type": "object",
+      "required": [
+        "menus",
+        "system"
+      ],
+      "properties": {
+        "system": {
+          "$ref": "#/$defs/system"
+        },
+        "holidays": {
+          "type": "array"
+        },
+        "menus": {
+          "type": "object",
+          "required": [
+            "branchMenus"
+          ],
+          "properties": {
+            "branchMenus": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/branch"
+              }
+            }
+          },
+          "additionalProperties": true
+        }
+      },
+      "additionalProperties": true
+    }
+  }
+}

@@ -138,6 +138,114 @@ function seatIdentityKey(value: string) {
   return value.trim().toLowerCase();
 }
 
+function joinSeatNames(names: string[]) {
+  if (names.length <= 1) {
+    return names[0] ?? "";
+  }
+
+  return `${names.slice(0, -1).join(", ")} and ${names.at(-1)}`;
+}
+
+function sequenceHint(
+  names: string[],
+  parsed: { stem: string; value: number }[],
+  formatValue: (stem: string, value: number) => string,
+) {
+  const stem = parsed[0]?.stem;
+
+  if (
+    stem === undefined ||
+    parsed.some((item) => item.stem !== stem) ||
+    parsed.some(
+      (item, index) =>
+        index > 0 && item.value <= parsed[index - 1].value,
+    )
+  ) {
+    return undefined;
+  }
+
+  const first = parsed[0].value;
+  const last = parsed.at(-1)?.value ?? first;
+
+  if (first === last) {
+    return `Type a seat number (${names[0]}).`;
+  }
+
+  const existing = new Set(parsed.map((item) => item.value));
+  const missing: string[] = [];
+
+  for (let value = first; value <= last; value += 1) {
+    if (!existing.has(value)) {
+      missing.push(formatValue(stem, value));
+    }
+  }
+
+  const range = `${names[0]} to ${names.at(-1)}`;
+
+  if (missing.length === 0) {
+    return `Type a seat number (${range}).`;
+  }
+
+  if (missing.length <= 3) {
+    return `Type a seat number (${range}, excluding ${joinSeatNames(
+      missing,
+    )}).`;
+  }
+
+  return undefined;
+}
+
+function seatSearchHint(seats: Seat[]) {
+  const names = seats.map((seat) => seat.name.trim()).filter(Boolean);
+
+  if (names.length === 0) {
+    return "No seats are configured for this area.";
+  }
+
+  const numeric = names.map((name) => {
+    const match = name.match(/^(.*?)(\d+)$/);
+    return match
+      ? { stem: match[1], value: Number(match[2]) }
+      : undefined;
+  });
+
+  if (numeric.every((item) => item !== undefined)) {
+    const hint = sequenceHint(
+      names,
+      numeric as { stem: string; value: number }[],
+      (stem, value) => `${stem}${value}`,
+    );
+
+    if (hint) {
+      return hint;
+    }
+  }
+
+  const lettered = names.map((name) => {
+    const match = name.match(/^(.*?\d+)([A-Za-z])$/);
+    return match
+      ? {
+          stem: match[1],
+          value: match[2].toUpperCase().charCodeAt(0),
+        }
+      : undefined;
+  });
+
+  if (lettered.every((item) => item !== undefined)) {
+    const hint = sequenceHint(
+      names,
+      lettered as { stem: string; value: number }[],
+      (stem, value) => `${stem}${String.fromCharCode(value)}`,
+    );
+
+    if (hint) {
+      return hint;
+    }
+  }
+
+  return `Type a seat number to search ${names.length} seats.`;
+}
+
 function formatSelectedDate(date: string) {
   const [year, month, day] = date.split("-");
   return year && month && day ? `${day}/${month}/${year}` : date;
@@ -223,6 +331,10 @@ export function SeatAssistant({
   const area = useMemo(
     () => branch?.areas.find((item) => item.id === areaId),
     [areaId, branch],
+  );
+  const seatHint = useMemo(
+    () => seatSearchHint(area?.seats ?? []),
+    [area],
   );
   const areaFavourites = useMemo(
     () =>
@@ -945,14 +1057,14 @@ export function SeatAssistant({
             <div className="nlb-seat-helper__seat-manager">
               <input
                 type="search"
-                placeholder="Search seat number, e.g. S383"
+                placeholder={`Search seat number, e.g. ${
+                  area.seats[0]?.name ?? "S1"
+                }`}
                 value={seatSearch}
                 onChange={(event) => setSeatSearch(event.target.value)}
                 autoFocus
               />
-              {!seatSearch.trim() && searchedSeats.length === 0 && (
-                <p>Type a seat number to search {area.seats.length} seats.</p>
-              )}
+              {!seatSearch.trim() && <p>{seatHint}</p>}
               <div className="nlb-seat-helper__seat-results">
                 {searchedSeats.map((seat) => {
                   const selected = favouriteIds.has(seat.id);

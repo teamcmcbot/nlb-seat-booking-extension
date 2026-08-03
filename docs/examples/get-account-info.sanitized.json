@@ -1,0 +1,131 @@
+{
+  "accountInfo": {
+    "userId": "sample-user",
+    "allowAdvanceBooking": false,
+    "dailyBookingQuotas": [
+      {
+        "name": "Study Area",
+        "code": "StudyArea",
+        "quotaInMinutes": 240,
+        "remainingQuotaInMinutes": 180
+      }
+    ],
+    "advancedBookingQuotas": [
+      {
+        "bookingDateTime": "2026-07-31T00:00:00+08:00",
+        "advancedDailyBookingQuotas": [
+          {
+            "name": "Study Area",
+            "code": "StudyArea",
+            "quotaInMinutes": 240,
+            "remainingQuotaInMinutes": 180
+          }
+        ]
+      }
+    ],
+    "bookings": [
+      {
+        "bookingId": 1000001,
+        "bookingRefId": "REDACTED",
+        "bookingTimeslotInMinutes": 60,
+        "branchId": 2,
+        "facilityId": 1,
+        "lastAction": "AutoPartialCancel",
+        "actions": [
+          "Book",
+          "AutoPartialCancel"
+        ],
+        "seat": "S377",
+        "area": "Study Area Near Escalator",
+        "floor": "3",
+        "branchName": "Jurong Library",
+        "startTime": "2026-07-31T10:00:00",
+        "endTime": "2026-07-31T11:00:00",
+        "canCancelStatus": false,
+        "canCheckInStatus": false,
+        "canExtendStatus": false,
+        "mapUrls": [
+          "jrl-3-studyareaescalator-fp.png",
+          "jrl-3-studyareaescalator-sp-full.png?t=20221130"
+        ]
+      },
+      {
+        "bookingId": 1000002,
+        "bookingRefId": "REDACTED",
+        "bookingTimeslotInMinutes": 60,
+        "branchId": 2,
+        "facilityId": 1,
+        "lastAction": "Book",
+        "actions": [
+          "Book"
+        ],
+        "seat": "S382",
+        "area": "Study Area Near Escalator",
+        "floor": "3",
+        "branchName": "Jurong Library",
+        "startTime": "2026-07-31T13:00:00",
+        "endTime": "2026-07-31T15:00:00",
+        "canCancelStatus": true,
+        "canCheckInStatus": true,
+        "canExtendStatus": false,
+        "mapUrls": [
+          "jrl-3-studyareaescalator-fp.png",
+          "jrl-3-studyareaescalator-sp-full.png?t=20221130"
+        ]
+      }
+    ]
+  },
+  "action": null,
+  "branchId": 0,
+  "settings": {
+    "system": {
+      "advanceBookingDays": 1,
+      "bookingReleaseTime": "2020-01-01T12:00:00+08:00",
+      "privilegeUserBookingReleaseTime": "2020-01-01T11:00:00+08:00",
+      "checkInStartTimeInMinutes": 15,
+      "checkInEndTimeInMinutes": 14,
+      "quotaDeductionBlockMinutes": 60
+    },
+    "holidays": [],
+    "menus": {
+      "branchMenus": [
+        {
+          "id": 2,
+          "name": "Jurong Library",
+          "code": "JRL",
+          "areas": [
+            {
+              "id": 43,
+              "name": "Study Area Near Escalator, Level 3",
+              "code": "JRL.3.StudyAreaEscalator",
+              "floor": "3",
+              "facilityId": 1,
+              "facilityCode": "StudyArea",
+              "firstSeatCode": "JRL.3.StudyAreaEscalator.359",
+              "openingTime": "2020-09-20T10:00:00",
+              "closingTime": "2020-09-20T20:30:00",
+              "bookingTimeslotInMinutes": 60,
+              "minBookingMinutes": 60,
+              "maxBookingMinutes": 240,
+              "seats": [
+                {
+                  "id": 723,
+                  "name": "S359",
+                  "description": null,
+                  "minPax": 0,
+                  "maxPax": 0,
+                  "hasAvailableSlots": [
+                    {
+                      "time": "19:00",
+                      "isAvail": true
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

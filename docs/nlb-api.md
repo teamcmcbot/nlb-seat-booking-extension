@@ -1,0 +1,614 @@
+# NLB Seat Booking API Notes
+
+Status: unofficial, reverse-engineered integration notes.
+
+This document describes the NLB Seat Booking HTTP endpoints used by NLB Seat
+Helper, the response fields consumed by the extension, and behavior observed
+while testing. It is not official NLB documentation and is not a promise that
+the endpoints or fields will remain stable.
+
+The notes are based on:
+
+- the extension source at version `1.0.0` and subsequent local changes;
+- a `GetAccountInfo` response captured on 30 July 2026;
+- booking-state observations made on 31 July 2026; and
+- successful availability and booking requests made during extension testing.
+
+All times in the captured data are interpreted in Singapore time
+(`Asia/Singapore`, UTC+08:00). Examples in this repository are sanitized.
+
+## API overview
+
+| Purpose | Method | Endpoint |
+| --- | --- | --- |
+| Account, quotas, bookings, branches, areas, seats, and rules | `GET` | `/seatbooking/api/accounts/GetAccountInfo` |
+| Available seats for one interval | `GET` | `/seatbooking/api/areas/SearchAvailableAreas` |
+| Create one booking | `POST` | `/seatbooking/api/bookings/Book` |
+
+The extension runs as a content script on `https://www.nlb.gov.sg/seatbooking/`
+and sends same-origin requests with:
+
+```http
+Accept: application/json, text/plain, */*
+```
+
+It sets `credentials: "include"`, which makes the browser use the signed-in
+NLB session already associated with the tab. The extension does not read or
+store NLB cookies.
+
+`POST /bookings/Book` additionally sends:
+
+```http
+Content-Type: application/json
+```
+
+## Reliability and compatibility rules
+
+- HTTP responses outside the `2xx` range are treated as errors.
+- `GetAccountInfo` must return JSON. A non-JSON response is treated as a likely
+  expired or redirected session.
+- `401` and `403` from `GetAccountInfo` are shown as a missing NLB session.
+- Availability requests time out after six seconds.
+- A `429` or `5xx` availability response is retried once after approximately
+  600 milliseconds.
+- Availability calls run sequentially rather than concurrently.
+- A failed interval never becomes selectable. Successful intervals from the
+  same scan remain usable, while the overall scan is marked incomplete.
+- Booking requests run sequentially and are not automatically retried. An
+  automatic retry could create a duplicate booking when the server completed
+  the first request but the response was lost.
+
+## `GET /accounts/GetAccountInfo`
+
+### Request
+
+```http
+GET https://www.nlb.gov.sg/seatbooking/api/accounts/GetAccountInfo
+Accept: application/json, text/plain, */*
+Cookie: supplied by Chrome through credentials: "include"
+```
+
+There is no request body.
+
+### Response status and sign-in state
+
+The observed top-level object contains:
+
+```ts
+interface GetAccountInfoResponse {
+  accountInfo: AccountInfo | null;
+  action: unknown;
+  branchId: number | string | null;
+  settings: Settings;
+  // Additional fields may be present.
+}
+```
+
+`accountInfo: null` means the catalog may still be available but the extension
+does not consider the user signed in. A non-null `accountInfo` with a non-empty
+`userId` becomes the active account session.
+
+A machine-readable compatibility schema for the subset consumed by the
+extension is available at
+[`schemas/get-account-info.consumed.schema.json`](schemas/get-account-info.consumed.schema.json).
+It deliberately allows unknown fields because the NLB response is larger than
+the extension's data model.
+
+See
+[`examples/get-account-info.sanitized.json`](examples/get-account-info.sanitized.json)
+for a complete sanitized example.
+
+### Account schema
+
+```ts
+interface AccountInfo {
+  userId: string;
+  allowAdvanceBooking?: boolean;
+  dailyBookingQuotas?: BookingQuota[];
+  advancedBookingQuotas?: AdvancedBookingQuota[];
+  bookings?: Booking[];
+}
+
+interface BookingQuota {
+  name: string;
+  code: string;
+  quotaInMinutes: number;
+  remainingQuotaInMinutes: number;
+}
+
+interface AdvancedBookingQuota {
+  bookingDateTime: string;
+  advancedDailyBookingQuotas: BookingQuota[];
+}
+```
+
+#### Account fields used by the extension
+
+| Field | Use |
+| --- | --- |
+| `userId` | Displays `Connected to {userId}` and establishes that account data exists. |
+| `allowAdvanceBooking` | Chooses the privileged release time when true and configured. |
+| `dailyBookingQuotas` | Supplies today's remaining and total quota. |
+| `advancedBookingQuotas[].bookingDateTime` | Associates advanced quota with a calendar date using the first ten characters (`YYYY-MM-DD`). |
+| `advancedBookingQuotas[].advancedDailyBookingQuotas` | Supplies quota for the corresponding advanced date. |
+| `bookings` | Identifies intervals already occupied by the signed-in account. |
+
+The preferred quota is the item whose `code` is `StudyArea`,
+case-insensitively. If it is absent, the extension falls back to the first
+quota item.
+
+Quota values remain in minutes internally. The UI formats them as `4h`,
+`1h 30m`, `30m`, or `0h`.
+
+### Existing booking schema
+
+The raw response contains more booking information than the extension keeps:
+
+```ts
+interface Booking {
+  bookingId: number | string;
+  bookingRefId?: string | null;
+  bookingTimeslotInMinutes?: number;
+  branchId: number | string;
+  facilityId?: number | string | null;
+  lastAction: string;
+  actions?: string[];
+  seat: string;
+  area: string;
+  areaInformation?: unknown;
+  areaIgnoreHolidays?: boolean;
+  floor?: number | string | null;
+  branchName?: string;
+  startTime: string;
+  endTime: string;
+  areaImageUrls?: string[];
+  mapUrls?: string[];
+  infoJson?: unknown;
+  canCancelStatus?: boolean;
+  canCheckInStatus?: boolean;
+  canExtendStatus?: boolean;
+}
+```
+
+#### Booking fields used by the extension
+
+| Field | Use |
+| --- | --- |
+| `bookingId` | Retained as a stable identifier in the normalized session. |
+| `branchId` | Part of matching a booking to the selected branch. |
+| `facilityId` | Helps disambiguate areas and facilities. |
+| `floor` | Helps disambiguate an area when its display name differs slightly. |
+| `seat` | Matches the displayed seat name, such as `S377`. |
+| `area` | Matches the selected area name after punctuation and case normalization. |
+| `startTime`, `endTime` | Determines whether a displayed interval overlaps the booking. |
+| `lastAction` | Determines whether the extension treats the booking as active. |
+
+The extension currently considers a booking inactive when `lastAction`
+contains `cancel`, case-insensitively:
+
+```ts
+active = !/cancel/i.test(lastAction);
+```
+
+Consequently, `AutoPartialCancel` is treated as canceled and no longer blocks
+another interval. A booking whose `lastAction` remains `Book` is treated as
+active, even if other server fields appear stale or contradictory.
+
+The extension does not currently use `actions`, `canCancelStatus`,
+`canCheckInStatus`, or `canExtendStatus` for conflict decisions. Those are
+documented because they are valuable lifecycle signals for future work.
+
+### Settings and catalog schema
+
+```ts
+interface Settings {
+  system: SystemSettings;
+  holidays?: unknown[];
+  menus: {
+    branchMenus: Branch[];
+  };
+}
+
+interface SystemSettings {
+  advanceBookingDays?: number;
+  bookingReleaseTime?: string;
+  privilegeUserBookingReleaseTime?: string;
+  checkInStartTimeInMinutes?: number;
+  checkInEndTimeInMinutes?: number;
+  quotaDeductionBlockMinutes?: number;
+}
+
+interface Branch {
+  id: number | string;
+  name: string;
+  code?: string;
+  areas: Area[];
+}
+
+interface Area {
+  id: number | string;
+  name: string;
+  floor?: number | string;
+  facilityId: number | string;
+  facilityCode?: string;
+  openingTime?: string;
+  closingTime?: string;
+  bookingTimeslotInMinutes?: number;
+  minBookingMinutes?: number;
+  maxBookingMinutes?: number;
+  areaMapUrls?: string[];
+  mapUrls?: string[];
+  seats: Seat[];
+}
+
+interface Seat {
+  id: number | string;
+  name: string;
+  code?: string;
+  seatCode?: string;
+  disabled?: boolean;
+  isDisabled?: boolean;
+}
+```
+
+#### System fields used by the extension
+
+| Field | Default | Use |
+| --- | ---: | --- |
+| `advanceBookingDays` | `1` | Calculates the furthest selectable calendar date. |
+| `bookingReleaseTime` | no restriction when absent | Determines when the normal advanced date becomes available. |
+| `privilegeUserBookingReleaseTime` | normal release time | Used when `allowAdvanceBooking` is true. |
+
+### Observed next-day release behavior
+
+The captured configuration contains:
+
+```json
+{
+  "advanceBookingDays": 1,
+  "bookingReleaseTime": "2020-01-01T12:00:00+08:00",
+  "privilegeUserBookingReleaseTime": "2020-01-01T11:00:00+08:00"
+}
+```
+
+Only the time portion is used. For a normal account with
+`allowAdvanceBooking: false`, the extension currently calculates:
+
+| Current time | Furthest selectable date |
+| --- | --- |
+| Before 12:00 | Today |
+| At or after 12:00 | Tomorrow |
+
+This matches the behavior observed in the NLB calendar on 31 July 2026:
+tomorrow was not selectable before noon and became selectable at/after noon.
+
+For an account with `allowAdvanceBooking: true`, the extension uses
+`privilegeUserBookingReleaseTime` when it is present. With the captured
+configuration, that would make tomorrow selectable from 11:00.
+
+The rule is configuration-driven rather than a hardcoded noon check. If NLB
+changes either release-time field or `advanceBookingDays`, the extension uses
+the new values returned by `GetAccountInfo`.
+
+`checkInStartTimeInMinutes`, `checkInEndTimeInMinutes`, and other system fields
+are currently documented but not enforced by the extension.
+
+#### Area fields used by the extension
+
+| Field | Default | Use |
+| --- | ---: | --- |
+| `id` | required | Availability query and booking request. |
+| `name` | required | Area selector and booking-location matching. |
+| `branchId` or parent branch `id` | required | Library grouping and availability query. |
+| `facilityId` | optional | Areas with value `2` are excluded. |
+| `facilityCode` | optional | Metadata and future quota/facility matching. |
+| `floor` | optional | Booking-location matching. |
+| `openingTime` | required for a timeline | First generated interval. |
+| `closingTime` | required for a timeline | Stops intervals that would end after closing. |
+| `bookingTimeslotInMinutes` | `60` | Size and spacing of timeline intervals. |
+| `minBookingMinutes` | `60` | Minimum duration and today's last possible start. |
+| `maxBookingMinutes` | `240` | Maximum duration and adjacent-slot merge limit. |
+| `areaMapUrls` or `mapUrls` | empty list | Seat-plan discovery; filenames containing `-sp` are preferred. |
+| `seats` | empty list | Favourite management and availability matching. |
+
+Discussion rooms and paid facilities observed as `facilityId: 2` are removed
+while the catalog is normalized. They never appear in the extension selectors.
+
+#### Seat fields used by the extension
+
+| Field | Use |
+| --- | --- |
+| `id` or `seatId` | Stable favourite and selection identity. |
+| `name` or `seatName` | Display, search, booking matching, and range hints. |
+| `code` or `seatCode` | Booking identifier when the account/catalog response supplies it. |
+| `disabled` or `isDisabled` | Preserved in the normalized model. |
+
+The catalog capture did not always include a booking-ready seat code. The
+extension therefore also extracts `code`/`seatCode` from availability
+responses and associates it with the seat ID/name before enabling booking.
+
+Seat names are sorted with numeric-aware comparison. Favourite-seat range
+hints are derived at runtime; they are not hardcoded. Numeric sequences such
+as `S35` to `S59`, letter sequences such as `S48A` to `S48O`, and up to three
+missing values are described explicitly.
+
+## `GET /areas/SearchAvailableAreas`
+
+This endpoint answers availability for one area and one exact interval. The
+extension does not ask for an entire day in one call.
+
+### Query parameters
+
+| Parameter | Example | Meaning |
+| --- | --- | --- |
+| `Mode` | `OffsiteMode` | Booking mode used by the public off-site flow. |
+| `BranchId` | `2` | Selected branch/library identifier. |
+| `AreaId` | `43` | Selected area identifier. |
+| `StartTime` | `2026-07-31T13:00` | Local start datetime without an explicit UTC offset. |
+| `DurationInMinutes` | `60` | Length of the interval being checked. |
+
+Example:
+
+```http
+GET /seatbooking/api/areas/SearchAvailableAreas?Mode=OffsiteMode&BranchId=2&AreaId=43&StartTime=2026-07-31T13%3A00&DurationInMinutes=60
+```
+
+### Call pattern
+
+For an area open from 10:00 to 20:30 with a 60-minute interval, the extension
+generates starts at 10:00 through 19:00. On a future date that is ten
+availability calls.
+
+For today, it removes every start that is not strictly later than the current
+time. At 12:00, it checks 13:00 through 19:00. Past cells are not generated,
+cannot appear green, and cannot be selected.
+
+Changing the visual Start or Duration preference does not make another API
+scan. Those controls only highlight a preferred window over the already
+scanned hourly results.
+
+### Accepted response contract
+
+We do not currently have a sanitized raw wire fixture for this endpoint in the
+repository. The extension intentionally accepts several casing and nesting
+variants because the NLB response has varied during testing.
+
+The parser recursively looks up to twelve levels deep for collections named,
+case- and punctuation-insensitively:
+
+- `seat`
+- `seats`
+- `seatList`
+- `availableSeats`
+
+Inside one of those collections it recognizes:
+
+```ts
+interface AvailableSeatIdentity {
+  id?: string | number;       // or seatId
+  code?: string | number;     // or seatCode
+  name?: string | number;     // or seatName
+}
+```
+
+At least one identity field is used to match catalog seats. A booking-ready
+identity requires `code`/`seatCode` plus either ID or name.
+
+The parser also looks for `areaMapUrls` or `mapUrls`. It prefers maps attached
+to the requested area ID; a single unambiguous map collection is accepted as
+a fallback.
+
+The following is an **illustrative minimal shape accepted by the parser**, not
+a claim that NLB always returns this exact envelope:
+
+```json
+{
+  "areas": [
+    {
+      "id": 43,
+      "areaMapUrls": [
+        "jrl-3-studyareaescalator-fp.png",
+        "jrl-3-studyareaescalator-sp-full.png?t=20221130"
+      ],
+      "availableSeats": [
+        {
+          "id": 741,
+          "name": "S377",
+          "code": "JRL.3.StudyAreaEscalator.377"
+        }
+      ]
+    }
+  ]
+}
+```
+
+Do not use this illustrative response as a strict mock of the NLB server.
+Capture and sanitize a real response before tightening the parser or writing
+an authoritative response schema.
+
+## `POST /bookings/Book`
+
+This endpoint submits exactly one planned booking.
+
+### Request body
+
+```ts
+interface BookRequest {
+  areaId: string;
+  seatCode: string;
+  startTime: string;
+  durationInMinutes: number;
+  mode: "OffsiteMode";
+}
+```
+
+Example:
+
+```json
+{
+  "areaId": "43",
+  "seatCode": "JRL.3.StudyAreaEscalator.377",
+  "startTime": "2026-07-31T13:00",
+  "durationInMinutes": 120,
+  "mode": "OffsiteMode"
+}
+```
+
+`seatCode` is the NLB booking identifier, not merely the visible name such as
+`S377`. This is why a green interval cannot be booked until the extension has
+discovered the seat code from catalog or availability data.
+
+### Accepted response contract
+
+The booking client requires a non-null JSON object. It treats the response as
+failed when either of these fields is explicitly false:
+
+```ts
+interface BookResponse {
+  success?: boolean;
+  isPreferredSeat?: boolean;
+  message?: string;
+  // Other server fields are currently ignored.
+}
+```
+
+An HTTP error also fails the booking. When `message` is absent, the extension
+shows a generic message that the seat is no longer available.
+
+A successful booking causes `GetAccountInfo` to be fetched again so quota and
+existing-booking state can be refreshed.
+
+## Booking lifecycle observations
+
+### Confirmed from captured responses
+
+The same booking entry changes over time through fields such as:
+
+- `lastAction`
+- `actions`
+- `canCancelStatus`
+- `canCheckInStatus`
+- `canExtendStatus`
+
+One observed unchecked booking changed from:
+
+```json
+{
+  "lastAction": "Book",
+  "actions": ["Book"],
+  "canCancelStatus": true,
+  "canCheckInStatus": true
+}
+```
+
+to:
+
+```json
+{
+  "lastAction": "AutoPartialCancel",
+  "actions": ["Book", "AutoPartialCancel"],
+  "canCancelStatus": false,
+  "canCheckInStatus": false
+}
+```
+
+The captured system configuration included:
+
+```json
+{
+  "checkInStartTimeInMinutes": 15,
+  "checkInEndTimeInMinutes": 14
+}
+```
+
+An unchecked 10:00 booking was observed as `AutoPartialCancel` at
+approximately 10:14.
+
+### Observed anomaly on 31 July 2026
+
+At approximately 11:37, an unchecked 11:00–12:00 booking still reported:
+
+```json
+{
+  "lastAction": "Book",
+  "actions": ["Book"],
+  "canCancelStatus": true,
+  "canCheckInStatus": true
+}
+```
+
+This was inconsistent with the earlier 10:00 booking and the apparent
+14-minute check-in window.
+
+### What is inferred, not proven
+
+It is plausible that NLB performs automatic cancellation asynchronously,
+possibly through a scheduled or queued backend process. The delayed entry may
+indicate a late or failed backend update. The API responses alone do not prove:
+
+- that a batch job exists;
+- its schedule or retry behavior;
+- whether `canCheckInStatus: true` remained operational;
+- whether quota was restored despite the stale action; or
+- whether the record eventually reconciled.
+
+Until more samples are captured, documentation and code should refer to this
+as an observed delayed/stale booking state rather than a confirmed batch-job
+failure.
+
+### Current extension consequence
+
+Because `lastAction: "Book"` does not contain `cancel`, the extension treats
+the stale booking as active and blocks overlapping new selections. This is the
+safe behavior: it avoids attempting a second booking while the server still
+claims that the first booking is active.
+
+The extension does not attempt to repair, cancel, or reinterpret a stale NLB
+booking. NLB remains authoritative.
+
+## Seat-plan image URLs
+
+Map filenames from `areaMapUrls` or `mapUrls` are resolved against:
+
+```text
+https://www.nlb.gov.sg/seatbooking/img/areas/{filename}
+```
+
+Absolute URLs and paths containing `..` are rejected. If several maps exist,
+the extension prefers the filename containing `-sp`, which represents the
+seat plan in the observed data.
+
+## Privacy and safe fixture capture
+
+Never commit a raw `GetAccountInfo` response without sanitizing it. Remove or
+replace:
+
+- `name`
+- `userId`
+- `email`
+- `accountId`
+- `bookingId`
+- `bookingRefId`
+- any QR/check-in token or account-specific URL
+
+Preserve structural fields needed to reproduce behavior, including time
+boundaries, action names, facility/area identifiers, and quota values.
+
+When capturing availability, store one successful response and representative
+`4xx`, `429`, and `5xx` errors if they occur naturally. Do not create a booking
+solely to obtain an error fixture.
+
+## Known unknowns
+
+- Holiday and holiday-eve authority: account metadata versus availability
+  response versus final booking validation.
+- Exact raw availability response schema across every branch/facility type.
+- Complete successful and failed booking response schemas.
+- Automatic cancellation scheduling and reconciliation behavior.
+- Whether server times always omit an offset and must always be interpreted as
+  Singapore local time.
+- Whether `advanceBookingDays` always counts calendar days.
+
+See
+[`holiday-and-closure-testing.md`](holiday-and-closure-testing.md) for the
+holiday investigation plan.
