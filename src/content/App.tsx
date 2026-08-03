@@ -1,13 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { getAccountInfo, NlbApiError } from "../api/account";
 import { SeatAssistant } from "../components/SeatAssistant";
-import type { AccountSession, BookingQuota } from "../models/account";
+import type { AccountSession } from "../models/account";
 import type { Catalog } from "../models/catalog";
-import {
-  extractAccountSession,
-  formatQuotaMinutes,
-  quotaByCode,
-} from "../services/accountSession";
+import { extractAccountSession } from "../services/accountSession";
 import { extractCatalog } from "../services/catalog";
 
 type AccountState =
@@ -39,25 +35,13 @@ function getErrorMessage(error: unknown) {
   return "Could not connect to NLB. Please refresh or try again.";
 }
 
-function QuotaValue({ quota }: { quota?: BookingQuota }) {
-  if (!quota) {
-    return <strong className="nlb-seat-helper__quota-unavailable">—</strong>;
-  }
-
-  return (
-    <strong>
-      {formatQuotaMinutes(quota.remainingQuotaInMinutes)}
-      <span> / {formatQuotaMinutes(quota.quotaInMinutes)}</span>
-    </strong>
-  );
-}
-
 export function App() {
   const [accountState, setAccountState] = useState<AccountState>({
     status: "loading",
   });
   const [requestId, setRequestId] = useState(0);
   const [expanded, setExpanded] = useState(true);
+  const [refreshingAccount, setRefreshingAccount] = useState(false);
 
   const retry = useCallback(() => {
     setRequestId((current) => current + 1);
@@ -66,6 +50,20 @@ export function App() {
     const accountInfo = await getAccountInfo();
     setAccountState(connectedAccountState(accountInfo));
   }, []);
+  const refreshAccountFromHeader = useCallback(async () => {
+    setRefreshingAccount(true);
+
+    try {
+      await refreshAccountSilently();
+    } catch (error) {
+      setAccountState({
+        status: "error",
+        message: getErrorMessage(error),
+      });
+    } finally {
+      setRefreshingAccount(false);
+    }
+  }, [refreshAccountSilently]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -89,7 +87,9 @@ export function App() {
 
   return (
     <aside
-      className="nlb-seat-helper__panel"
+      className={`nlb-seat-helper__panel${
+        expanded && accountState.status === "connected" ? " is-workspace" : ""
+      }`}
       aria-label="NLB Seat Helper status"
       aria-live="polite"
     >
@@ -98,17 +98,26 @@ export function App() {
           className={`nlb-seat-helper__status nlb-seat-helper__status--${accountState.status}`}
           aria-hidden="true"
         />
-        <div>
-          <strong className="nlb-seat-helper__title">NLB Seat Helper</strong>
-          <span className="nlb-seat-helper__message">
-            {accountState.status === "loading" && "Connecting to NLB…"}
-            {accountState.status === "connected" &&
-              (accountState.session
-                ? `Connected to ${accountState.session.userId}`
-                : "NLB sign-in not detected")}
-            {accountState.status === "error" && "Connection failed"}
-          </span>
-        </div>
+        <strong className="nlb-seat-helper__title">
+          NLB Seat Helper
+          {accountState.status === "connected" && (
+            <span> ({accountState.session?.userId ?? "Not signed in"})</span>
+          )}
+          {accountState.status === "loading" && <span> (Connecting…)</span>}
+          {accountState.status === "error" && <span> (Connection failed)</span>}
+        </strong>
+        <button
+          type="button"
+          className={`nlb-seat-helper__account-refresh${
+            refreshingAccount ? " is-refreshing" : ""
+          }`}
+          onClick={() => void refreshAccountFromHeader()}
+          disabled={refreshingAccount || accountState.status === "loading"}
+          aria-label="Refresh NLB account session"
+          title="Refresh account after signing in"
+        >
+          ↻
+        </button>
         <button
           type="button"
           className="nlb-seat-helper__collapse"
@@ -128,33 +137,11 @@ export function App() {
       )}
 
       {expanded && accountState.status === "connected" && (
-        <>
-          <div className="nlb-seat-helper__quota-summary">
-            <div>
-              <span>Current day quota</span>
-              <QuotaValue
-                quota={quotaByCode(
-                  accountState.session?.dailyQuotas ?? [],
-                )}
-              />
-              <small>remaining / total</small>
-            </div>
-            <div>
-              <span>Next day quota</span>
-              <QuotaValue
-                quota={quotaByCode(
-                  accountState.session?.advancedQuotas[0]?.quotas ?? [],
-                )}
-              />
-              <small>remaining / total</small>
-            </div>
-          </div>
-          <SeatAssistant
-            catalog={accountState.catalog}
-            session={accountState.session}
-            onAccountRefresh={refreshAccountSilently}
-          />
-        </>
+        <SeatAssistant
+          catalog={accountState.catalog}
+          session={accountState.session}
+          onAccountRefresh={refreshAccountSilently}
+        />
       )}
 
       {expanded && accountState.status === "error" && (
@@ -163,12 +150,6 @@ export function App() {
           <button type="button" onClick={retry}>
             Try again
           </button>
-        </div>
-      )}
-
-      {expanded && (
-        <div className="nlb-seat-helper__privacy">
-          Uses this tab’s signed-in session. Favourites stay in Chrome.
         </div>
       )}
     </aside>

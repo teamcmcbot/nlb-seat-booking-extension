@@ -23,11 +23,8 @@ import {
   type HourSlot,
 } from "../services/availability";
 import {
-  durationOptions,
-  formatDuration,
   getBookableDateRange,
   getBookableSlots,
-  preferredDuration,
 } from "../services/bookingRules";
 import {
   favouriteIdentity,
@@ -251,6 +248,17 @@ function formatSelectedDate(date: string) {
   return year && month && day ? `${day}/${month}/${year}` : date;
 }
 
+function selectedDateLabel(date: string, now: Date) {
+  if (date === localDateValue(now)) {
+    return "Today";
+  }
+
+  const tomorrow = new Date(now);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  return date === localDateValue(tomorrow) ? "Tomorrow" : "Selected date";
+}
+
 function bookingPeriod(booking: PlannedBooking) {
   const start = new Date(booking.startTime);
   const end = new Date(
@@ -298,8 +306,6 @@ export function SeatAssistant({
   const [storageReady, setStorageReady] = useState(false);
   const [managing, setManaging] = useState(false);
   const [seatSearch, setSeatSearch] = useState("");
-  const [selectedStart, setSelectedStart] = useState("");
-  const [durationMinutes, setDurationMinutes] = useState(240);
   const [now, setNow] = useState(() => new Date());
   const [mapExpanded, setMapExpanded] = useState(false);
   const [discoveredMaps, setDiscoveredMaps] = useState<
@@ -323,6 +329,38 @@ export function SeatAssistant({
     availability: {},
   });
   const scanController = useRef<AbortController>();
+
+  useEffect(() => {
+    if (!reviewingBooking) {
+      return undefined;
+    }
+
+    const closeReviewOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setReviewingBooking(false);
+      }
+    };
+
+    document.addEventListener("keydown", closeReviewOnEscape);
+    return () => document.removeEventListener("keydown", closeReviewOnEscape);
+  }, [reviewingBooking]);
+
+  useEffect(() => {
+    const allBookingsSucceeded =
+      bookingProgress.length > 0 &&
+      bookingProgress.every((item) => item.status === "booked");
+
+    if (bookingRunning || !allBookingsSucceeded) {
+      return undefined;
+    }
+
+    const dismissTimer = window.setTimeout(
+      () => setBookingProgress([]),
+      12_000,
+    );
+
+    return () => window.clearTimeout(dismissTimer);
+  }, [bookingProgress, bookingRunning]);
 
   const branch = useMemo(
     () => catalog.branches.find((item) => item.id === branchId),
@@ -363,24 +401,6 @@ export function SeatAssistant({
     () => (area && date ? getBookableSlots(area, date, now) : []),
     [area, date, now],
   );
-  const selectedStartIndex = slots.findIndex(
-    (slot) => slot.key === selectedStart,
-  );
-  const availableDurations = useMemo(
-    () =>
-      area
-        ? durationOptions(area, slots, selectedStartIndex)
-        : [],
-    [area, selectedStartIndex, slots],
-  );
-  const selectedSlots =
-    selectedStartIndex >= 0 && area
-      ? slots.slice(
-          selectedStartIndex,
-          selectedStartIndex +
-            Math.ceil(durationMinutes / area.intervalMinutes),
-        )
-      : [];
   const areaMapPaths = area
     ? [
         ...new Set([
@@ -452,6 +472,42 @@ export function SeatAssistant({
           selectedDateQuota.quotaInMinutes / 2
         ? "low"
         : "available";
+  const orderedFavouriteSeats = useMemo(() => {
+    const useAvailabilityPriority =
+      scan.status === "complete" || scan.status === "error";
+
+    return favouriteSeats
+      .map((seat, index) => {
+        const seatAvailability = scan.availability[seat.id] ?? {};
+        const booked = Boolean(
+          area &&
+            slots.some((slot) => {
+              const booking = findConflictingBooking(
+                session?.bookings,
+                slot,
+              );
+              return (
+                booking && bookingMatchesSeat(booking, area, seat)
+              );
+            }),
+        );
+        const available =
+          useAvailabilityPriority &&
+          Object.values(seatAvailability).some(Boolean);
+        const rank = booked ? 0 : available ? 1 : 2;
+
+        return { seat, index, rank };
+      })
+      .sort((left, right) => left.rank - right.rank || left.index - right.index)
+      .map(({ seat }) => seat);
+  }, [
+    area,
+    favouriteSeats,
+    scan.availability,
+    scan.status,
+    session?.bookings,
+    slots,
+  ]);
   const scanContextKey = [
     area?.branchId,
     area?.id,
@@ -527,31 +583,6 @@ export function SeatAssistant({
       setDate(dateRange.min);
     }
   }, [date, dateRange]);
-
-  useEffect(() => {
-    if (slots.length === 0) {
-      setSelectedStart("");
-      return;
-    }
-
-    if (!slots.some((slot) => slot.key === selectedStart)) {
-      setSelectedStart(slots[0].key);
-    }
-  }, [selectedStart, slots]);
-
-  useEffect(() => {
-    if (availableDurations.length === 0) {
-      return;
-    }
-
-    const duration = preferredDuration(
-      availableDurations,
-      selectedDateQuota?.remainingQuotaInMinutes,
-    );
-    if (duration !== undefined) {
-      setDurationMinutes(duration);
-    }
-  }, [availableDurations, selectedDateQuota]);
 
   useEffect(() => {
     scanController.current?.abort();
@@ -985,7 +1016,9 @@ export function SeatAssistant({
           <div
             className={`nlb-seat-helper__date-quota is-${selectedQuotaTone}`}
           >
-            <span>Quota for {formatSelectedDate(date)}</span>
+            <span>
+              {selectedDateLabel(date, now)} · {formatSelectedDate(date)}
+            </span>
             {selectedDateQuota ? (
               <strong>
                 {formatQuotaMinutes(
@@ -1044,13 +1077,31 @@ export function SeatAssistant({
                 {areaFavourites.length} of {area.seats.length} selected
               </span>
             </div>
-            <button
-              type="button"
-              className="nlb-seat-helper__text-button"
-              onClick={() => setManaging((current) => !current)}
-            >
-              {managing ? "Done" : "Manage"}
-            </button>
+            <div className="nlb-seat-helper__section-actions">
+              <button
+                type="button"
+                className="nlb-seat-helper__text-button"
+                onClick={() => setManaging((current) => !current)}
+              >
+                {managing ? "Done" : "Manage"}
+              </button>
+              {!managing && areaFavourites.length > 0 && (
+                <button
+                  type="button"
+                  className="nlb-seat-helper__refresh"
+                  onClick={() => void checkAvailability()}
+                  disabled={
+                    scan.status === "scanning" || slots.length === 0
+                  }
+                >
+                  {scan.status === "scanning"
+                    ? "Checking…"
+                    : scan.status === "idle"
+                      ? "Check"
+                      : "Refresh"}
+                </button>
+              )}
+            </div>
           </div>
 
           {managing ? (
@@ -1095,54 +1146,6 @@ export function SeatAssistant({
             </div>
           ) : (
             <>
-              <div className="nlb-seat-helper__request-fields">
-                <label>
-                  <span>Start</span>
-                  <select
-                    value={selectedStart}
-                    onChange={(event) => setSelectedStart(event.target.value)}
-                  >
-                    {slots.map((slot) => (
-                      <option key={slot.key} value={slot.key}>
-                        {timeLabel(slot.label)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  <span>Duration</span>
-                  <select
-                    value={durationMinutes}
-                    onChange={(event) =>
-                      setDurationMinutes(Number(event.target.value))
-                    }
-                    disabled={availableDurations.length === 0}
-                  >
-                    {availableDurations.map((minutes) => (
-                      <option key={minutes} value={minutes}>
-                        {formatDuration(minutes)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
-                <button
-                  type="button"
-                  className="nlb-seat-helper__refresh"
-                  onClick={() => void checkAvailability()}
-                  disabled={
-                    scan.status === "scanning" || slots.length === 0
-                  }
-                >
-                  {scan.status === "idle"
-                    ? "Check availability"
-                    : "Refresh"}
-                </button>
-              </div>
-              <p className="nlb-seat-helper__request-hint">
-                Start and duration highlight your preferred window. The hourly
-                scan is reused when these values change.
-              </p>
-
               {slots.length === 0 ? (
                 <p className="nlb-seat-helper__notice">
                   Opening hours were not available for this area.
@@ -1164,18 +1167,15 @@ export function SeatAssistant({
                     </p>
                   )}
                   <div className="nlb-seat-helper__favourite-list">
-                    {favouriteSeats.map((seat) => {
+                    {orderedFavouriteSeats.map((seat) => {
                       const seatAvailability =
                         scan.availability[seat.id] ?? {};
-                      const knownSelectedSlots = selectedSlots.filter(
+                      const knownSlots = slots.filter(
                         (slot) => seatAvailability[slot.key] !== undefined,
                       );
-                      const selectedAvailable =
-                        selectedSlots.length > 0 &&
-                        knownSelectedSlots.length === selectedSlots.length &&
-                        selectedSlots.every(
-                          (slot) => seatAvailability[slot.key],
-                        );
+                      const availableForSeat = slots.filter(
+                        (slot) => seatAvailability[slot.key],
+                      ).length;
                       const selectedForSeat = slots.filter((slot) =>
                         selectedCellKeys.has(
                           selectionKey(seat.id, slot.key),
@@ -1200,7 +1200,7 @@ export function SeatAssistant({
                             <strong>★ {seat.name}</strong>
                             <span
                               className={
-                                selectedAvailable ? "is-available" : ""
+                                availableForSeat > 0 ? "is-available" : ""
                               }
                             >
                               {selectedForSeat > 0
@@ -1216,16 +1216,17 @@ export function SeatAssistant({
                                 : scan.status === "idle"
                                 ? "Not checked"
                                 : scan.status === "scanning" &&
-                                    knownSelectedSlots.length <
-                                      selectedSlots.length
+                                    knownSlots.length < slots.length
                                   ? "Checking…"
                                   : scan.status === "error" &&
-                                      knownSelectedSlots.length <
-                                        selectedSlots.length
+                                      knownSlots.length < slots.length
                                     ? "Incomplete"
-                                    : selectedAvailable
-                                      ? "Available"
-                                      : "Not fully available"}
+                                    : availableForSeat > 0
+                                      ? `${formatQuotaMinutes(
+                                          availableForSeat *
+                                            area.intervalMinutes,
+                                        )} available`
+                                      : "Unavailable"}
                             </span>
                           </div>
                           <div
@@ -1255,9 +1256,6 @@ export function SeatAssistant({
                                   conflictingBooking &&
                                   !bookedByYou,
                               );
-                              const requested = selectedSlots.some(
-                                (selected) => selected.key === slot.key,
-                              );
                               const selected = selectedCellKeys.has(
                                 selectionKey(seat.id, slot.key),
                               );
@@ -1271,7 +1269,6 @@ export function SeatAssistant({
                                       : available
                                         ? "is-free"
                                         : "is-busy",
-                                requested ? "is-requested" : "",
                                 selected ? "is-selected" : "",
                               ]
                                 .filter(Boolean)
@@ -1335,15 +1332,18 @@ export function SeatAssistant({
                       );
                     })}
                   </div>
-                  <div
+                  <details
                     className="nlb-seat-helper__timeline-legend"
                     aria-label="Timeline color legend"
                   >
-                    <span><i className="is-free" />Available</span>
-                    <span><i className="is-mine" />Booked by you</span>
-                    <span><i className="is-conflict" />Blocked by your booking</span>
-                    <span><i className="is-busy" />Unavailable</span>
-                  </div>
+                    <summary>Colors</summary>
+                    <div>
+                      <span><i className="is-free" />Available</span>
+                      <span><i className="is-mine" />Booked by you</span>
+                      <span><i className="is-conflict" />Blocked by your booking</span>
+                      <span><i className="is-busy" />Unavailable</span>
+                    </div>
+                  </details>
 
                   <section className="nlb-seat-helper__booking-selection">
                     <div className="nlb-seat-helper__booking-selection-header">
@@ -1421,38 +1421,6 @@ export function SeatAssistant({
                       </>
                     )}
 
-                    {reviewingBooking && bookingPlan.length > 0 && (
-                      <div
-                        className="nlb-seat-helper__booking-review"
-                        role="alertdialog"
-                        aria-label="Confirm NLB bookings"
-                      >
-                        <strong>
-                          Confirm {bookingPlan.length} booking request
-                          {bookingPlan.length === 1 ? "" : "s"}?
-                        </strong>
-                        <p>
-                          These requests will be submitted sequentially to
-                          NLB. Successful bookings consume your displayed
-                          quota.
-                        </p>
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => setReviewingBooking(false)}
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            type="button"
-                            className="is-confirm"
-                            onClick={() => void runBookings()}
-                          >
-                            Confirm and book
-                          </button>
-                        </div>
-                      </div>
-                    )}
                   </section>
 
                   {bookingProgress.length > 0 && (
@@ -1460,11 +1428,21 @@ export function SeatAssistant({
                       className="nlb-seat-helper__booking-progress"
                       aria-live="polite"
                     >
-                      <strong>Booking status</strong>
+                      <div className="nlb-seat-helper__booking-progress-header">
+                        <strong>Booking status</strong>
+                        {!bookingRunning && (
+                          <button
+                            type="button"
+                            onClick={() => setBookingProgress([])}
+                          >
+                            Dismiss
+                          </button>
+                        )}
+                      </div>
                       {bookingProgress.map((item) => (
                         <div
                           key={item.booking.id}
-                          className={`is-${item.status}`}
+                          className={`nlb-seat-helper__booking-progress-item is-${item.status}`}
                         >
                           <span aria-hidden="true">
                             {item.status === "pending" && "○"}
@@ -1492,6 +1470,58 @@ export function SeatAssistant({
           )}
         </>
       )}
+
+      {reviewingBooking &&
+        bookingPlan.length > 0 &&
+        createPortal(
+          <div
+            className="nlb-seat-helper__booking-review-overlay"
+            onClick={() => setReviewingBooking(false)}
+          >
+            <div
+              className="nlb-seat-helper__booking-review"
+              role="alertdialog"
+              aria-modal="true"
+              aria-label="Confirm NLB bookings"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <strong>
+                Confirm {bookingPlan.length} booking request
+                {bookingPlan.length === 1 ? "" : "s"}?
+              </strong>
+              <p>
+                Check the seat and time below. These requests will be submitted
+                sequentially and successful bookings consume your displayed
+                quota.
+              </p>
+              <div className="nlb-seat-helper__booking-review-plan">
+                {bookingPlan.map((booking) => (
+                  <div key={booking.id}>
+                    <strong>{booking.seatName}</strong>
+                    <span>{bookingPeriod(booking)}</span>
+                  </div>
+                ))}
+              </div>
+              <div className="nlb-seat-helper__booking-review-actions">
+                <button
+                  type="button"
+                  onClick={() => setReviewingBooking(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="is-confirm"
+                  autoFocus
+                  onClick={() => void runBookings()}
+                >
+                  Confirm and book
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.getElementById("nlb-seat-helper-root")!,
+        )}
 
       {mapExpanded &&
         areaMapImage &&

@@ -47,9 +47,10 @@ installation and preserves the extension's existing Chrome storage.
 
 ### Account and quota
 
-- Shows the signed-in NLB user ID.
-- Shows remaining versus total Study Area quota for the current and next day.
-- Shows the quota for the selected date.
+- Shows the signed-in NLB user ID in the compact panel header.
+- Refreshes the signed-in account from the header after login without
+  reloading the NLB page.
+- Shows remaining versus total Study Area quota for the selected date.
 - Refreshes account quota and booking information after a booking run.
 - Formats quota in hours and minutes, including `0h` when exhausted.
 
@@ -64,20 +65,23 @@ installation and preserves the extension's existing Chrome storage.
   and maximum booking durations.
 - Removes elapsed same-day slots. For example, at 12pm only slots beginning
   after 12pm are displayed and checked.
-- Defaults Duration to the selected date's remaining quota when it is greater
-  than zero; otherwise it defaults to four hours, capped by the area's rules
-  and remaining opening hours.
 
 ### Favourite seats and seat plan
 
 - Stores favourite seats per area in Chrome storage.
 - Provides seat-number search so large areas do not need to render every seat.
+- Keeps the seat plan visible while favourite seats are browsed or managed.
+- Prioritizes seats booked by the user and available seats after a scan, while
+  keeping rows stationary as timeline cells are selected.
+- Grows to fit short favourite lists, uses up to the remaining browser height
+  for longer lists, and scrolls only that list when more seats are available
+  than can fit.
 - Displays NLB's seat-plan image when available, preferring the `-sp` map.
 - Opens the seat plan in a full-screen viewer when clicked.
 
 ### Availability
 
-- Checks availability only when **Check availability** or **Refresh** is
+- Checks availability only when **Check** or **Refresh** is
   clicked; there is no automatic availability refresh.
 - Calls NLB's `SearchAvailableAreas` once per currently bookable interval.
 - Runs requests sequentially to reduce load on the NLB service.
@@ -107,9 +111,12 @@ Timeline colors:
   times.
 - Can combine adjacent intervals for the same seat into a continuous booking
   or submit every interval separately.
-- Shows a review step before any booking requests are sent.
+- Opens an immediate confirmation overlay with the seat and time summary before
+  any booking requests are sent.
 - Sends confirmed requests sequentially to NLB's `bookings/Book` endpoint.
 - Displays pending, booking, successful, and failed status for every request.
+- Lets users dismiss completed booking status manually and automatically clears
+  an entirely successful run after 12 seconds. Failed results remain visible.
 
 ## Privacy and permissions
 
@@ -191,12 +198,11 @@ versioned download.
 1. Sign in to NLB and open the Seat Booking page.
 2. Select a library, a specific area, and an available date.
 3. Open **Manage** and choose favourite seats.
-4. Choose the preferred Start and Duration values.
-5. Click **Check availability**.
-6. Select green intervals without exceeding the displayed quota.
-7. Choose whether adjacent intervals should be combined or booked separately.
-8. Click **Book**, review the generated requests, and confirm.
-9. Review the per-request booking status and refreshed quota.
+4. Click **Check** beside Favourite seats.
+5. Select green intervals without exceeding the displayed quota.
+6. Choose whether adjacent intervals should be combined or booked separately.
+7. Click **Book**, review the generated requests, and confirm.
+8. Review the per-request booking status and refreshed quota.
 
 ## Project structure
 

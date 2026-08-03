@@ -18,6 +18,12 @@ https://www.nlb.gov.sg/seatbooking/*
 The React application renders an independent floating panel over the NLB page.
 It does not replace or modify NLB's own booking controls.
 
+The compact panel keeps the selected-date quota, seat plan, favourite
+timelines, and booking action visible together. Short lists keep the panel at
+its natural content height. Longer favourite lists expand up to the browser
+height that remains after the fixed controls, then become the primary scroll
+region so the map remains available while seats are browsed or managed.
+
 The extension has one Chrome permission:
 
 ```json
@@ -38,7 +44,7 @@ flowchart TD
     B --> D["Normalize catalog and booking rules"]
     C --> E["Render user, quotas, and existing bookings"]
     D --> F["Render library, area, date, and seat controls"]
-    F --> G["User clicks Check availability or Refresh"]
+    F --> G["User clicks Check or Refresh"]
     G --> H["Generate currently bookable intervals"]
     H --> I["Call SearchAvailableAreas sequentially"]
     I --> J["Match returned seat IDs, codes, and names"]
@@ -61,7 +67,7 @@ flowchart TD
 | `src/services/catalog.ts` | Extracts, merges, filters, and sorts branches, areas, seats, maps, and booking rules. |
 | `src/services/accountSession.ts` | Normalizes user ID, quota, advanced quota, and existing bookings. |
 | `src/services/availability.ts` | Generates intervals and recursively extracts available seat identities and map URLs. |
-| `src/services/bookingRules.ts` | Calculates dates, elapsed same-day intervals, durations, and preferred quota-based duration. |
+| `src/services/bookingRules.ts` | Calculates selectable dates and removes elapsed same-day intervals. |
 | `src/services/bookingConflicts.ts` | Detects time overlap and identifies a signed-in user's seat booking. |
 | `src/services/bookingPlanner.ts` | Produces separate requests or merges adjacent intervals for the same seat. |
 | `src/services/favourites.ts` | Persists favourite seat identities in Chrome local storage. |
@@ -185,10 +191,10 @@ No library/area range is hardcoded.
 
 ## Availability scan
 
-Availability is manual. Changing branch, area, date, Start, or Duration does
-not start a background polling loop.
+Availability is manual. Changing branch, area, or date does not start a
+background polling loop.
 
-When the user clicks **Check availability** or **Refresh**:
+When the user clicks **Check** or **Refresh** beside Favourite seats:
 
 1. The extension computes the remaining valid intervals.
 2. It sends one `SearchAvailableAreas` request for each interval.
@@ -199,9 +205,9 @@ When the user clicks **Check availability** or **Refresh**:
 7. Discovered booking seat codes and map URLs are retained in memory.
 8. Failed intervals are marked incomplete and never selectable.
 
-Start and Duration are visual preference controls. They highlight a preferred
-window but reuse the hourly scan; changing them does not repeat the network
-requests.
+The timeline always represents every currently bookable interval for the
+selected date. Users choose booking times directly from green timeline cells;
+there is no separate Start or Duration preference.
 
 ## Seat identity matching
 
@@ -256,7 +262,13 @@ Selected cells are stored as `{seatId}|{slotStart}` keys.
 
 ## Booking plan
 
-The review step converts selected cells into planned requests.
+The review step converts selected cells into planned requests and presents
+them in a focused confirmation overlay, so confirmation never appears below an
+internally scrolled section.
+
+After execution, booking results can be dismissed manually. A run where every
+request succeeded clears automatically after 12 seconds; partial or complete
+failures stay visible for review.
 
 With **Book each hour separately**, every cell becomes a request:
 
@@ -311,6 +323,10 @@ Kept only in memory:
 
 Reloading the NLB tab discards the in-memory state and fetches fresh account
 data.
+
+The header refresh action fetches `GetAccountInfo` with HTTP caching disabled.
+This lets the extension detect a newly signed-in session after NLB redirects
+back to the booking page without requiring another full-page reload.
 
 ## Failure model
 

@@ -9,7 +9,7 @@ the endpoints or fields will remain stable.
 
 The notes are based on:
 
-- the extension source at version `1.0.0` and subsequent local changes;
+- the extension source through version `1.0.1`;
 - a `GetAccountInfo` response captured on 30 July 2026;
 - booking-state observations made on 31 July 2026; and
 - successful availability and booking requests made during extension testing.
@@ -363,9 +363,9 @@ For today, it removes every start that is not strictly later than the current
 time. At 12:00, it checks 13:00 through 19:00. Past cells are not generated,
 cannot appear green, and cannot be selected.
 
-Changing the visual Start or Duration preference does not make another API
-scan. Those controls only highlight a preferred window over the already
-scanned hourly results.
+The timeline represents every generated interval. Users select booking times
+directly from the returned green cells; there is no separate Start or Duration
+filter.
 
 ### Accepted response contract
 

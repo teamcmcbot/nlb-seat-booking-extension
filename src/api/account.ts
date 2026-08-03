@@ -14,6 +14,7 @@ export class NlbApiError extends Error {
 export async function getAccountInfo(signal?: AbortSignal): Promise<unknown> {
   const response = await fetch(GET_ACCOUNT_INFO_URL, {
     method: "GET",
+    cache: "no-store",
     credentials: "include",
     headers: {
       Accept: "application/json, text/plain, */*",
