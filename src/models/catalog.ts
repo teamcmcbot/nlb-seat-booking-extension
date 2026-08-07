@@ -3,6 +3,12 @@ export interface Seat {
   code: string;
   name: string;
   disabled: boolean;
+  availableSlots: SeatAvailabilitySlot[];
+}
+
+export interface SeatAvailabilitySlot {
+  time: string;
+  isAvailable: boolean;
 }
 
 export interface Area {

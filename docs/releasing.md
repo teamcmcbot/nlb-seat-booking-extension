@@ -45,14 +45,14 @@ content.css
 
 ## Publish
 
-For version `1.0.1`:
+For version `1.0.3`:
 
 ```bash
-git tag v1.0.1
-git push origin v1.0.1
-gh release create v1.0.1 nlb-seat-helper.zip \
+git tag v1.0.3
+git push origin v1.0.3
+gh release create v1.0.3 nlb-seat-helper.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "NLB Seat Helper v1.0.1" \
+  --title "NLB Seat Helper v1.0.3" \
   --notes-file RELEASE_NOTES.md
 ```
 

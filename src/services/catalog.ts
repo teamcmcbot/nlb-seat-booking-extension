@@ -4,6 +4,7 @@ import type {
   Branch,
   Catalog,
   Seat,
+  SeatAvailabilitySlot,
 } from "../models/catalog";
 
 type JsonRecord = Record<string, unknown>;
@@ -66,6 +67,20 @@ function compareSeatNames(left: Seat, right: Seat) {
   });
 }
 
+function extractAvailableSlots(seat: JsonRecord): SeatAvailabilitySlot[] {
+  return arrayField(seat, ["hasAvailableSlots"])
+    .filter(isRecord)
+    .map((slot): SeatAvailabilitySlot | undefined => {
+      const time = stringField(slot, ["time"]);
+      const available = field(slot, ["isAvail", "isAvailable"]);
+
+      return time && typeof available === "boolean"
+        ? { time, isAvailable: available }
+        : undefined;
+    })
+    .filter((slot): slot is SeatAvailabilitySlot => Boolean(slot));
+}
+
 function mergeSeat(existing: Seat | undefined, candidate: Seat) {
   if (!existing) {
     return candidate;
@@ -77,6 +92,10 @@ function mergeSeat(existing: Seat | undefined, candidate: Seat) {
     code: candidate.code || existing.code,
     name: candidate.name || existing.name,
     disabled: existing.disabled || candidate.disabled,
+    availableSlots:
+      candidate.availableSlots.length > 0
+        ? candidate.availableSlots
+        : existing.availableSlots,
   };
 }
 
@@ -105,6 +124,7 @@ function extractSeats(area: JsonRecord): Seat[] {
         code,
         name,
         disabled: booleanField(seat, ["disabled", "isDisabled"]),
+        availableSlots: extractAvailableSlots(seat),
       };
     })
     .filter((seat): seat is Seat => Boolean(seat))

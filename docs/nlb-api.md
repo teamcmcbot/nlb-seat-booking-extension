@@ -9,7 +9,7 @@ the endpoints or fields will remain stable.
 
 The notes are based on:
 
-- the extension source through version `1.0.1`;
+- the extension source through version `1.0.3`;
 - a `GetAccountInfo` response captured on 30 July 2026;
 - booking-state observations made on 31 July 2026; and
 - successful availability and booking requests made during extension testing.
@@ -22,8 +22,11 @@ All times in the captured data are interpreted in Singapore time
 | Purpose | Method | Endpoint |
 | --- | --- | --- |
 | Account, quotas, bookings, branches, areas, seats, and rules | `GET` | `/seatbooking/api/accounts/GetAccountInfo` |
+| Full current seat/time reference matrix used by NLB's availability page | `GET` | `/seatbooking/api/seatAvailability/SearchSeatAvailability` |
 | Available seats for one interval | `GET` | `/seatbooking/api/areas/SearchAvailableAreas` |
 | Create one booking | `POST` | `/seatbooking/api/bookings/Book` |
+| End the Seat Booking application session | `POST` | `/seatbooking/api/logout` |
+| End the central NLB sign-in session | `GET` | `https://signin.nlb.gov.sg/authenticate/oidc/logout` |
 
 The extension runs as a content script on `https://www.nlb.gov.sg/seatbooking/`
 and sends same-origin requests with:
@@ -35,6 +38,44 @@ Accept: application/json, text/plain, */*
 It sets `credentials: "include"`, which makes the browser use the signed-in
 NLB session already associated with the tab. The extension does not read or
 store NLB cookies.
+
+## Sign-in and sign-out lifecycle
+
+Sign-in uses NLB's authorization-code flow and redirects back to:
+
+```text
+https://www.nlb.gov.sg/seatbooking/?code={one-time-code}&state={state}
+```
+
+The extension does not exchange or persist that code. NLB's Seat Booking page
+establishes the application session, after which the extension detects the
+account through `GetAccountInfo`. Because that processing may still be in
+progress when the content script starts, the extension uses a short bounded
+retry after an expected authentication return.
+
+Sign-out is a two-step operation:
+
+```http
+POST https://www.nlb.gov.sg/seatbooking/api/logout
+Content-Type: application/json
+
+{
+  "Mode": "OffsiteMode"
+}
+```
+
+The `Mode` field is required. Omitting it can cause the endpoint to reject an
+otherwise valid signed-in session with `401 Unauthorized`.
+
+After a successful response, the browser navigates to:
+
+```text
+https://signin.nlb.gov.sg/authenticate/oidc/logout?service=https%3A%2F%2Fwww.nlb.gov.sg%2Fseatbooking%2F
+```
+
+NLB clears the central sign-in session and redirects to the Seat Booking page.
+The extension then starts in its signed-out state. It does not manipulate
+cookies directly.
 
 `POST /bookings/Book` additionally sends:
 
@@ -48,12 +89,14 @@ Content-Type: application/json
 - `GetAccountInfo` must return JSON. A non-JSON response is treated as a likely
   expired or redirected session.
 - `401` and `403` from `GetAccountInfo` are shown as a missing NLB session.
-- Availability requests time out after six seconds.
-- A `429` or `5xx` availability response is retried once after approximately
-  600 milliseconds.
-- Availability calls run sequentially rather than concurrently.
+- `SearchAvailableAreas` requests time out after six seconds.
+- A `429` or `5xx` `SearchAvailableAreas` response is retried once after
+  approximately 600 milliseconds.
+- Future-date timeline calls and booking-preflight calls run sequentially
+  rather than concurrently.
 - A failed interval never becomes selectable. Successful intervals from the
-  same scan remain usable, while the overall scan is marked incomplete.
+  same future-date scan remain usable, while the overall scan is marked
+  incomplete.
 - Booking requests run sequentially and are not automatically retried. An
   automatic retry could create a duplicate booking when the server completed
   the first request but the response was lost.
@@ -248,6 +291,10 @@ interface Seat {
   seatCode?: string;
   disabled?: boolean;
   isDisabled?: boolean;
+  hasAvailableSlots?: Array<{
+    time: string;
+    isAvail: boolean;
+  }>;
 }
 ```
 
@@ -322,20 +369,53 @@ while the catalog is normalized. They never appear in the extension selectors.
 | `name` or `seatName` | Display, search, booking matching, and range hints. |
 | `code` or `seatCode` | Booking identifier when the account/catalog response supplies it. |
 | `disabled` or `isDisabled` | Preserved in the normalized model. |
+| `hasAvailableSlots[].time` | Matches current-day timeline cells by local `HH:mm` time. |
+| `hasAvailableSlots[].isAvail` | Initial current-day availability; false values cannot be upgraded by booking search. |
 
 The catalog capture did not always include a booking-ready seat code. The
-extension therefore also extracts `code`/`seatCode` from availability
-responses and associates it with the seat ID/name before enabling booking.
+extension therefore obtains `code`/`seatCode` during exact booking preflight
+after the user confirms a selection.
 
 Seat names are sorted with numeric-aware comparison. Favourite-seat range
 hints are derived at runtime; they are not hardcoded. Numeric sequences such
 as `S35` to `S59`, letter sequences such as `S48A` to `S48O`, and up to three
 missing values are described explicitly.
 
+### Availability-matrix scope
+
+`hasAvailableSlots` entries contain a local time and availability flag, but no
+calendar date. In the captured response, they matched the full current-day
+seat/time matrix returned by NLB's seat-availability page. The extension
+therefore treats them as current-day reference data only.
+
+They must not be reused for tomorrow or another future date. When a future
+date is selected, the extension asks `SearchAvailableAreas` about each exact
+date/time interval instead.
+
+## `GET /seatAvailability/SearchSeatAvailability`
+
+NLB's public Seat Availability page uses this endpoint to obtain a full
+current seat/time reference matrix. In a point-in-time comparison, its values
+matched `GetAccountInfo` →
+`settings.menus.branchMenus[].areas[].seats[].hasAvailableSlots` for all 2,103
+comparable seats, with no differences.
+
+Neither observed response supplied all booking-ready seat codes or area map
+URLs. The extension therefore does not call this endpoint: `GetAccountInfo`
+already supplies the same current-day matrix together with account, catalog,
+quota, and booking data. This avoids a redundant request.
+
+This endpoint and the embedded `hasAvailableSlots` matrix should be treated as
+reference availability, not as the final authority for creating a booking.
+The public NLB availability page itself labels its display as reference-only,
+and `bookings/Book` remains the server-side authority.
+
 ## `GET /areas/SearchAvailableAreas`
 
-This endpoint answers availability for one area and one exact interval. The
-extension does not ask for an entire day in one call.
+This endpoint answers booking availability for one area and one exact
+interval. It is used for future-date timeline checks, one-time map discovery,
+and selected-block preflight. Its result does not upgrade a current-day
+`hasAvailableSlots` false value.
 
 ### Query parameters
 
@@ -353,15 +433,30 @@ Example:
 GET /seatbooking/api/areas/SearchAvailableAreas?Mode=OffsiteMode&BranchId=2&AreaId=43&StartTime=2026-07-31T13%3A00&DurationInMinutes=60
 ```
 
+### Mode and browser location
+
+The observed NLB client chooses `OnsiteModeGps` only after its browser
+geolocation polling places the user inside the selected branch's configured
+geofence. The on-site state is branch-specific and expires according to the
+configured on-site timeout. Otherwise it uses `OffsiteMode`.
+
+Point-in-time tests returned identical `SearchAvailableAreas` payloads for
+`OffsiteMode` and `OnsiteModeGps`, but that does not establish that the modes
+are interchangeable for every branch, date, or server rule. Sending
+`OnsiteModeGps` without the corresponding verified geolocation state would
+misrepresent the client context. The extension therefore continues to use
+`OffsiteMode`; it does not request location permission or use browser GPS.
+
 ### Call pattern
 
 For an area open from 10:00 to 20:30 with a 60-minute interval, the extension
 generates starts at 10:00 through 19:00. On a future date that is ten
-availability calls.
+availability calls. Today uses the `GetAccountInfo` slot matrix and one account
+refresh instead.
 
 For today, it removes every start that is not strictly later than the current
-time. At 12:00, it checks 13:00 through 19:00. Past cells are not generated,
-cannot appear green, and cannot be selected.
+time. At 12:00, the displayed matrix begins at 13:00. Past cells are not
+generated, cannot appear green, and cannot be selected.
 
 The timeline represents every generated interval. Users select booking times
 directly from the returned green cells; there is no separate Start or Duration
@@ -456,7 +551,7 @@ Example:
 
 `seatCode` is the NLB booking identifier, not merely the visible name such as
 `S377`. This is why a green interval cannot be booked until the extension has
-discovered the seat code from catalog or availability data.
+obtained the seat code from catalog data or the exact booking preflight.
 
 ### Accepted response contract
 

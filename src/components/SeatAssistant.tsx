@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { bookSeat } from "../api/booking";
-import { searchAvailableAreas } from "../api/availability";
+import {
+  searchAvailableAreas,
+  type AvailabilityQuery,
+} from "../api/availability";
 import { NlbApiError } from "../api/account";
 import type { AccountSession } from "../models/account";
 import type {
@@ -47,8 +50,12 @@ import {
 
 interface SeatAssistantProps {
   catalog: Catalog;
+  profileUserId: string;
   session?: AccountSession;
-  onAccountRefresh: () => Promise<void>;
+  onAccountRefresh: () => Promise<{
+    session?: AccountSession;
+    catalog?: Catalog;
+  }>;
 }
 
 type SeatAvailability = Record<string, Record<string, boolean>>;
@@ -71,10 +78,64 @@ function localDateValue(date: Date) {
   return `${year}-${month}-${day}`;
 }
 
-function tomorrowValue() {
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  return localDateValue(tomorrow);
+function todayValue() {
+  return localDateValue(new Date());
+}
+
+function isToday(date: string, now: Date) {
+  return date === localDateValue(now);
+}
+
+function referenceTime(value: string) {
+  return (
+    value.match(/(?:T|\s)?(\d{1,2}:\d{2})/)?.[1] ?? value.slice(0, 5)
+  );
+}
+
+function referenceAvailability(
+  area: Area | undefined,
+  seats: Seat[],
+  slots: HourSlot[],
+  date: string,
+  now: Date,
+) {
+  if (!area || !isToday(date, now)) {
+    return undefined;
+  }
+
+  const availability: SeatAvailability = {};
+  let knownSlots = 0;
+
+  for (const seat of seats) {
+    const slotsByTime = new Map(
+      seat.availableSlots.map((slot) => [referenceTime(slot.time), slot]),
+    );
+
+    for (const slot of slots) {
+      const referenceSlot = slotsByTime.get(referenceTime(slot.label));
+      if (!referenceSlot) {
+        continue;
+      }
+
+      availability[seat.id] = {
+        ...availability[seat.id],
+        [slot.key]: !seat.disabled && referenceSlot.isAvailable,
+      };
+      knownSlots += 1;
+    }
+  }
+
+  return knownSlots > 0 ? availability : undefined;
+}
+
+function catalogArea(
+  catalog: Catalog | undefined,
+  branchId: string,
+  areaId: string,
+) {
+  return catalog?.branches
+    .find((branch) => branch.id === branchId)
+    ?.areas.find((area) => area.id === areaId);
 }
 
 function mapImageUrl(path?: string) {
@@ -115,6 +176,27 @@ function retryDelay(signal: AbortSignal) {
       { once: true },
     );
   });
+}
+
+async function searchWithTransientRetry(
+  query: AvailabilityQuery,
+  signal: AbortSignal,
+) {
+  try {
+    return await searchAvailableAreas(query, signal);
+  } catch (error) {
+    const isTransient =
+      error instanceof NlbApiError &&
+      (error.status === 429 ||
+        (error.status !== undefined && error.status >= 500));
+
+    if (!isTransient || signal.aborted) {
+      throw error;
+    }
+
+    await retryDelay(signal);
+    return searchAvailableAreas(query, signal);
+  }
 }
 
 function timeLabel(value: string) {
@@ -296,18 +378,20 @@ function existingBookingLabel(
 
 export function SeatAssistant({
   catalog,
+  profileUserId,
   session,
   onAccountRefresh,
 }: SeatAssistantProps) {
   const [branchId, setBranchId] = useState("");
   const [areaId, setAreaId] = useState("");
-  const [date, setDate] = useState(tomorrowValue);
+  const [date, setDate] = useState(todayValue);
   const [favourites, setFavourites] = useState<FavouriteSeat[]>([]);
   const [storageReady, setStorageReady] = useState(false);
   const [managing, setManaging] = useState(false);
   const [seatSearch, setSeatSearch] = useState("");
   const [now, setNow] = useState(() => new Date());
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [loadingMapKey, setLoadingMapKey] = useState("");
   const [discoveredMaps, setDiscoveredMaps] = useState<
     Record<string, string[]>
   >({});
@@ -329,6 +413,7 @@ export function SeatAssistant({
     availability: {},
   });
   const scanController = useRef<AbortController>();
+  const mapRequests = useRef(new Set<string>());
 
   useEffect(() => {
     if (!reviewingBooking) {
@@ -401,6 +486,11 @@ export function SeatAssistant({
     () => (area && date ? getBookableSlots(area, date, now) : []),
     [area, date, now],
   );
+  const referenceMatrix = useMemo(
+    () => referenceAvailability(area, favouriteSeats, slots, date, now),
+    [area, date, favouriteSeats, slots],
+  );
+  const referenceMatrixKey = JSON.stringify(referenceMatrix ?? null);
   const areaMapPaths = area
     ? [
         ...new Set([
@@ -447,9 +537,6 @@ export function SeatAssistant({
   const selectedMinutes = selectedSeatSlots.reduce(
     (total, slot) => total + slot.durationMinutes,
     0,
-  );
-  const bookingIdentifiersReady = selectedSeatSlots.every(
-    (slot) => Boolean(slot.seatCode),
   );
   const bookingPlan = useMemo(
     () =>
@@ -509,6 +596,7 @@ export function SeatAssistant({
     slots,
   ]);
   const scanContextKey = [
+    session?.userId ?? profileUserId,
     area?.branchId,
     area?.id,
     date,
@@ -521,10 +609,14 @@ export function SeatAssistant({
           `${booking.bookingId}:${booking.startTime}:${booking.endTime}`,
       )
       .join(","),
+    referenceMatrixKey,
   ].join("|");
 
   useEffect(() => {
-    Promise.all([loadFavouriteSeats(), loadLastSeatSelection()])
+    Promise.all([
+      loadFavouriteSeats(profileUserId),
+      loadLastSeatSelection(profileUserId),
+    ])
       .then(([storedFavourites, lastSelection]) => {
         setFavourites(storedFavourites);
 
@@ -585,8 +677,69 @@ export function SeatAssistant({
   }, [date, dateRange]);
 
   useEffect(() => {
+    const probeSlot = slots[0];
+    if (!area || !storageReady || areaMapImage || !probeSlot) {
+      return undefined;
+    }
+
+    const mapKey = `${area.branchId}:${area.id}`;
+    if (mapRequests.current.has(mapKey)) {
+      return undefined;
+    }
+
+    mapRequests.current.add(mapKey);
+    setLoadingMapKey(mapKey);
+    const controller = new AbortController();
+
+    void searchWithTransientRetry(
+      {
+        branchId: area.branchId,
+        areaId: area.id,
+        startTime: probeSlot.startTime,
+        durationMinutes: probeSlot.minutes,
+      },
+      controller.signal,
+    )
+      .then((payload) => {
+        const maps = extractAreaMapUrls(payload, area.id);
+        if (maps.length === 0) {
+          return;
+        }
+
+        setDiscoveredMaps((current) => ({
+          ...current,
+          [mapKey]: [...new Set([...(current[mapKey] ?? []), ...maps])],
+        }));
+      })
+      .catch(() => {
+        if (!controller.signal.aborted) {
+          mapRequests.current.delete(mapKey);
+        }
+      })
+      .finally(() => {
+        setLoadingMapKey((current) => (current === mapKey ? "" : current));
+      });
+
+    return () => {
+      controller.abort();
+      mapRequests.current.delete(mapKey);
+    };
+  }, [
+    area?.branchId,
+    area?.id,
+    areaMapImage,
+    slots[0]?.startTime,
+    slots[0]?.minutes,
+    storageReady,
+  ]);
+
+  useEffect(() => {
     scanController.current?.abort();
-    setScan({ status: "idle", availability: {} });
+    setScan(
+      referenceMatrix
+        ? { status: "complete", availability: referenceMatrix }
+        : { status: "idle", availability: {} },
+    );
     setSelectedCellKeys(new Set());
     setSelectionMessage("");
     setReviewingBooking(false);
@@ -602,6 +755,90 @@ export function SeatAssistant({
       favouriteSeats.length === 0 ||
       slots.length === 0
     ) {
+      return;
+    }
+
+    if (isToday(date, now)) {
+      scanController.current?.abort();
+      const controller = new AbortController();
+      scanController.current = controller;
+      setScan({
+        status: "scanning",
+        availability: referenceMatrix ?? scan.availability,
+        completed: 0,
+        total: 1,
+      });
+
+      try {
+        const refreshed = await onAccountRefresh();
+        if (controller.signal.aborted) {
+          return;
+        }
+
+        const refreshedArea = catalogArea(
+          refreshed.catalog,
+          area.branchId,
+          area.id,
+        );
+        const refreshedFavouriteSeats = favouriteSeats
+          .map((seat) =>
+            refreshedArea?.seats.find((candidate) => candidate.id === seat.id),
+          )
+          .filter((seat): seat is Seat => Boolean(seat));
+        const refreshedMatrix = referenceAvailability(
+          refreshedArea,
+          refreshedFavouriteSeats,
+          slots,
+          date,
+          now,
+        );
+
+        if (!refreshedMatrix) {
+          throw new NlbApiError(
+            "NLB did not return current seat availability.",
+          );
+        }
+
+        const unavailableSelections = selectedSeatSlots.filter(
+          (selected) => {
+            const seatAvailability = refreshedMatrix[selected.seatId];
+            return !seatAvailability?.[selected.startTime];
+          },
+        );
+
+        if (unavailableSelections.length > 0) {
+          const unavailableKeys = new Set(
+            unavailableSelections.map((selected) =>
+              selectionKey(selected.seatId, selected.startTime),
+            ),
+          );
+          setSelectedCellKeys(
+            (current) =>
+              new Set(
+                [...current].filter((key) => !unavailableKeys.has(key)),
+              ),
+          );
+          setSelectionMessage(
+            "One or more selected hours are no longer available and were removed.",
+          );
+        } else {
+          setSelectionMessage("");
+        }
+
+        setScan({ status: "complete", availability: refreshedMatrix });
+      } catch (error) {
+        if (!controller.signal.aborted) {
+          setScan({
+            status: "error",
+            availability: referenceMatrix ?? scan.availability,
+            message:
+              error instanceof Error
+                ? error.message
+                : "Current availability could not be refreshed.",
+          });
+        }
+      }
+
       return;
     }
 
@@ -633,23 +870,10 @@ export function SeatAssistant({
         startTime: slot.startTime,
         durationMinutes: slot.minutes,
       };
-      let payload: unknown;
-
-      try {
-        payload = await searchAvailableAreas(query, controller.signal);
-      } catch (error) {
-        const isTransient =
-          error instanceof NlbApiError &&
-          (error.status === 429 ||
-            (error.status !== undefined && error.status >= 500));
-
-        if (!isTransient || controller.signal.aborted) {
-          throw error;
-        }
-
-        await retryDelay(controller.signal);
-        payload = await searchAvailableAreas(query, controller.signal);
-      }
+      const payload = await searchWithTransientRetry(
+        query,
+        controller.signal,
+      );
 
       const maps = extractAreaMapUrls(payload, selectedArea.id);
       if (maps.length > 0) {
@@ -826,34 +1050,195 @@ export function SeatAssistant({
     }
 
     setSelectedCellKeys((current) => new Set(current).add(key));
-    setSelectionMessage(
-      bookingCodeForSeat(seat)
-        ? ""
-        : `${seat.name} was selected, but its booking identifier is unavailable.`,
-    );
+    setSelectionMessage("");
+  }
+
+  function markBookingUnavailable(booking: PlannedBooking) {
+    const bookingStart = new Date(booking.startTime).getTime();
+    const bookingEnd = bookingStart + booking.durationMinutes * 60_000;
+    const affectedSlots = slots.filter((slot) => {
+      const slotStart = new Date(slot.startTime).getTime();
+      return slotStart >= bookingStart && slotStart < bookingEnd;
+    });
+
+    setScan((current) => {
+      const availability = { ...current.availability };
+      const seatAvailability = { ...availability[booking.seatId] };
+      affectedSlots.forEach((slot) => {
+        seatAvailability[slot.key] = false;
+      });
+      availability[booking.seatId] = seatAvailability;
+
+      return current.status === "scanning"
+        ? { ...current, availability }
+        : { status: "complete", availability };
+    });
+    setSelectedCellKeys((current) => {
+      const next = new Set(current);
+      affectedSlots.forEach((slot) => {
+        next.delete(selectionKey(booking.seatId, slot.key));
+      });
+      return next;
+    });
   }
 
   async function runBookings() {
     if (
       !area ||
+      !session ||
       bookingPlan.length === 0 ||
-      !bookingIdentifiersReady ||
       bookingRunning
     ) {
       return;
     }
 
+    let refreshedCatalog: Catalog | undefined;
+    try {
+      const refreshed = await onAccountRefresh();
+      if (refreshed.session?.userId !== session.userId) {
+        setReviewingBooking(false);
+        setSelectionMessage(
+          "The signed-in NLB account changed. Review the booking again under the active account.",
+        );
+        return;
+      }
+      refreshedCatalog = refreshed.catalog;
+    } catch {
+      setReviewingBooking(false);
+      setSelectionMessage(
+        "The active NLB account could not be verified. Refresh the account and try again.",
+      );
+      return;
+    }
+
+    if (isToday(date, now)) {
+      const refreshedArea = catalogArea(
+        refreshedCatalog,
+        area.branchId,
+        area.id,
+      );
+      const refreshedSeats = favouriteSeats
+        .map((seat) =>
+          refreshedArea?.seats.find((candidate) => candidate.id === seat.id),
+        )
+        .filter((seat): seat is Seat => Boolean(seat));
+      const refreshedMatrix = referenceAvailability(
+        refreshedArea,
+        refreshedSeats,
+        slots,
+        date,
+        now,
+      );
+
+      if (!refreshedMatrix) {
+        setReviewingBooking(false);
+        setSelectionMessage(
+          "NLB did not return current reference availability. Refresh and try again.",
+        );
+        return;
+      }
+
+      const unavailableBooking = bookingPlan.find((booking) => {
+        const bookingStart = new Date(booking.startTime).getTime();
+        const bookingEnd =
+          bookingStart + booking.durationMinutes * 60_000;
+        return slots.some((slot) => {
+          const slotStart = new Date(slot.startTime).getTime();
+          return (
+            slotStart >= bookingStart &&
+            slotStart < bookingEnd &&
+            refreshedMatrix[booking.seatId]?.[slot.key] !== true
+          );
+        });
+      });
+
+      if (unavailableBooking) {
+        markBookingUnavailable(unavailableBooking);
+        setReviewingBooking(false);
+        setSelectionMessage(
+          `${unavailableBooking.seatName} is no longer available for the selected time. The selection was removed.`,
+        );
+        return;
+      }
+    }
+
     const controller = new AbortController();
     setBookingRunning(true);
     setReviewingBooking(false);
+    setSelectionMessage("Verifying the selected seats with NLB…");
+    const validatedPlan: PlannedBooking[] = [];
+
+    try {
+      for (const booking of bookingPlan) {
+        const payload = await searchWithTransientRetry(
+          {
+            branchId: area.branchId,
+            areaId: area.id,
+            startTime: booking.startTime,
+            durationMinutes: booking.durationMinutes,
+          },
+          controller.signal,
+        );
+        const maps = extractAreaMapUrls(payload, area.id);
+        if (maps.length > 0) {
+          const mapKey = `${area.branchId}:${area.id}`;
+          setDiscoveredMaps((current) => ({
+            ...current,
+            [mapKey]: [
+              ...new Set([...(current[mapKey] ?? []), ...maps]),
+            ],
+          }));
+        }
+
+        const availableSeat = extractAvailableSeatIdentities(payload).find(
+          (candidate) =>
+            candidate.id === booking.seatId ||
+            candidate.name?.toLowerCase() ===
+              booking.seatName.toLowerCase() ||
+            (booking.seatCode && candidate.code === booking.seatCode),
+        );
+
+        if (!availableSeat) {
+          markBookingUnavailable(booking);
+          setBookingRunning(false);
+          setSelectionMessage(
+            `${booking.seatName} is no longer available for ${bookingPeriod(
+              booking,
+            )}. The selection was removed.`,
+          );
+          return;
+        }
+
+        validatedPlan.push({ ...booking, seatCode: availableSeat.code });
+      }
+    } catch (error) {
+      setBookingRunning(false);
+      setSelectionMessage(
+        error instanceof Error
+          ? `The selected seats could not be verified: ${error.message}`
+          : "The selected seats could not be verified. Try again.",
+      );
+      return;
+    }
+
+    const areaKey = `${area.branchId}:${area.id}`;
+    setDiscoveredSeatCodes((current) => {
+      const codes = { ...(current[areaKey] ?? {}) };
+      validatedPlan.forEach((booking) => {
+        codes[seatIdentityKey(booking.seatId)] = booking.seatCode;
+        codes[seatIdentityKey(booking.seatName)] = booking.seatCode;
+      });
+      return { ...current, [areaKey]: codes };
+    });
+    setSelectionMessage("");
     setBookingProgress(
-      bookingPlan.map((booking) => ({
+      validatedPlan.map((booking) => ({
         booking,
         status: "pending",
       })),
     );
 
-    for (const booking of bookingPlan) {
+    for (const booking of validatedPlan) {
       setBookingProgress((current) =>
         current.map((item) =>
           item.booking.id === booking.id
@@ -892,7 +1277,6 @@ export function SeatAssistant({
 
     setBookingRunning(false);
     setSelectedCellKeys(new Set());
-    setScan({ status: "idle", availability: {} });
 
     try {
       await onAccountRefresh();
@@ -917,7 +1301,7 @@ export function SeatAssistant({
       : [...favourites, favourite];
 
     setFavourites(next);
-    await saveFavouriteSeats(next);
+    await saveFavouriteSeats(profileUserId, next);
   }
 
   const searchedSeats = useMemo(() => {
@@ -952,7 +1336,7 @@ export function SeatAssistant({
               setBranchId(nextBranchId);
               setAreaId("");
               setManaging(false);
-              void saveLastSeatSelection({
+              void saveLastSeatSelection(profileUserId, {
                 branchId: nextBranchId,
                 areaId: "",
               });
@@ -976,7 +1360,7 @@ export function SeatAssistant({
               const nextAreaId = event.target.value;
               setAreaId(nextAreaId);
               setManaging(false);
-              void saveLastSeatSelection({
+              void saveLastSeatSelection(profileUserId, {
                 branchId,
                 areaId: nextAreaId,
               });
@@ -1056,8 +1440,8 @@ export function SeatAssistant({
               </figure>
             ) : (
               <p>
-                {scan.status === "idle"
-                  ? "The seat plan will load when availability is checked."
+                {loadingMapKey === `${area.branchId}:${area.id}`
+                  ? "Loading seat plan…"
                   : "NLB did not provide a seat plan for this area."}
               </p>
             )}
@@ -1072,7 +1456,12 @@ export function SeatAssistant({
 
           <div className="nlb-seat-helper__section-heading">
             <div>
-              <strong>Favourite seats</strong>
+              <strong>
+                Favourite seats{" "}
+                <span className="nlb-seat-helper__section-date">
+                  ({formatSelectedDate(date)})
+                </span>
+              </strong>
               <span>
                 {areaFavourites.length} of {area.seats.length} selected
               </span>
@@ -1365,7 +1754,6 @@ export function SeatAssistant({
                         disabled={
                           selectedSeatSlots.length === 0 ||
                           !selectedDateQuota ||
-                          !bookingIdentifiersReady ||
                           bookingRunning
                         }
                         onClick={() => setReviewingBooking(true)}

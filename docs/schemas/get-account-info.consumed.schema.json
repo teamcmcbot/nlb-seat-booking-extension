@@ -220,6 +220,25 @@
         },
         "isDisabled": {
           "type": "boolean"
+        },
+        "hasAvailableSlots": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "time",
+              "isAvail"
+            ],
+            "properties": {
+              "time": {
+                "type": "string"
+              },
+              "isAvail": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": true
+          }
         }
       },
       "additionalProperties": true

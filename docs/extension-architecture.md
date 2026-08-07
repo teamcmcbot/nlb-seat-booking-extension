@@ -35,6 +35,36 @@ The extension has one Chrome permission:
 NLB requests run in the page's signed-in context with
 `credentials: "include"`. No cookie API permission is requested.
 
+## Authentication and account switching
+
+The extension does not render an authentication form or handle NLB
+credentials. **Sign in** invokes the Seat Booking page's own login control so
+NLB creates and validates its authorization state. The content script is not
+injected on `signin.nlb.gov.sg`, so the extension disappears while the user
+completes NLB's official login flow.
+
+Before invoking that control, the extension stores a short-lived sign-in
+marker in the Seat Booking tab's session storage. After NLB redirects to the
+Seat Booking page, the newly injected extension retries `GetAccountInfo` for a
+bounded period while NLB finishes establishing the application session. The
+panel then opens with the authenticated account without requiring a manual
+refresh.
+
+**Sign out** first sends `POST /seatbooking/api/logout`, then navigates to
+NLB's central OIDC logout endpoint with the Seat Booking page as its return
+service. This clears both the application and central sign-in sessions before
+returning to the booking page.
+
+Only one NLB account can be authenticated in a Chrome profile at a time.
+Favourite seats and the last library/area selection are therefore stored
+separately by `userId`, allowing users to sign out, sign in with another
+account, and recover that account's preferences. Passwords, cookies,
+authorization codes, quotas, and bookings are never persisted.
+
+When signed out, catalog and availability features remain available. The
+workspace uses the last active account's local favourites and area preference
+until another account signs in.
+
 ## End-to-end flow
 
 ```mermaid
@@ -44,15 +74,15 @@ flowchart TD
     B --> D["Normalize catalog and booking rules"]
     C --> E["Render user, quotas, and existing bookings"]
     D --> F["Render library, area, date, and seat controls"]
-    F --> G["User clicks Check or Refresh"]
-    G --> H["Generate currently bookable intervals"]
-    H --> I["Call SearchAvailableAreas sequentially"]
-    I --> J["Match returned seat IDs, codes, and names"]
-    J --> K["Render availability timeline"]
-    K --> L["Validate selections against quota and bookings"]
-    L --> M["Build booking plan"]
+    F --> G["Today: read hasAvailableSlots matrix"]
+    F --> Q["Future date: search each exact interval"]
+    G --> H["Render availability timeline"]
+    Q --> H
+    H --> I["Validate selections against quota and bookings"]
+    I --> M["Build booking plan"]
     M --> N["User reviews and confirms"]
-    N --> O["POST bookings/Book sequentially"]
+    N --> J["Refresh account and preflight selected blocks"]
+    J --> O["POST bookings/Book sequentially"]
     O --> P["Refresh GetAccountInfo"]
     P --> E
 ```
@@ -191,19 +221,25 @@ No library/area range is hardcoded.
 
 ## Availability scan
 
-Availability is manual. Changing branch, area, or date does not start a
-background polling loop.
+For today, availability initializes immediately from each catalog seat's
+`hasAvailableSlots` matrix returned by `GetAccountInfo`. Pressing **Refresh**
+fetches `GetAccountInfo` once and replaces the current-day matrix. An
+`availableSeats` result from `SearchAvailableAreas` never upgrades a false
+matrix value to true.
 
-When the user clicks **Check** or **Refresh** beside Favourite seats:
+The matrix has time labels but no booking date. For a future date, the
+extension therefore retains the date-specific flow:
 
-1. The extension computes the remaining valid intervals.
+1. It computes the remaining valid intervals.
 2. It sends one `SearchAvailableAreas` request for each interval.
 3. Requests run sequentially.
 4. A transient `429`/`5xx` response is retried once.
 5. Each request has a six-second timeout.
-6. Successful seat identities are stored per interval.
-7. Discovered booking seat codes and map URLs are retained in memory.
-8. Failed intervals are marked incomplete and never selectable.
+6. Failed intervals are marked incomplete and never selectable.
+
+When an area with no map is selected, one exact availability request is used
+to extract and cache `areaMapUrls`. Availability and seat identities from this
+map-discovery request are ignored.
 
 The timeline always represents every currently bookable interval for the
 selected date. Users choose booking times directly from green timeline cells;
@@ -217,11 +253,8 @@ A catalog seat can be matched by any normalized value available from:
 - seat code; or
 - visible seat name.
 
-The match is case-insensitive. The availability response is also the source of
-the booking-ready seat code when the initial catalog does not include one.
-
-A slot may look available but remain unbookable until that code is known. This
-fail-closed rule prevents malformed booking requests.
+The match is case-insensitive. Missing booking-ready seat codes do not prevent
+selection because exact preflight obtains the code before any booking request.
 
 ## Existing-booking conflicts
 
@@ -250,9 +283,7 @@ slightly different area labels between catalog and booking records.
 
 A green cell is selectable only when:
 
-- its availability request succeeded;
-- the seat was returned as available;
-- its booking seat code is known;
+- today's reference matrix, or a future-date exact check, marks it available;
 - no active existing booking overlaps it;
 - no newly selected seat already occupies the same interval; and
 - the total selected minutes do not exceed the selected date's remaining
@@ -294,11 +325,17 @@ S377 17:00–19:00
 
 After explicit confirmation, the extension:
 
-1. marks every planned request pending;
-2. submits requests sequentially;
-3. displays booking/booked/failed state for each request;
-4. continues after an individual failure; and
-5. fetches `GetAccountInfo` again after the run.
+1. refreshes `GetAccountInfo` and verifies the signed-in account;
+2. requires today's refreshed matrix to keep every selected interval true;
+3. preflights each planned booking block with `SearchAvailableAreas`;
+4. obtains the booking-ready seat code from the successful preflight;
+5. submits requests sequentially;
+6. displays booking/booked/failed state for each request; and
+7. fetches `GetAccountInfo` again after the run.
+
+Preflight is asymmetric: it can remove a selected interval that NLB no longer
+returns, but it cannot turn a reference-matrix false value into an available
+cell. The final `Book` response remains authoritative.
 
 The refresh updates quota and booking conflicts in memory. It does not persist
 account data to Chrome storage.
@@ -307,8 +344,9 @@ account data to Chrome storage.
 
 Persisted in `chrome.storage.local`:
 
-- favourite seats; and
-- last selected branch and area.
+- the NLB user ID embedded in each account-specific storage key;
+- favourite seats for each account; and
+- the last selected branch and area for each account.
 
 Kept only in memory:
 
@@ -328,6 +366,12 @@ The header refresh action fetches `GetAccountInfo` with HTTP caching disabled.
 This lets the extension detect a newly signed-in session after NLB redirects
 back to the booking page without requiring another full-page reload.
 
+The content script also watches NLB's client-side route changes. A
+`reload=true` query parameter on the Seat Booking home, account, booking
+details, or my-bookings route restarts account loading. This refreshes session,
+quota, and booking data even when the site changes routes without reloading the
+document.
+
 ## Failure model
 
 The extension favors safe false negatives over unsafe false positives:
@@ -335,7 +379,7 @@ The extension favors safe false negatives over unsafe false positives:
 - malformed catalog records are ignored;
 - uncertain dates may remain unavailable;
 - failed availability intervals cannot be selected;
-- missing seat codes prevent booking;
+- missing seat codes prevent submission unless preflight supplies one;
 - stale non-canceled bookings continue to block overlaps;
 - quota limits are enforced client-side and still validated by NLB; and
 - the final booking endpoint remains authoritative.

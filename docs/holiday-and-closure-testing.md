@@ -49,10 +49,17 @@ The extension currently:
 2. Builds intervals from the selected area's normal `openingTime`,
    `closingTime`, and booking interval.
 3. Removes elapsed intervals when the selected date is today.
-4. Calls `SearchAvailableAreas` once for each remaining generated interval.
-5. Shows a seat as green only when that interval's API response reports it as
-   available.
-6. Relies on `bookings/Book` as the final server-side validation.
+4. Uses `GetAccountInfo` → `seats[].hasAvailableSlots` for today's reference
+   availability. The matrix has times but no calendar date.
+5. Calls `SearchAvailableAreas` once for each generated interval when the
+   selected date is tomorrow or another future date.
+6. Makes one map-discovery `SearchAvailableAreas` call when the selected area
+   has no cached map; that response does not change timeline availability.
+7. Refreshes `GetAccountInfo` and preflights selected booking blocks with
+   exact `SearchAvailableAreas` calls immediately before booking. A preflight
+   may reject a selection but cannot turn a current-day false matrix value
+   into true.
+8. Relies on `bookings/Book` as the final server-side validation.
 
 It does **not** currently:
 
@@ -63,11 +70,12 @@ It does **not** currently:
 - treat `ignoreHolidays` areas differently; or
 - skip intervals that are inside normal hours but outside special-day hours.
 
-### Consequences today
+### Consequences on special dates
 
 On a full holiday, the date may remain selectable if it is inside the normal
-advance-booking window. The extension will generate the area's normal
-intervals and ask `SearchAvailableAreas` about them.
+advance-booking window. For today, the extension renders NLB's current-day
+`hasAvailableSlots` matrix. For a future holiday, it generates the area's
+normal intervals and asks `SearchAvailableAreas` about each one.
 
 Expected safe outcomes are:
 
@@ -78,10 +86,11 @@ Expected safe outcomes are:
 An extended-hours area may still return availability. This must be verified
 against `ignoreHolidays`.
 
-On an early-closure day, the extension may make unnecessary calls for
+On a future early-closure day, the extension may make unnecessary calls for
 intervals after the special closing time. Those cells should not become green
 unless NLB reports them as available, but the UI does not currently label them
-as "closed".
+as "closed". For an early closure today, the extension depends on NLB's
+current-day matrix to mark those times unavailable.
 
 ## Is the day after a holiday selectable?
 
@@ -106,10 +115,10 @@ Capture results for the same library and area where possible.
 
 | Scenario | What to inspect | Expected extension behavior |
 | --- | --- | --- |
-| Ordinary weekday | Normal metadata and hourly responses | Existing timeline behavior |
-| Holiday eve with early closure | Area hours, dwell limits, and responses before/after closure | No selectable green cells after actual closure |
-| Full holiday, ordinary area | Holiday record, branch exclusion, all hourly responses | Date disabled or every interval explicitly closed/unavailable |
-| Full holiday, `ignoreHolidays` area | Area flag and hourly responses | Only genuinely operating intervals selectable |
+| Ordinary weekday | Normal metadata, today's matrix, and future interval responses | Existing timeline behavior |
+| Holiday eve with early closure | Area hours, today's matrix, dwell limits, and future responses before/after closure | No selectable green cells after actual closure |
+| Full holiday, ordinary area | Holiday record, branch exclusion, today's matrix, and future interval responses | Date disabled or every interval explicitly closed/unavailable |
+| Full holiday, `ignoreHolidays` area | Area flag, today's matrix, and future interval responses | Only genuinely operating intervals selectable |
 | Holiday excluded for one branch | `excludedBranches` and two branch responses | Excluded branch follows normal behavior if NLB intends that exception |
 | Holiday followed by an open day | Date range before and after release time | Follows confirmed `advanceBookingDays` semantics |
 | Failed or ambiguous API response | Status and payload | Fail closed; never make an uncertain interval selectable |
@@ -128,11 +137,13 @@ For each scenario, record:
 - branch dwell-time configuration;
 - area ID, facility ID/code, normal opening/closing times, and
   `ignoreHolidays`; and
+- relevant seats' `hasAvailableSlots` entries for a current-day test; and
 - the selected date's quota.
 
 ### `SearchAvailableAreas`
 
-For one interval before, at, and after the expected closure:
+For a future-date test, capture one interval before, at, and after the expected
+closure:
 
 - request branch, area, date, start time, and duration;
 - HTTP status;

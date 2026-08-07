@@ -26,8 +26,8 @@ No Node.js or development tools are required.
 5. Enable **Developer mode**.
 6. Select **Load unpacked**.
 7. Choose the extracted folder that directly contains `manifest.json`.
-8. Sign in to NLB and open or refresh
-   `https://www.nlb.gov.sg/seatbooking/`.
+8. Open `https://www.nlb.gov.sg/seatbooking/` and use **Sign in** in the
+   extension header if required.
 
 Chrome requires Developer mode because this extension is distributed outside
 the Chrome Web Store.
@@ -47,6 +47,14 @@ installation and preserves the extension's existing Chrome storage.
 
 ### Account and quota
 
+- Signs in through NLB's official authentication page directly from the
+  extension header.
+- Signs out of both Seat Booking and the central NLB session from the
+  extension header.
+- Detects the completed sign-in automatically after NLB redirects back to the
+  Seat Booking page.
+- Keeps catalog and availability features accessible while signed out, using
+  the last active account's local preferences.
 - Shows the signed-in NLB user ID in the compact panel header.
 - Refreshes the signed-in account from the header after login without
   reloading the NLB page.
@@ -59,7 +67,8 @@ installation and preserves the extension's existing Chrome storage.
 - Extracts the current library, area, seat, and booking rules from NLB's
   `GetAccountInfo` response.
 - Excludes `facilityId: 2` discussion rooms and breakout rooms.
-- Remembers the last selected library and area in Chrome storage.
+- Remembers the last selected library and area separately for each NLB
+  account in Chrome storage.
 - Respects NLB's configured advance-booking days and release time.
 - Uses each area's opening time, closing time, booking interval, and minimum
   and maximum booking durations.
@@ -68,7 +77,7 @@ installation and preserves the extension's existing Chrome storage.
 
 ### Favourite seats and seat plan
 
-- Stores favourite seats per area in Chrome storage.
+- Stores favourite seats per account and area in Chrome storage.
 - Provides seat-number search so large areas do not need to render every seat.
 - Keeps the seat plan visible while favourite seats are browsed or managed.
 - Prioritizes seats booked by the user and available seats after a scan, while
@@ -81,16 +90,20 @@ installation and preserves the extension's existing Chrome storage.
 
 ### Availability
 
-- Checks availability only when **Check** or **Refresh** is
-  clicked; there is no automatic availability refresh.
-- Calls NLB's `SearchAvailableAreas` once per currently bookable interval.
-- Runs requests sequentially to reduce load on the NLB service.
+- Shows today's favourite-seat availability immediately from the
+  `hasAvailableSlots` matrix returned by `GetAccountInfo`.
+- Refreshes today's complete matrix with one account request instead of one
+  request per hour.
+- Retains exact interval checks for future dates, whose date-specific
+  availability is not represented by the current-day matrix.
+- Loads and caches the selected area's map with one metadata request without
+  allowing that response to make unavailable cells selectable.
 - Stops an individual request after six seconds.
 - Retries a transient `429` or `5xx` response once after a short delay.
 - Keeps successful interval results when another interval fails and marks the
   scan as incomplete.
-- Extracts NLB's internal seat code from the availability response for use by
-  the booking endpoint.
+- Revalidates selected booking blocks and obtains NLB's internal seat code
+  immediately before booking.
 
 Timeline colors:
 
@@ -113,6 +126,9 @@ Timeline colors:
   or submit every interval separately.
 - Opens an immediate confirmation overlay with the seat and time summary before
   any booking requests are sent.
+- Requires both the refreshed reference matrix and the exact booking preflight
+  to accept a current-day selection; preflight may disable but never enable a
+  timeline cell.
 - Sends confirmed requests sequentially to NLB's `bookings/Book` endpoint.
 - Displays pending, booking, successful, and failed status for every request.
 - Lets users dismiss completed booking status manually and automatically clears
@@ -128,16 +144,17 @@ Requests use the NLB page's existing signed-in session with
 
 Chrome storage contains only:
 
-- favourite seat selections; and
-- the last selected library and area.
+- NLB user IDs used to separate local account profiles;
+- favourite seat selections for each account; and
+- the last selected library and area for each account.
 
-Account details, quotas, bookings, and availability results remain in memory
-and are not persisted by the extension.
+Other account details, quotas, bookings, and availability results remain in
+memory and are not persisted by the extension.
 
 ## Requirements
 
 - Google Chrome or another Chromium browser that supports Manifest V3.
-- An active NLB account session on the NLB Seat Booking website.
+- An NLB account when booking or using account-specific features.
 - Node.js and npm only when building from source.
 
 ## Build from source
@@ -195,10 +212,11 @@ versioned download.
 
 ## Usage
 
-1. Sign in to NLB and open the Seat Booking page.
+1. Open the Seat Booking page and sign in from the extension header.
 2. Select a library, a specific area, and an available date.
 3. Open **Manage** and choose favourite seats.
-4. Click **Check** beside Favourite seats.
+4. For today, review the immediately loaded matrix or click **Refresh**. For a
+   future date, click **Check** to run the date-specific interval searches.
 5. Select green intervals without exceeding the displayed quota.
 6. Choose whether adjacent intervals should be combined or booked separately.
 7. Click **Book**, review the generated requests, and confirm.

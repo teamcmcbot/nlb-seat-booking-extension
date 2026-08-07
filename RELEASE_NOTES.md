@@ -1,23 +1,38 @@
-# NLB Seat Helper v1.0.1
+# NLB Seat Helper v1.0.3
 
-This release improves the helper's compact layout and makes the booking flow
-clearer and more predictable.
+This release adds account controls to the extension and keeps each NLB
+account's local preferences separate.
 
 ## Highlights
 
-- Keeps the seat plan visible while browsing and managing favourite seats.
-- Uses a responsive favourite-seat list that grows with the browser viewport,
-  scrolls internally for long lists, and avoids empty space for short lists.
-- Removes the redundant Start and Duration controls; booking times are selected
-  directly from the availability timeline.
-- Keeps seat rows stationary while selecting consecutive timeline cells.
-- Adds a header refresh action that detects a newly signed-in NLB session
-  without reloading the whole page.
-- Shows the selected date's remaining quota in the main controls.
-- Opens booking confirmation in a focused overlay with the complete seat and
-  time summary.
-- Adds a manual Dismiss action for booking results and automatically clears a
-  fully successful run after 12 seconds. Failed results remain visible.
+- Adds **Sign in** beside the signed-out status in the extension header.
+- Adds **Sign out** beside the active account in the extension header.
+- Uses NLB's official sign-in and central sign-out pages; the extension never
+  reads or stores passwords, cookies, or authentication tokens.
+- Waits for NLB to finish establishing the account session after redirecting
+  back to Seat Booking, removing the need to manually refresh the extension.
+- Refreshes the account automatically when the Seat Booking tab becomes
+  visible or regains focus.
+- Detects `reload=true` on Seat Booking home, account, booking-details, and
+  my-bookings routes, including client-side navigation, and reloads account
+  and session data.
+- Keeps the seat availability workspace expandable and usable while signed
+  out, with the account refresh control still available.
+- Keeps header actions aligned by truncating only an unusually long account
+  name while preserving the full name as a hover tooltip.
+- Shows the selected date in the Favourite seats heading so availability is
+  not mistaken for another day's results.
+- Stores favourite seats and the last selected library and area separately for
+  each NLB user ID.
+- Migrates existing favourites and preferences to the first account used after
+  updating.
+- Verifies that the signed-in account has not changed immediately before
+  submitting a booking.
+- Shows current-day availability immediately from NLB's account seat matrix,
+  retains exact interval searches for tomorrow and other future dates, loads
+  maps once per area, and uses a conservative exact preflight before booking.
+  Exact searches can reject a current-day matrix result but never upgrade a
+  current-day false cell.
 
 ## Installation
 

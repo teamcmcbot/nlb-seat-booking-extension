@@ -76,6 +76,39 @@
   animation: nlb-seat-helper-spin 700ms linear infinite;
 }
 
+.nlb-seat-helper__account-action {
+  min-height: 26px;
+  flex: 0 0 auto;
+  padding: 0 9px;
+  border: 1px solid #b9d8c8;
+  border-radius: 8px;
+  background: #e7f4ed;
+  color: #135f40;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__account-action:hover {
+  background: #d6ebdf;
+}
+
+.nlb-seat-helper__account-action--secondary {
+  border: 1px solid #c9dbd2;
+  background: white;
+  color: #246046;
+}
+
+.nlb-seat-helper__account-action--secondary:hover {
+  background: #e8f1ec;
+}
+
+.nlb-seat-helper__account-action:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
 .nlb-seat-helper__status {
   width: 10px;
   height: 10px;
@@ -97,6 +130,12 @@
   box-shadow: 0 0 0 3px rgb(22 138 81 / 12%);
 }
 
+.nlb-seat-helper__status--signed-out {
+  border-color: #f3ead4;
+  background: #ad7927;
+  box-shadow: 0 0 0 3px rgb(173 121 39 / 12%);
+}
+
 .nlb-seat-helper__status--error {
   border-color: #fde2df;
   background: #c9483c;
@@ -104,22 +143,52 @@
 }
 
 .nlb-seat-helper__title {
-  display: block;
+  display: flex;
   min-width: 0;
   flex: 1;
+  align-items: baseline;
+  gap: 4px;
   color: #163b2c;
   font-size: 14px;
   font-weight: 700;
   letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+.nlb-seat-helper__title > strong {
+  flex: 0 0 auto;
+}
+
+.nlb-seat-helper__account-name {
+  display: flex;
+  min-width: 0;
+  align-items: baseline;
+}
+
+.nlb-seat-helper__account-parenthesis {
+  flex: 0 0 auto;
+}
+
+.nlb-seat-helper__account-name-value {
+  min-width: 0;
+  flex: 1 1 auto;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.nlb-seat-helper__title span {
+.nlb-seat-helper__account-name,
+.nlb-seat-helper__title-status {
+  min-width: 0;
   color: #52635b;
   font-size: 12px;
   font-weight: 550;
+}
+
+.nlb-seat-helper__title-status {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nlb-seat-helper__loading {
@@ -397,6 +466,14 @@
 .nlb-seat-helper__section-heading strong {
   color: #263b31;
   font-size: 13px;
+}
+
+.nlb-seat-helper__section-heading strong .nlb-seat-helper__section-date {
+  display: inline;
+  margin-top: 0;
+  color: #7a8781;
+  font-size: 11px;
+  font-weight: 500;
 }
 
 .nlb-seat-helper__section-heading span {

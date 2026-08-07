@@ -33,6 +33,7 @@ export async function searchAvailableAreas(
     const response = await fetch(
       `${SEARCH_AVAILABLE_AREAS_URL}?${parameters.toString()}`,
       {
+        cache: "no-store",
         credentials: "include",
         headers: {
           Accept: "application/json, text/plain, */*",
