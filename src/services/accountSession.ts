@@ -2,6 +2,7 @@ import type {
   AccountSession,
   AdvancedBookingQuota,
   BookingQuota,
+  CancellationReason,
   ExistingBooking,
 } from "../models/account";
 
@@ -63,6 +64,51 @@ function identifier(value: unknown) {
     : "";
 }
 
+function bookingIdentifier(value: unknown) {
+  return typeof value === "string" || typeof value === "number"
+    ? value
+    : undefined;
+}
+
+function cancellationReasonFrom(
+  value: unknown,
+  index: number,
+): CancellationReason | undefined {
+  if (!isRecord(value)) {
+    return undefined;
+  }
+
+  const code = typeof value.code === "string" ? value.code.trim() : "";
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  if (!code || !name) {
+    return undefined;
+  }
+
+  const order = Number(value.order);
+  return {
+    code,
+    name,
+    description:
+      typeof value.description === "string" ? value.description : "",
+    order: Number.isFinite(order) ? order : index,
+  };
+}
+
+function cancellationReasonsFrom(payload: JsonRecord) {
+  const settings = isRecord(payload.settings) ? payload.settings : undefined;
+  const menus = settings && isRecord(settings.menus) ? settings.menus : undefined;
+  const reasons = menus?.cancelReasons;
+
+  return Array.isArray(reasons)
+    ? reasons
+        .map(cancellationReasonFrom)
+        .filter(
+          (reason): reason is CancellationReason => Boolean(reason),
+        )
+        .sort((left, right) => left.order - right.order)
+    : [];
+}
+
 function existingBookingFrom(
   value: unknown,
 ): ExistingBooking | undefined {
@@ -88,7 +134,7 @@ function existingBookingFrom(
     typeof value.lastAction === "string" ? value.lastAction : "";
 
   return {
-    bookingId: identifier(value.bookingId),
+    bookingId: bookingIdentifier(value.bookingId),
     branchId: identifier(value.branchId),
     facilityId: identifier(value.facilityId) || undefined,
     floor: identifier(value.floor) || undefined,
@@ -96,6 +142,8 @@ function existingBookingFrom(
     area: typeof value.area === "string" ? value.area : "",
     startTime,
     endTime,
+    lastAction,
+    canCancelStatus: value.canCancelStatus === true,
     active: !/cancel/i.test(lastAction),
   };
 }
@@ -135,6 +183,7 @@ export function extractAccountSession(
             left.startTime.localeCompare(right.startTime),
           )
       : [],
+    cancellationReasons: cancellationReasonsFrom(payload),
   };
 }
 

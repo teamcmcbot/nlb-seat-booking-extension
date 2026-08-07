@@ -9,7 +9,7 @@ the endpoints or fields will remain stable.
 
 The notes are based on:
 
-- the extension source through version `1.0.3`;
+- the extension source through version `1.1.0`;
 - a `GetAccountInfo` response captured on 30 July 2026;
 - booking-state observations made on 31 July 2026; and
 - successful availability and booking requests made during extension testing.
@@ -25,6 +25,7 @@ All times in the captured data are interpreted in Singapore time
 | Full current seat/time reference matrix used by NLB's availability page | `GET` | `/seatbooking/api/seatAvailability/SearchSeatAvailability` |
 | Available seats for one interval | `GET` | `/seatbooking/api/areas/SearchAvailableAreas` |
 | Create one booking | `POST` | `/seatbooking/api/bookings/Book` |
+| Cancel one complete booking | `PATCH` | `/seatbooking/api/bookings/Cancel` |
 | End the Seat Booking application session | `POST` | `/seatbooking/api/logout` |
 | End the central NLB sign-in session | `GET` | `https://signin.nlb.gov.sg/authenticate/oidc/logout` |
 
@@ -217,7 +218,7 @@ interface Booking {
 
 | Field | Use |
 | --- | --- |
-| `bookingId` | Retained as a stable identifier in the normalized session. |
+| `bookingId` | Stable cancellation identity; its original string/number type is preserved for the request. |
 | `branchId` | Part of matching a booking to the selected branch. |
 | `facilityId` | Helps disambiguate areas and facilities. |
 | `floor` | Helps disambiguate an area when its display name differs slightly. |
@@ -225,6 +226,7 @@ interface Booking {
 | `area` | Matches the selected area name after punctuation and case normalization. |
 | `startTime`, `endTime` | Determines whether a displayed interval overlaps the booking. |
 | `lastAction` | Determines whether the extension treats the booking as active. |
+| `canCancelStatus` | Required together with `lastAction: "Book"` and a future start time before cancellation is enabled. |
 
 The extension currently considers a booking inactive when `lastAction`
 contains `cancel`, case-insensitively:
@@ -237,9 +239,19 @@ Consequently, `AutoPartialCancel` is treated as canceled and no longer blocks
 another interval. A booking whose `lastAction` remains `Book` is treated as
 active, even if other server fields appear stale or contradictory.
 
-The extension does not currently use `actions`, `canCancelStatus`,
-`canCheckInStatus`, or `canExtendStatus` for conflict decisions. Those are
-documented because they are valuable lifecycle signals for future work.
+The extension does not use `actions`, `canCheckInStatus`, or
+`canExtendStatus` for conflict decisions. Cancellation eligibility is stricter
+than active-booking detection and requires all of:
+
+```ts
+booking.bookingId !== undefined &&
+booking.lastAction === "Book" &&
+booking.canCancelStatus === true &&
+Date.now() < new Date(booking.startTime).getTime()
+```
+
+Consequently, a checked-in booking can remain purple as an active booking but
+cannot be selected for this pre-start cancellation flow.
 
 ### Settings and catalog schema
 
@@ -249,7 +261,15 @@ interface Settings {
   holidays?: unknown[];
   menus: {
     branchMenus: Branch[];
+    cancelReasons?: CancellationReason[];
   };
+}
+
+interface CancellationReason {
+  code: string;
+  name: string;
+  description?: string;
+  order?: number;
 }
 
 interface SystemSettings {
@@ -339,6 +359,20 @@ the new values returned by `GetAccountInfo`.
 
 `checkInStartTimeInMinutes`, `checkInEndTimeInMinutes`, and other system fields
 are currently documented but not enforced by the extension.
+
+### Seat-booking cancellation reasons
+
+Seat-booking reasons are read from:
+
+```text
+settings.menus.cancelReasons
+```
+
+`settings.menus.visitBookingCancelReasons` is a separate list and is not used
+for seat cancellation. The extension displays each valid reason's `name` and
+sends its `code`. `ChangeOfPlan` is selected initially when present; otherwise
+the first valid server-provided reason is used. One selected reason applies to
+all bookings in a cancellation run.
 
 #### Area fields used by the extension
 
@@ -573,6 +607,65 @@ shows a generic message that the seat is no longer available.
 A successful booking causes `GetAccountInfo` to be fetched again so quota and
 existing-booking state can be refreshed.
 
+## `PATCH /bookings/Cancel`
+
+This endpoint cancels one complete booking identified by `bookingId`. It does
+not cancel an individual timeline cell inside a multi-hour booking.
+
+### Request body
+
+```ts
+interface CancelRequest {
+  mode: "OffsiteMode";
+  bookingId: number | string;
+  CancelReason: string;
+}
+```
+
+Observed successful request:
+
+```json
+{
+  "mode": "OffsiteMode",
+  "bookingId": 1000002,
+  "CancelReason": "ChangeOfPlan"
+}
+```
+
+The property casing is intentional: `mode` is lower-case while
+`CancelReason` begins with capitals. The extension preserves the booking ID's
+observed primitive type instead of converting a numeric ID to a string.
+
+Requests use `credentials: "include"`, JSON content headers, and run
+sequentially. They are not retried automatically because a lost response may
+hide a completed cancellation.
+
+### Observed successful response and reconciliation
+
+One successful response contained a refreshed `accountInfo`, top-level
+`action: "ManualFullCancel"`, and the affected booking changed to:
+
+```json
+{
+  "lastAction": "ManualFullCancel",
+  "actions": ["Book", "ManualFullCancel"],
+  "canCancelStatus": false
+}
+```
+
+Complete success and business-error schemas are not confirmed. A `2xx`
+response without an explicit `success: false` is therefore provisional. After
+the run, the extension fetches `GetAccountInfo` again:
+
+- a missing or inactive booking confirms cancellation;
+- a booking that remains active is reported as uncertain; and
+- a request that appeared to fail but is inactive in the refreshed account is
+  reconciled as cancelled.
+
+No automatic retry is made for failed or uncertain results. Those bookings
+remain selected for review; only bookings confirmed missing or inactive are
+removed from the cancellation selection.
+
 ## Booking lifecycle observations
 
 ### Confirmed from captured responses
@@ -658,8 +751,9 @@ the stale booking as active and blocks overlapping new selections. This is the
 safe behavior: it avoids attempting a second booking while the server still
 claims that the first booking is active.
 
-The extension does not attempt to repair, cancel, or reinterpret a stale NLB
-booking. NLB remains authoritative.
+The extension does not reinterpret a stale booking as canceled. A stale
+booking whose start time has passed remains purple and non-cancelable even if
+`canCancelStatus` is unexpectedly true. NLB remains authoritative.
 
 ## Seat-plan image URLs
 
@@ -698,7 +792,7 @@ solely to obtain an error fixture.
 - Holiday and holiday-eve authority: account metadata versus availability
   response versus final booking validation.
 - Exact raw availability response schema across every branch/facility type.
-- Complete successful and failed booking response schemas.
+- Complete successful and failed booking and cancellation response schemas.
 - Automatic cancellation scheduling and reconciliation behavior.
 - Whether server times always omit an offset and must always be interpreted as
   Singapore local time.

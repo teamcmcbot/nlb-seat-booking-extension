@@ -125,6 +125,26 @@
             }
           ]
         }
+      ],
+      "cancelReasons": [
+        {
+          "code": "ChangeOfPlan",
+          "name": "Decided not to visit this library",
+          "description": "",
+          "order": 0
+        },
+        {
+          "code": "BookedWrongTime",
+          "name": "Booked for the wrong date/time",
+          "description": "",
+          "order": 0
+        },
+        {
+          "code": "Others",
+          "name": "Others",
+          "description": "",
+          "order": 0
+        }
       ]
     }
   }

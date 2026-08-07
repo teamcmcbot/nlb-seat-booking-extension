@@ -78,6 +78,9 @@ installation and preserves the extension's existing Chrome storage.
 ### Favourite seats and seat plan
 
 - Stores favourite seats per account and area in Chrome storage.
+- Resolves active current or future bookings against the catalog and adds any
+  missing booked seats to that account's favourites, so booked seats remain
+  visible even when they were not selected manually.
 - Provides seat-number search so large areas do not need to render every seat.
 - Keeps the seat plan visible while favourite seats are browsed or managed.
 - Prioritizes seats booked by the user and available seats after a scan, while
@@ -110,6 +113,7 @@ Timeline colors:
 - Green: available and selectable.
 - Blue with a check mark: selected for a new booking.
 - Purple: already booked by the signed-in user.
+- Dark purple with a check mark: complete booking selected for cancellation.
 - Amber: available, but blocked by another booking at the same time.
 - Red: unavailable.
 
@@ -133,6 +137,29 @@ Timeline colors:
 - Displays pending, booking, successful, and failed status for every request.
 - Lets users dismiss completed booking status manually and automatically clears
   an entirely successful run after 12 seconds. Failed results remain visible.
+- Refreshes the displayed availability after booking, including rerunning
+  date-specific interval checks for a future date.
+
+### Cancellation
+
+- Makes an upcoming purple booking selectable only while NLB reports
+  `lastAction: "Book"`, `canCancelStatus: true`, and its start time is still in
+  the future.
+- Selects a multi-hour booking atomically by booking ID: clicking any purple
+  interval selects every visible interval in that booking and sends one
+  cancellation request.
+- Prevents green booking selections and purple cancellation selections from
+  being mixed.
+- Lets the user review each complete booking and choose an NLB cancellation
+  reason, defaulting to **Decided not to visit this library**.
+- Sends cancellation requests sequentially without automatic retries, then
+  reconciles them against a fresh account response.
+- Keeps failed or uncertain cancellations selected for review and clears only
+  bookings confirmed missing or inactive.
+- Refreshes today's account matrix or reruns future-date interval checks after
+  cancellation.
+- Keeps checked-in, started, canceled, completed, or otherwise non-cancelable
+  purple bookings visible but noninteractive.
 
 ## Privacy and permissions
 
@@ -217,10 +244,11 @@ versioned download.
 3. Open **Manage** and choose favourite seats.
 4. For today, review the immediately loaded matrix or click **Refresh**. For a
    future date, click **Check** to run the date-specific interval searches.
-5. Select green intervals without exceeding the displayed quota.
-6. Choose whether adjacent intervals should be combined or booked separately.
-7. Click **Book**, review the generated requests, and confirm.
-8. Review the per-request booking status and refreshed quota.
+5. To book, select green intervals, choose the adjacent-hour mode, click
+   **Book**, and confirm the request summary.
+6. To cancel, select a cancelable purple booking, click **Cancel**, review the
+   complete booking, choose a reason, and confirm.
+7. Review the per-request result and automatically refreshed availability.
 
 ## Project structure
 
