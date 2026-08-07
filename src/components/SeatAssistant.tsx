@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { bookSeat } from "../api/booking";
+import { cancelBooking } from "../api/cancellation";
 import {
   searchAvailableAreas,
   type AvailabilityQuery,
 } from "../api/availability";
 import { NlbApiError } from "../api/account";
-import type { AccountSession } from "../models/account";
+import type { AccountSession, ExistingBooking } from "../models/account";
 import type {
   BookingProgress,
+  CancellationProgress,
   PlannedBooking,
   SelectedSeatSlot,
 } from "../models/booking";
@@ -39,8 +41,11 @@ import {
   quotaForDate,
 } from "../services/accountSession";
 import {
-  bookingMatchesSeat,
+  bookingFavouriteCandidates,
+  existingBookingKey,
+  findBookingForSeatSlot,
   findConflictingBooking,
+  isBookingCancelable,
 } from "../services/bookingConflicts";
 import { buildBookingPlan } from "../services/bookingPlanner";
 import {
@@ -376,6 +381,33 @@ function existingBookingLabel(
   )}`;
 }
 
+function existingBookingPeriod(booking: ExistingBooking) {
+  const start = new Date(booking.startTime);
+  const end = new Date(booking.endTime);
+  const date = `${String(start.getDate()).padStart(2, "0")}/${String(
+    start.getMonth() + 1,
+  ).padStart(2, "0")}/${start.getFullYear()}`;
+  const label = (value: Date) =>
+    timeLabel(
+      `${String(value.getHours()).padStart(2, "0")}:${String(
+        value.getMinutes(),
+      ).padStart(2, "0")}`,
+    );
+
+  return `${date}, ${label(start)}–${label(end)}`;
+}
+
+function bookingDurationMinutes(booking: ExistingBooking) {
+  return Math.max(
+    0,
+    Math.round(
+      (new Date(booking.endTime).getTime() -
+        new Date(booking.startTime).getTime()) /
+        60_000,
+    ),
+  );
+}
+
 export function SeatAssistant({
   catalog,
   profileUserId,
@@ -401,12 +433,23 @@ export function SeatAssistant({
   const [selectedCellKeys, setSelectedCellKeys] = useState<Set<string>>(
     () => new Set(),
   );
+  const [selectedCancellationKeys, setSelectedCancellationKeys] = useState<
+    Set<string>
+  >(() => new Set());
   const [selectionMessage, setSelectionMessage] = useState("");
+  const [automaticFavouriteMessage, setAutomaticFavouriteMessage] =
+    useState("");
   const [bookSeparately, setBookSeparately] = useState(true);
   const [reviewingBooking, setReviewingBooking] = useState(false);
+  const [reviewingCancellation, setReviewingCancellation] = useState(false);
+  const [cancellationReasonCode, setCancellationReasonCode] = useState("");
   const [bookingRunning, setBookingRunning] = useState(false);
+  const [cancellationRunning, setCancellationRunning] = useState(false);
   const [bookingProgress, setBookingProgress] = useState<
     BookingProgress[]
+  >([]);
+  const [cancellationProgress, setCancellationProgress] = useState<
+    CancellationProgress[]
   >([]);
   const [scan, setScan] = useState<ScanState>({
     status: "idle",
@@ -416,19 +459,20 @@ export function SeatAssistant({
   const mapRequests = useRef(new Set<string>());
 
   useEffect(() => {
-    if (!reviewingBooking) {
+    if (!reviewingBooking && !reviewingCancellation) {
       return undefined;
     }
 
     const closeReviewOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setReviewingBooking(false);
+        setReviewingCancellation(false);
       }
     };
 
     document.addEventListener("keydown", closeReviewOnEscape);
     return () => document.removeEventListener("keydown", closeReviewOnEscape);
-  }, [reviewingBooking]);
+  }, [reviewingBooking, reviewingCancellation]);
 
   useEffect(() => {
     const allBookingsSucceeded =
@@ -446,6 +490,23 @@ export function SeatAssistant({
 
     return () => window.clearTimeout(dismissTimer);
   }, [bookingProgress, bookingRunning]);
+
+  useEffect(() => {
+    const allCancellationsSucceeded =
+      cancellationProgress.length > 0 &&
+      cancellationProgress.every((item) => item.status === "cancelled");
+
+    if (cancellationRunning || !allCancellationsSucceeded) {
+      return undefined;
+    }
+
+    const dismissTimer = window.setTimeout(
+      () => setCancellationProgress([]),
+      12_000,
+    );
+
+    return () => window.clearTimeout(dismissTimer);
+  }, [cancellationProgress, cancellationRunning]);
 
   const branch = useMemo(
     () => catalog.branches.find((item) => item.id === branchId),
@@ -474,6 +535,10 @@ export function SeatAssistant({
     () =>
       area?.seats.filter((seat) => favouriteIds.has(seat.id)) ?? [],
     [area, favouriteIds],
+  );
+  const bookingFavouriteState = useMemo(
+    () => bookingFavouriteCandidates(catalog, session?.bookings, now),
+    [catalog, now, session?.bookings],
   );
   const dateRange = useMemo(
     () =>
@@ -534,10 +599,22 @@ export function SeatAssistant({
       ),
     [areaSeatCodes, favouriteSeats, selectedCellKeys, slots],
   );
+  const selectedCancellationBookings = useMemo(
+    () =>
+      session?.bookings.filter((booking) =>
+        selectedCancellationKeys.has(existingBookingKey(booking)),
+      ) ?? [],
+    [selectedCancellationKeys, session?.bookings],
+  );
   const selectedMinutes = selectedSeatSlots.reduce(
     (total, slot) => total + slot.durationMinutes,
     0,
   );
+  const selectedCancellationMinutes = selectedCancellationBookings.reduce(
+    (total, booking) => total + bookingDurationMinutes(booking),
+    0,
+  );
+  const cancellationMode = selectedCancellationBookings.length > 0;
   const bookingPlan = useMemo(
     () =>
       buildBookingPlan(
@@ -569,13 +646,13 @@ export function SeatAssistant({
         const booked = Boolean(
           area &&
             slots.some((slot) => {
-              const booking = findConflictingBooking(
+              const booking = findBookingForSeatSlot(
                 session?.bookings,
                 slot,
+                area,
+                seat,
               );
-              return (
-                booking && bookingMatchesSeat(booking, area, seat)
-              );
+              return Boolean(booking);
             }),
         );
         const available =
@@ -602,13 +679,6 @@ export function SeatAssistant({
     date,
     favouriteSeats.map((seat) => seat.id).join(","),
     slots.map((slot) => slot.key).join(","),
-    session?.bookings
-      .filter((booking) => booking.active)
-      .map(
-        (booking) =>
-          `${booking.bookingId}:${booking.startTime}:${booking.endTime}`,
-      )
-      .join(","),
     referenceMatrixKey,
   ].join("|");
 
@@ -638,6 +708,51 @@ export function SeatAssistant({
       })
       .finally(() => setStorageReady(true));
   }, []);
+
+  useEffect(() => {
+    if (!storageReady || !session) {
+      return;
+    }
+
+    const existing = new Set(favourites.map(favouriteIdentity));
+    const additions = bookingFavouriteState.favourites.filter(
+      (favourite) => !existing.has(favouriteIdentity(favourite)),
+    );
+    if (additions.length === 0) {
+      return;
+    }
+
+    const next = [...favourites, ...additions];
+    setFavourites(next);
+    setAutomaticFavouriteMessage(
+      `${additions.length} booked seat${
+        additions.length === 1 ? " was" : "s were"
+      } added to this account's favourites.`,
+    );
+    void saveFavouriteSeats(profileUserId, next);
+  }, [
+    bookingFavouriteState.favourites,
+    favourites,
+    profileUserId,
+    session,
+    storageReady,
+  ]);
+
+  useEffect(() => {
+    const reasons = session?.cancellationReasons ?? [];
+    if (
+      cancellationReasonCode &&
+      reasons.some((reason) => reason.code === cancellationReasonCode)
+    ) {
+      return;
+    }
+
+    setCancellationReasonCode(
+      reasons.find((reason) => reason.code === "ChangeOfPlan")?.code ??
+        reasons[0]?.code ??
+        "",
+    );
+  }, [cancellationReasonCode, session?.cancellationReasons]);
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(new Date()), 30_000);
@@ -741,13 +856,21 @@ export function SeatAssistant({
         : { status: "idle", availability: {} },
     );
     setSelectedCellKeys(new Set());
+    setSelectedCancellationKeys(new Set());
     setSelectionMessage("");
     setReviewingBooking(false);
+    setReviewingCancellation(false);
 
     return () => scanController.current?.abort();
   }, [scanContextKey]);
 
-  async function checkAvailability() {
+  async function checkAvailability(
+    refreshedAccount?: {
+      session?: AccountSession;
+      catalog?: Catalog;
+    },
+    options: { preserveCancellationSelection?: boolean } = {},
+  ) {
     if (
       !area ||
       !date ||
@@ -770,7 +893,7 @@ export function SeatAssistant({
       });
 
       try {
-        const refreshed = await onAccountRefresh();
+        const refreshed = refreshedAccount ?? (await onAccountRefresh());
         if (controller.signal.aborted) {
           return;
         }
@@ -854,8 +977,12 @@ export function SeatAssistant({
     let firstError: unknown;
 
     setSelectedCellKeys(new Set());
+    if (!options.preserveCancellationSelection) {
+      setSelectedCancellationKeys(new Set());
+    }
     setSelectionMessage("");
     setReviewingBooking(false);
+    setReviewingCancellation(false);
     setScan({
       status: "scanning",
       availability: {},
@@ -987,6 +1114,13 @@ export function SeatAssistant({
   }
 
   function toggleSelectedSlot(seat: Seat, slot: HourSlot) {
+    if (selectedCancellationKeys.size > 0) {
+      setSelectionMessage(
+        "Clear the selected purple booking before selecting available hours.",
+      );
+      return;
+    }
+
     const key = selectionKey(seat.id, slot.key);
     const alreadySelected = selectedCellKeys.has(key);
 
@@ -1053,6 +1187,34 @@ export function SeatAssistant({
     setSelectionMessage("");
   }
 
+  function toggleCancellationBooking(booking: ExistingBooking) {
+    if (selectedCellKeys.size > 0) {
+      setSelectionMessage(
+        "Clear the selected green hours before selecting a booking to cancel.",
+      );
+      return;
+    }
+
+    if (!isBookingCancelable(booking, now)) {
+      setSelectionMessage(
+        `${existingBookingLabel(booking)} can no longer be cancelled.`,
+      );
+      return;
+    }
+
+    const key = existingBookingKey(booking);
+    setSelectedCancellationKeys((current) => {
+      const next = new Set(current);
+      if (next.has(key)) {
+        next.delete(key);
+      } else {
+        next.add(key);
+      }
+      return next;
+    });
+    setSelectionMessage("");
+  }
+
   function markBookingUnavailable(booking: PlannedBooking) {
     const bookingStart = new Date(booking.startTime).getTime();
     const bookingEnd = bookingStart + booking.durationMinutes * 60_000;
@@ -1080,6 +1242,12 @@ export function SeatAssistant({
       });
       return next;
     });
+  }
+
+  async function refreshAfterMutation() {
+    const refreshed = await onAccountRefresh();
+    await checkAvailability(refreshed);
+    return refreshed;
   }
 
   async function runBookings() {
@@ -1238,6 +1406,7 @@ export function SeatAssistant({
       })),
     );
 
+    let successfulBookings = 0;
     for (const booking of validatedPlan) {
       setBookingProgress((current) =>
         current.map((item) =>
@@ -1249,6 +1418,7 @@ export function SeatAssistant({
 
       try {
         await bookSeat({ areaId: area.id, booking }, controller.signal);
+        successfulBookings += 1;
         setBookingProgress((current) =>
           current.map((item) =>
             item.booking.id === booking.id
@@ -1279,11 +1449,227 @@ export function SeatAssistant({
     setSelectedCellKeys(new Set());
 
     try {
-      await onAccountRefresh();
+      await refreshAfterMutation();
     } catch {
       setSelectionMessage(
-        "Bookings finished, but the quota could not be refreshed.",
+        successfulBookings > 0
+          ? "Bookings finished, but account and availability could not be refreshed."
+          : "Booking attempts finished, but account data could not be refreshed.",
       );
+    }
+  }
+
+  async function runCancellations() {
+    if (
+      !session ||
+      selectedCancellationBookings.length === 0 ||
+      !cancellationReasonCode ||
+      cancellationRunning
+    ) {
+      return;
+    }
+
+    setCancellationRunning(true);
+    setReviewingCancellation(false);
+    setSelectionMessage("Verifying the selected bookings with NLB…");
+
+    let refreshedBeforeCancellation: Awaited<
+      ReturnType<typeof onAccountRefresh>
+    >;
+    try {
+      refreshedBeforeCancellation = await onAccountRefresh();
+    } catch {
+      setCancellationRunning(false);
+      setSelectionMessage(
+        "The active NLB account could not be verified. Refresh and try again.",
+      );
+      return;
+    }
+
+    if (refreshedBeforeCancellation.session?.userId !== session.userId) {
+      setCancellationRunning(false);
+      setSelectedCancellationKeys(new Set());
+      setSelectionMessage(
+        "The signed-in NLB account changed. Review cancellations under the active account.",
+      );
+      return;
+    }
+
+    const refreshedBookings = new Map(
+      refreshedBeforeCancellation.session.bookings.map((booking) => [
+        existingBookingKey(booking),
+        booking,
+      ]),
+    );
+    const verifiedBookings = [...selectedCancellationKeys]
+      .map((key) => refreshedBookings.get(key))
+      .filter(
+        (booking): booking is ExistingBooking =>
+          Boolean(booking && isBookingCancelable(booking, new Date())),
+      );
+
+    if (verifiedBookings.length === 0) {
+      setCancellationRunning(false);
+      setSelectedCancellationKeys(new Set());
+      setSelectionMessage(
+        "The selected bookings are no longer eligible for cancellation.",
+      );
+      return;
+    }
+
+    if (verifiedBookings.length < selectedCancellationKeys.size) {
+      const verifiedKeys = new Set(
+        verifiedBookings.map(existingBookingKey),
+      );
+      setSelectedCancellationKeys((current) =>
+        new Set([...current].filter((key) => verifiedKeys.has(key))),
+      );
+      setSelectionMessage(
+        "One or more bookings changed and were removed from the cancellation request.",
+      );
+    } else {
+      setSelectionMessage("");
+    }
+
+    const controller = new AbortController();
+    const resolvedKeys = new Set<string>();
+    setCancellationProgress(
+      verifiedBookings.map((booking) => ({
+        booking,
+        status: "pending",
+      })),
+    );
+
+    for (const booking of verifiedBookings) {
+      const key = existingBookingKey(booking);
+      if (!isBookingCancelable(booking, new Date())) {
+        setCancellationProgress((current) =>
+          current.map((item) =>
+            existingBookingKey(item.booking) === key
+              ? {
+                  ...item,
+                  status: "failed",
+                  message: `${booking.seat}: the booking has started and can no longer be cancelled.`,
+                }
+              : item,
+          ),
+        );
+        continue;
+      }
+
+      setCancellationProgress((current) =>
+        current.map((item) =>
+          existingBookingKey(item.booking) === key
+            ? { ...item, status: "cancelling" }
+            : item,
+        ),
+      );
+
+      try {
+        await cancelBooking(
+          { booking, reasonCode: cancellationReasonCode },
+          controller.signal,
+        );
+        setCancellationProgress((current) =>
+          current.map((item) =>
+            existingBookingKey(item.booking) === key
+              ? {
+                  ...item,
+                  status: "cancelled",
+                  message: `${booking.seat}: cancellation accepted by NLB.`,
+                }
+              : item,
+          ),
+        );
+      } catch (error) {
+        setCancellationProgress((current) =>
+          current.map((item) =>
+            existingBookingKey(item.booking) === key
+              ? {
+                  ...item,
+                  status: "failed",
+                  message:
+                    error instanceof Error
+                      ? error.message
+                      : "Cancellation failed.",
+                }
+              : item,
+          ),
+        );
+      }
+    }
+
+    try {
+      const refreshedAfterCancellation = await onAccountRefresh();
+      if (refreshedAfterCancellation.session?.userId !== session.userId) {
+        throw new NlbApiError(
+          "The signed-in NLB account changed before cancellation could be verified.",
+        );
+      }
+
+      const remainingBookings = new Map(
+        refreshedAfterCancellation.session.bookings.map((booking) => [
+          existingBookingKey(booking),
+          booking,
+        ]),
+      );
+      verifiedBookings.forEach((booking) => {
+        const key = existingBookingKey(booking);
+        if (!remainingBookings.get(key)?.active) {
+          resolvedKeys.add(key);
+        }
+      });
+      setCancellationProgress((current) =>
+        current.map((item) => {
+          const key = existingBookingKey(item.booking);
+          const remaining = remainingBookings.get(key);
+          if (!remaining?.active && item.status === "failed") {
+            return {
+              ...item,
+              status: "cancelled",
+              message: `${item.booking.seat}: the refreshed account confirms cancellation.`,
+            };
+          }
+
+          if (item.status === "cancelled" && remaining?.active) {
+            return {
+              ...item,
+              status: "uncertain",
+              message: `${item.booking.seat}: NLB accepted the request, but the booking still appears active. Refresh before trying again.`,
+            };
+          }
+
+          return item;
+        }),
+      );
+
+      await checkAvailability(refreshedAfterCancellation, {
+        preserveCancellationSelection: true,
+      });
+    } catch (error) {
+      setCancellationProgress((current) =>
+        current.map((item) =>
+          item.status === "cancelled"
+            ? {
+                ...item,
+                status: "uncertain",
+                message: `${item.booking.seat}: cancellation was accepted, but the account could not be reconciled. Refresh before trying again.`,
+              }
+            : item,
+        ),
+      );
+      setSelectionMessage(
+        error instanceof Error
+          ? error.message
+          : "Cancellation finished, but account data could not be refreshed.",
+      );
+    } finally {
+      setCancellationRunning(false);
+      setSelectedCancellationKeys((current) => {
+        const next = new Set(current);
+        resolvedKeys.forEach((key) => next.delete(key));
+        return next;
+      });
     }
   }
 
@@ -1294,9 +1680,21 @@ export function SeatAssistant({
 
     const favourite = seatToFavourite(area, seat);
     const identity = favouriteIdentity(favourite);
-    const next = favourites.some(
+    const alreadyFavourite = favourites.some(
       (item) => favouriteIdentity(item) === identity,
-    )
+    );
+    const requiredByActiveBooking = bookingFavouriteState.favourites.some(
+      (item) => favouriteIdentity(item) === identity,
+    );
+
+    if (alreadyFavourite && requiredByActiveBooking) {
+      setAutomaticFavouriteMessage(
+        `${seat.name} is kept in favourites while it has an active booking.`,
+      );
+      return;
+    }
+
+    const next = alreadyFavourite
       ? favourites.filter((item) => favouriteIdentity(item) !== identity)
       : [...favourites, favourite];
 
@@ -1420,6 +1818,20 @@ export function SeatAssistant({
               <strong>Unavailable</strong>
             )}
           </div>
+
+          {automaticFavouriteMessage && (
+            <p className="nlb-seat-helper__notice">
+              {automaticFavouriteMessage}
+            </p>
+          )}
+
+          {bookingFavouriteState.unmatched > 0 && (
+            <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
+              {bookingFavouriteState.unmatched} active booked seat
+              {bookingFavouriteState.unmatched === 1 ? " could" : "s could"}
+              {" "}not be matched to the current NLB catalog.
+            </p>
+          )}
 
           <section className="nlb-seat-helper__map-section">
             <strong>Seat plan</strong>
@@ -1570,16 +1982,31 @@ export function SeatAssistant({
                           selectionKey(seat.id, slot.key),
                         ),
                       ).length;
-                      const bookedForSeat = area
+                      const selectedCancellationForSeat = area
                         ? slots.filter((slot) => {
-                            const booking = findConflictingBooking(
+                            const booking = findBookingForSeatSlot(
                               session?.bookings,
                               slot,
+                              area,
+                              seat,
                             );
-                            return (
+                            return Boolean(
                               booking &&
-                              bookingMatchesSeat(booking, area, seat)
+                                selectedCancellationKeys.has(
+                                  existingBookingKey(booking),
+                                ),
                             );
+                          }).length
+                        : 0;
+                      const bookedForSeat = area
+                        ? slots.filter((slot) => {
+                            const booking = findBookingForSeatSlot(
+                              session?.bookings,
+                              slot,
+                              area,
+                              seat,
+                            );
+                            return Boolean(booking);
                           }).length
                         : 0;
 
@@ -1597,6 +2024,11 @@ export function SeatAssistant({
                                     selectedForSeat *
                                       area.intervalMinutes,
                                   )} selected`
+                                : selectedCancellationForSeat > 0
+                                  ? `${formatQuotaMinutes(
+                                      selectedCancellationForSeat *
+                                        area.intervalMinutes,
+                                    )} selected to cancel`
                                 : bookedForSeat > 0
                                   ? `${formatQuotaMinutes(
                                       bookedForSeat *
@@ -1626,18 +2058,29 @@ export function SeatAssistant({
                           >
                             {slots.map((slot) => {
                               const available = seatAvailability[slot.key];
+                              const bookedBooking = area
+                                ? findBookingForSeatSlot(
+                                    session?.bookings,
+                                    slot,
+                                    area,
+                                    seat,
+                                  )
+                                : undefined;
                               const conflictingBooking =
+                                bookedBooking ??
                                 findConflictingBooking(
                                   session?.bookings,
                                   slot,
                                 );
-                              const bookedByYou = Boolean(
-                                conflictingBooking &&
-                                  area &&
-                                  bookingMatchesSeat(
-                                    conflictingBooking,
-                                    area,
-                                    seat,
+                              const bookedByYou = Boolean(bookedBooking);
+                              const cancellationEligible = Boolean(
+                                bookedBooking &&
+                                  isBookingCancelable(bookedBooking, now),
+                              );
+                              const cancellationSelected = Boolean(
+                                bookedBooking &&
+                                  selectedCancellationKeys.has(
+                                    existingBookingKey(bookedBooking),
                                   ),
                               );
                               const blockedByBooking = Boolean(
@@ -1659,12 +2102,21 @@ export function SeatAssistant({
                                         ? "is-free"
                                         : "is-busy",
                                 selected ? "is-selected" : "",
+                                cancellationSelected
+                                  ? "is-cancel-selected"
+                                  : "",
                               ]
                                 .filter(Boolean)
                                 .join(" ");
                               const title = `${timeLabel(slot.label)}: ${
                                 bookedByYou
-                                  ? "booked by you"
+                                  ? cancellationSelected
+                                    ? "booked by you — selected for cancellation"
+                                    : cancellationEligible && bookedBooking
+                                      ? `booked by you — click to select the complete ${existingBookingPeriod(
+                                          bookedBooking,
+                                        )} booking for cancellation`
+                                      : "booked by you — this booking cannot be cancelled"
                                   : blockedByBooking &&
                                       conflictingBooking
                                     ? `available, but blocked by your ${existingBookingLabel(
@@ -1679,7 +2131,25 @@ export function SeatAssistant({
                                     : "unavailable"
                               }`;
 
-                              return available && !conflictingBooking ? (
+                              return bookedBooking && cancellationEligible ? (
+                                <button
+                                  type="button"
+                                  key={slot.key}
+                                  className={className}
+                                  title={title}
+                                  aria-label={`${seat.name}, ${timeLabel(
+                                    slot.label,
+                                  )}, booked by you, ${
+                                    cancellationSelected
+                                      ? "selected for cancellation"
+                                      : "select complete booking for cancellation"
+                                  }`}
+                                  aria-pressed={cancellationSelected}
+                                  onClick={() =>
+                                    toggleCancellationBooking(bookedBooking)
+                                  }
+                                />
+                              ) : available && !conflictingBooking ? (
                                 <button
                                   type="button"
                                   key={slot.key}
@@ -1729,6 +2199,7 @@ export function SeatAssistant({
                     <div>
                       <span><i className="is-free" />Available</span>
                       <span><i className="is-mine" />Booked by you</span>
+                      <span><i className="is-cancel-selected" />Selected to cancel</span>
                       <span><i className="is-conflict" />Blocked by your booking</span>
                       <span><i className="is-busy" />Unavailable</span>
                     </div>
@@ -1738,27 +2209,51 @@ export function SeatAssistant({
                     <div className="nlb-seat-helper__booking-selection-header">
                       <div>
                         <strong>
-                          {selectedMinutes > 0
+                          {cancellationMode
+                            ? `${selectedCancellationBookings.length} booking${
+                                selectedCancellationBookings.length === 1
+                                  ? ""
+                                  : "s"
+                              } selected`
+                            : selectedMinutes > 0
                             ? `${formatQuotaMinutes(
                                 selectedMinutes,
                               )} selected`
-                            : "Select available hours"}
+                            : "Select available hours or a booking"}
                         </strong>
                         <span>
-                          Click green timeline boxes. Selection cannot exceed
-                          the quota for this date.
+                          {cancellationMode
+                            ? cancellationReasonCode
+                              ? `${formatQuotaMinutes(
+                                  selectedCancellationMinutes,
+                                )} of booked time will be cancelled.`
+                              : "Cancellation reasons are unavailable. Refresh the account before continuing."
+                            : "Click green boxes to book or cancelable purple boxes to cancel."}
                         </span>
                       </div>
                       <button
                         type="button"
-                        disabled={
-                          selectedSeatSlots.length === 0 ||
-                          !selectedDateQuota ||
-                          bookingRunning
+                        className={
+                          cancellationMode ? "is-cancel-action" : ""
                         }
-                        onClick={() => setReviewingBooking(true)}
+                        disabled={
+                          cancellationMode
+                            ? selectedCancellationBookings.length === 0 ||
+                              !cancellationReasonCode ||
+                              cancellationRunning ||
+                              bookingRunning
+                            : selectedSeatSlots.length === 0 ||
+                              !selectedDateQuota ||
+                              bookingRunning ||
+                              cancellationRunning
+                        }
+                        onClick={() =>
+                          cancellationMode
+                            ? setReviewingCancellation(true)
+                            : setReviewingBooking(true)
+                        }
                       >
-                        Book
+                        {cancellationMode ? "Cancel" : "Book"}
                       </button>
                     </div>
 
@@ -1768,7 +2263,7 @@ export function SeatAssistant({
                       </p>
                     )}
 
-                    {selectedSeatSlots.length > 0 && (
+                    {!cancellationMode && selectedSeatSlots.length > 0 && (
                       <>
                         <fieldset className="nlb-seat-helper__booking-mode">
                           <legend>How should adjacent hours be booked?</legend>
@@ -1852,6 +2347,45 @@ export function SeatAssistant({
                       ))}
                     </section>
                   )}
+
+                  {cancellationProgress.length > 0 && (
+                    <section
+                      className="nlb-seat-helper__booking-progress nlb-seat-helper__cancellation-progress"
+                      aria-live="polite"
+                    >
+                      <div className="nlb-seat-helper__booking-progress-header">
+                        <strong>Cancellation status</strong>
+                        {!cancellationRunning && (
+                          <button
+                            type="button"
+                            onClick={() => setCancellationProgress([])}
+                          >
+                            Dismiss
+                          </button>
+                        )}
+                      </div>
+                      {cancellationProgress.map((item) => (
+                        <div
+                          key={existingBookingKey(item.booking)}
+                          className={`nlb-seat-helper__booking-progress-item is-${item.status}`}
+                        >
+                          <span aria-hidden="true">
+                            {item.status === "pending" && "○"}
+                            {item.status === "cancelling" && "…"}
+                            {item.status === "cancelled" && "✓"}
+                            {item.status === "failed" && "!"}
+                            {item.status === "uncertain" && "?"}
+                          </span>
+                          <p>
+                            {item.message ??
+                              `${item.booking.seat}: ${existingBookingPeriod(
+                                item.booking,
+                              )}`}
+                          </p>
+                        </div>
+                      ))}
+                    </section>
+                  )}
                 </>
               )}
             </>
@@ -1904,6 +2438,81 @@ export function SeatAssistant({
                   onClick={() => void runBookings()}
                 >
                   Confirm and book
+                </button>
+              </div>
+            </div>
+          </div>,
+          document.getElementById("nlb-seat-helper-root")!,
+        )}
+
+      {reviewingCancellation &&
+        selectedCancellationBookings.length > 0 &&
+        createPortal(
+          <div
+            className="nlb-seat-helper__booking-review-overlay"
+            onClick={() => setReviewingCancellation(false)}
+          >
+            <div
+              className="nlb-seat-helper__booking-review nlb-seat-helper__cancellation-review"
+              role="alertdialog"
+              aria-modal="true"
+              aria-label="Confirm NLB booking cancellations"
+              onClick={(event) => event.stopPropagation()}
+            >
+              <strong>
+                Cancel {selectedCancellationBookings.length} booking
+                {selectedCancellationBookings.length === 1 ? "" : "s"}?
+              </strong>
+              <p>
+                Each booking below will be cancelled in full. This cannot be
+                undone from the extension.
+              </p>
+              <label className="nlb-seat-helper__cancellation-reason">
+                <span>Reason</span>
+                <select
+                  value={cancellationReasonCode}
+                  onChange={(event) =>
+                    setCancellationReasonCode(event.target.value)
+                  }
+                >
+                  {(session?.cancellationReasons ?? []).map((reason) => (
+                    <option key={reason.code} value={reason.code}>
+                      {reason.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <div className="nlb-seat-helper__booking-review-plan">
+                {selectedCancellationBookings.map((booking) => (
+                  <div key={existingBookingKey(booking)}>
+                    <strong>{booking.seat}</strong>
+                    <span>
+                      <small>
+                        {area?.branchName ?? "Selected library"} ·{
+                          " "
+                        }
+                        {booking.area || area?.name || "Selected area"}
+                      </small>
+                      {existingBookingPeriod(booking)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+              <div className="nlb-seat-helper__booking-review-actions">
+                <button
+                  type="button"
+                  onClick={() => setReviewingCancellation(false)}
+                >
+                  Go back
+                </button>
+                <button
+                  type="button"
+                  className="is-confirm is-cancel-confirm"
+                  disabled={!cancellationReasonCode}
+                  autoFocus
+                  onClick={() => void runCancellations()}
+                >
+                  Confirm cancellation
                 </button>
               </div>
             </div>

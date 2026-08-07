@@ -1,9 +1,27 @@
 import type { ExistingBooking } from "../models/account";
-import type { Area, Seat } from "../models/catalog";
+import type { Area, Catalog, FavouriteSeat, Seat } from "../models/catalog";
 import type { HourSlot } from "./availability";
 
 function normalized(value: string) {
   return value.toLocaleLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+export function existingBookingKey(booking: ExistingBooking) {
+  return booking.bookingId === undefined
+    ? `${booking.branchId}:${booking.area}:${booking.seat}:${booking.startTime}:${booking.endTime}`
+    : String(booking.bookingId);
+}
+
+export function isBookingCancelable(
+  booking: ExistingBooking,
+  now = new Date(),
+) {
+  return (
+    booking.bookingId !== undefined &&
+    booking.lastAction === "Book" &&
+    booking.canCancelStatus &&
+    now.getTime() < new Date(booking.startTime).getTime()
+  );
 }
 
 export function bookingOverlapsSlot(
@@ -64,4 +82,70 @@ export function bookingMatchesSeat(
     floorMatches &&
     (areaNamesMatch || strongLocationMatch)
   );
+}
+
+export function findBookingForSeatSlot(
+  bookings: ExistingBooking[] | undefined,
+  slot: HourSlot,
+  area: Area,
+  seat: Seat,
+) {
+  return bookings?.find(
+    (booking) =>
+      bookingOverlapsSlot(booking, slot) &&
+      bookingMatchesSeat(booking, area, seat),
+  );
+}
+
+export function resolveBookingSeat(
+  catalog: Catalog,
+  booking: ExistingBooking,
+) {
+  const matches = catalog.branches.flatMap((branch) =>
+    branch.areas.flatMap((area) =>
+      area.seats
+        .filter((seat) => bookingMatchesSeat(booking, area, seat))
+        .map((seat) => ({ area, seat })),
+    ),
+  );
+
+  return matches.length === 1 ? matches[0] : undefined;
+}
+
+export function bookingFavouriteCandidates(
+  catalog: Catalog,
+  bookings: ExistingBooking[] | undefined,
+  now = new Date(),
+): { favourites: FavouriteSeat[]; unmatched: number } {
+  const favourites = new Map<string, FavouriteSeat>();
+  let unmatched = 0;
+
+  for (const booking of bookings ?? []) {
+    if (
+      !booking.active ||
+      new Date(booking.endTime).getTime() <= now.getTime()
+    ) {
+      continue;
+    }
+
+    const resolved = resolveBookingSeat(catalog, booking);
+    if (!resolved) {
+      unmatched += 1;
+      continue;
+    }
+
+    const favourite = {
+      branchId: resolved.area.branchId,
+      areaId: resolved.area.id,
+      seatId: resolved.seat.id,
+      seatCode: resolved.seat.code,
+      seatName: resolved.seat.name,
+    };
+    favourites.set(
+      `${favourite.branchId}:${favourite.areaId}:${favourite.seatId}`,
+      favourite,
+    );
+  }
+
+  return { favourites: [...favourites.values()], unmatched };
 }

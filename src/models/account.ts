@@ -10,8 +10,15 @@ export interface AdvancedBookingQuota {
   quotas: BookingQuota[];
 }
 
+export interface CancellationReason {
+  code: string;
+  name: string;
+  description: string;
+  order: number;
+}
+
 export interface ExistingBooking {
-  bookingId: string;
+  bookingId?: string | number;
   branchId: string;
   facilityId?: string;
   floor?: string;
@@ -19,6 +26,8 @@ export interface ExistingBooking {
   area: string;
   startTime: string;
   endTime: string;
+  lastAction: string;
+  canCancelStatus: boolean;
   active: boolean;
 }
 
@@ -27,4 +36,5 @@ export interface AccountSession {
   dailyQuotas: BookingQuota[];
   advancedQuotas: AdvancedBookingQuota[];
   bookings: ExistingBooking[];
+  cancellationReasons: CancellationReason[];
 }

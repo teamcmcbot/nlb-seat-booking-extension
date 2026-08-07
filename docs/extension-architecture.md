@@ -80,10 +80,15 @@ flowchart TD
     Q --> H
     H --> I["Validate selections against quota and bookings"]
     I --> M["Build booking plan"]
+    H --> R["Select complete cancelable bookings by booking ID"]
     M --> N["User reviews and confirms"]
+    R --> S["Choose reason and confirm cancellation"]
     N --> J["Refresh account and preflight selected blocks"]
+    S --> T["Refresh account and revalidate eligibility"]
     J --> O["POST bookings/Book sequentially"]
+    T --> U["PATCH bookings/Cancel sequentially"]
     O --> P["Refresh GetAccountInfo"]
+    U --> P
     P --> E
 ```
 
@@ -94,11 +99,12 @@ flowchart TD
 | `src/api/account.ts` | Fetches account/catalog JSON and classifies HTTP/session errors. |
 | `src/api/availability.ts` | Builds one availability query, applies a six-second timeout, and returns unknown JSON for defensive parsing. |
 | `src/api/booking.ts` | Sends one booking request and interprets the minimal success/error contract. |
+| `src/api/cancellation.ts` | Cancels one complete booking without automatic retry. |
 | `src/services/catalog.ts` | Extracts, merges, filters, and sorts branches, areas, seats, maps, and booking rules. |
 | `src/services/accountSession.ts` | Normalizes user ID, quota, advanced quota, and existing bookings. |
 | `src/services/availability.ts` | Generates intervals and recursively extracts available seat identities and map URLs. |
 | `src/services/bookingRules.ts` | Calculates selectable dates and removes elapsed same-day intervals. |
-| `src/services/bookingConflicts.ts` | Detects time overlap and identifies a signed-in user's seat booking. |
+| `src/services/bookingConflicts.ts` | Detects overlap, resolves bookings to catalog seats, and evaluates cancellation eligibility. |
 | `src/services/bookingPlanner.ts` | Produces separate requests or merges adjacent intervals for the same seat. |
 | `src/services/favourites.ts` | Persists favourite seat identities in Chrome local storage. |
 | `src/services/preferences.ts` | Persists the last selected branch and area. |
@@ -210,6 +216,14 @@ interface FavouriteSeat {
 Only matching favourites appear for the selected area. Search prevents a
 large area from rendering hundreds of seats simultaneously.
 
+Active bookings whose end time is still in the future are resolved against
+the catalog using branch, area, facility, floor, and seat metadata. A unique
+match is added to that account's persisted favourites when missing. This
+allows purple booked seats to appear even when the user did not favourite them
+manually. Ambiguous or unmatched bookings are reported and are never attached
+to a guessed seat. An automatically added seat remains a normal favourite
+after cancellation.
+
 The seat-range hint is calculated from the current area:
 
 - same-prefix numeric names: `S35 to S59`;
@@ -275,6 +289,11 @@ The UI distinguishes:
   overlapping booking; and
 - an ordinarily unavailable seat.
 
+Purple is a booking overlay with higher display priority than the underlying
+availability result. It is therefore applied identically over today's account
+matrix and a future date's exact interval results, and can appear before a
+future availability scan finishes.
+
 Location matching uses branch ID, seat name, facility, floor, and a normalized
 area-name comparison. Facility/floor provide a strong fallback when NLB uses
 slightly different area labels between catalog and booking records.
@@ -290,6 +309,17 @@ A green cell is selectable only when:
   Study Area quota.
 
 Selected cells are stored as `{seatId}|{slotStart}` keys.
+
+Cancellation uses a separate set of stable booking-ID keys. Green booking
+selections and purple cancellation selections cannot be mixed. Clicking a
+cancelable purple cell selects its complete booking, so every visible interval
+covered by the same booking ID receives the selected state. A 13:00–15:00
+booking covers the 13:00 and 14:00 interval cells and produces one
+cancellation request.
+
+A purple booking is interactive only when it has an ID, `lastAction` is
+exactly `Book`, `canCancelStatus` is true, and the current time is before its
+start. Started and checked-in bookings remain purple but noninteractive.
 
 ## Booking plan
 
@@ -331,7 +361,8 @@ After explicit confirmation, the extension:
 4. obtains the booking-ready seat code from the successful preflight;
 5. submits requests sequentially;
 6. displays booking/booked/failed state for each request; and
-7. fetches `GetAccountInfo` again after the run.
+7. fetches `GetAccountInfo` again after the run; and
+8. refreshes today's matrix or reruns the future-date interval scan.
 
 Preflight is asymmetric: it can remove a selected interval that NLB no longer
 returns, but it cannot turn a reference-matrix false value into an available
@@ -339,6 +370,32 @@ cell. The final `Book` response remains authoritative.
 
 The refresh updates quota and booking conflicts in memory. It does not persist
 account data to Chrome storage.
+
+## Cancellation execution and refresh
+
+The cancellation review lists each selected booking once, even when it spans
+multiple timeline cells. Reasons come from
+`settings.menus.cancelReasons`; `ChangeOfPlan` is selected by default when it
+exists, and one reason applies to the run.
+
+After explicit confirmation, the extension:
+
+1. refreshes `GetAccountInfo` and verifies the signed-in account;
+2. resolves every selected booking again by ID;
+3. rechecks action, server cancelability, and future start time;
+4. sends one `PATCH bookings/Cancel` request per complete booking,
+   sequentially and without automatic retry;
+5. refreshes `GetAccountInfo` again to reconcile accepted, failed, and
+   uncertain results; and
+6. refreshes today's matrix or reruns the future-date interval scan.
+
+Before each request, the start-time rule is checked again in case a booking
+begins during a multi-request run. A `2xx` response is provisional until the
+refreshed account shows the booking missing or inactive. Partial failures stay
+visible and failed or uncertain bookings remain selected for review. Only
+bookings confirmed missing or inactive are cleared from the cancellation
+selection. A completely successful result can clear automatically after
+twelve seconds.
 
 ## State and persistence
 
@@ -357,7 +414,9 @@ Kept only in memory:
 - discovered booking seat codes;
 - map URLs;
 - selected cells; and
-- booking progress.
+- selected cancellation booking IDs;
+- booking progress; and
+- cancellation progress and the selected reason.
 
 Reloading the NLB tab discards the in-memory state and fetches fresh account
 data.
@@ -381,8 +440,12 @@ The extension favors safe false negatives over unsafe false positives:
 - failed availability intervals cannot be selected;
 - missing seat codes prevent submission unless preflight supplies one;
 - stale non-canceled bookings continue to block overlaps;
+- malformed, changed, started, or server-disabled bookings cannot be
+  cancelled;
+- cancellation requests are never retried automatically;
 - quota limits are enforced client-side and still validated by NLB; and
-- the final booking endpoint remains authoritative.
+- NLB's refreshed account, booking, and cancellation responses remain
+  authoritative.
 
 Client-side checks improve UX but are not security or concurrency guarantees.
 Seat availability and quota can change between scan and booking.
@@ -391,9 +454,10 @@ Seat availability and quota can change between scan and booking.
 
 - No confirmed date-specific holiday/early-closure calculation.
 - No authoritative raw availability-response fixture in the repository.
-- No complete booking-response schema.
+- No complete booking- or cancellation-response schema.
 - `lastAction` cancellation detection is string-based.
-- Check-in, cancellation, and extension buttons are not implemented.
+- Check-in, ending an active session early, and booking extension are not
+  implemented.
 - The extension cannot correct a delayed or stale NLB booking lifecycle state.
 - Unpacked distribution requires Chrome Developer mode.
 

@@ -755,6 +755,25 @@
   text-align: center;
 }
 
+.nlb-seat-helper__timeline button.is-cancel-selected {
+  z-index: 1;
+  border-color: #4f267d;
+  background: #694096;
+  box-shadow: 0 0 0 2px rgb(105 64 150 / 30%);
+  transform: translateY(-1px);
+}
+
+.nlb-seat-helper__timeline button.is-cancel-selected::after {
+  position: absolute;
+  inset: 0;
+  color: white;
+  content: "✓";
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 14px;
+  text-align: center;
+}
+
 .nlb-seat-helper__timeline-labels {
   margin-top: 3px;
 }
@@ -805,6 +824,12 @@
 
 .nlb-seat-helper__timeline-legend .is-mine {
   background: #8b68b8;
+}
+
+.nlb-seat-helper__timeline-legend .is-cancel-selected {
+  border: 1px solid #4f267d;
+  background: #694096;
+  box-shadow: 0 0 0 1px rgb(105 64 150 / 22%);
 }
 
 .nlb-seat-helper__timeline-legend .is-conflict {
@@ -875,6 +900,14 @@
 .nlb-seat-helper__booking-selection-header > button:disabled {
   background: #c8d3cd;
   cursor: default;
+}
+
+.nlb-seat-helper__booking-selection-header > button.is-cancel-action {
+  background: #a33d35;
+}
+
+.nlb-seat-helper__booking-selection-header > button.is-cancel-action:disabled {
+  background: #d6c5c2;
 }
 
 .nlb-seat-helper__selection-warning {
@@ -1007,6 +1040,13 @@
   font-size: 9px;
 }
 
+.nlb-seat-helper__booking-review-plan small {
+  display: block;
+  margin-bottom: 1px;
+  color: #89766e;
+  font-size: 8px;
+}
+
 .nlb-seat-helper__booking-review-actions {
   display: flex;
   justify-content: flex-end;
@@ -1029,6 +1069,53 @@
   border-color: #176c48;
   background: #176c48;
   color: white;
+}
+
+.nlb-seat-helper__cancellation-review {
+  border-color: #e4aca6;
+  background: #fff4f2;
+}
+
+.nlb-seat-helper__cancellation-review > strong {
+  color: #8b332c;
+}
+
+.nlb-seat-helper__cancellation-review > p {
+  color: #875b56;
+}
+
+.nlb-seat-helper__cancellation-reason {
+  display: block;
+  margin-bottom: 10px;
+}
+
+.nlb-seat-helper__cancellation-reason > span {
+  display: block;
+  margin-bottom: 4px;
+  color: #704c48;
+  font-size: 9px;
+  font-weight: 700;
+}
+
+.nlb-seat-helper__cancellation-reason > select {
+  width: 100%;
+  padding: 7px 8px;
+  border: 1px solid #d9bbb7;
+  border-radius: 7px;
+  background: white;
+  color: #503c39;
+  font: inherit;
+  font-size: 10px;
+}
+
+.nlb-seat-helper__booking-review button.is-cancel-confirm {
+  border-color: #9e3e36;
+  background: #9e3e36;
+}
+
+.nlb-seat-helper__booking-review button:disabled {
+  cursor: default;
+  opacity: 0.55;
 }
 
 .nlb-seat-helper__booking-progress {
@@ -1095,13 +1182,35 @@
   background: #eef4fb;
 }
 
+.nlb-seat-helper__booking-progress .is-cancelling {
+  background: #f6effb;
+}
+
 .nlb-seat-helper__booking-progress .is-booked {
+  background: #edf8f1;
+}
+
+.nlb-seat-helper__booking-progress .is-cancelled {
   background: #edf8f1;
 }
 
 .nlb-seat-helper__booking-progress .is-booked > span,
 .nlb-seat-helper__booking-progress .is-booked p {
   color: #176c48;
+}
+
+.nlb-seat-helper__booking-progress .is-cancelled > span,
+.nlb-seat-helper__booking-progress .is-cancelled p {
+  color: #176c48;
+}
+
+.nlb-seat-helper__booking-progress .is-uncertain {
+  background: #fff7e8;
+}
+
+.nlb-seat-helper__booking-progress .is-uncertain > span,
+.nlb-seat-helper__booking-progress .is-uncertain p {
+  color: #94651b;
 }
 
 .nlb-seat-helper__booking-progress .is-failed {

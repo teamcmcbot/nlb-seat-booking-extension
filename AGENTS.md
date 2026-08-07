@@ -54,6 +54,13 @@ NLB's APIs are unofficial and reverse-engineered. Preserve these safety rules:
   Preflight may reject a current-day selection but must never upgrade a false
   current-day matrix value.
 - Treat `bookings/Book` as the final booking authority.
+- Enable cancellation only for a booking with an ID, exact `lastAction:
+  "Book"`, `canCancelStatus: true`, and a start time later than the current
+  time.
+- Cancel complete bookings by booking ID. Never imply that one timeline cell
+  can be removed from a multi-hour booking.
+- Do not automatically retry cancellation requests. Reconcile uncertain
+  results through a fresh `GetAccountInfo` response.
 - Fail closed: malformed, timed-out, failed, or ambiguous availability must
   not become selectable.
 - Keep NLB requests sequential where documented to reduce service load and
