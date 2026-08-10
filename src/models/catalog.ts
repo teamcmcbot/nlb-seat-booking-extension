@@ -14,6 +14,7 @@ export interface SeatAvailabilitySlot {
 export interface Area {
   id: string;
   branchId: string;
+  branchCode?: string;
   branchName: string;
   facilityId?: string;
   facilityCode?: string;
@@ -30,6 +31,7 @@ export interface Area {
 
 export interface Branch {
   id: string;
+  code?: string;
   name: string;
   areas: Area[];
 }
@@ -37,6 +39,14 @@ export interface Branch {
 export interface Catalog {
   branches: Branch[];
   bookingRules: BookingRules;
+  holidays: HolidayClosure[];
+}
+
+export interface HolidayClosure {
+  name: string;
+  startDate: string;
+  endDate: string;
+  excludedBranches: string[];
 }
 
 export interface BookingRules {

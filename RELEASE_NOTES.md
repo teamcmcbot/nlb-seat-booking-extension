@@ -1,28 +1,24 @@
-# NLB Seat Helper v1.1.0
+# NLB Seat Helper v1.1.1
 
-This release adds safe, account-aware cancellation for upcoming NLB seat
-bookings.
+This patch release prevents NLB's incorrect current-day availability matrix
+from making seats appear bookable while a library is closed for a configured
+holiday.
 
 ## Highlights
 
-- Makes eligible purple bookings selectable for cancellation while preserving
-  non-cancelable, started, and checked-in bookings as read-only purple cells.
-- Selects and cancels multi-hour bookings atomically by booking ID, regardless
-  of how many timeline cells they cover.
-- Prevents green booking selections and purple cancellation selections from
-  being mixed.
-- Loads NLB's seat cancellation reasons and defaults to **Decided not to visit
-  this library**, while allowing another reason to be selected.
-- Revalidates the signed-in account and every selected booking immediately
-  before cancellation.
-- Sends cancellation requests sequentially without automatic retries and
-  reconciles uncertain responses against fresh account data.
-- Automatically adds uniquely matched active booked seats to the correct
-  account's favourites, including seats not previously selected manually.
-- Refreshes account and seat availability after both booking and cancellation;
-  future dates rerun their exact interval searches.
-- Documents the cancellation endpoint, eligibility rules, response
-  reconciliation, multi-hour behavior, and automatic-favourite matching.
+- Treats validated `settings.holidays` start/end values as inclusive full
+  local calendar dates.
+- Respects branch exemptions listed by branch ID or code in
+  `excludedBranches`.
+- Keeps a released holiday date selectable for inspection without exposing the
+  next unreleased calendar day.
+- Renders favourite-seat holiday intervals as grey, non-interactive closed
+  cells while skipping availability scans and map discovery.
+- Rechecks holiday settings after the booking-time account refresh.
+- Adds regression coverage for National Day, booking release time, calendar
+  boundaries, branch exclusions, and malformed holiday ranges.
+- Leaves partial-day holiday-eve hours and extended-hours-area exceptions
+  pending further live API evidence.
 
 ## Installation
 

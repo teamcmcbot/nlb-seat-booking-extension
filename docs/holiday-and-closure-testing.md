@@ -1,10 +1,11 @@
 # Holiday and Early-Closure Testing
 
-Status: investigation and live testing still required.
+Status: full-day closure handling implemented; partial-day and exception live
+testing still required.
 
 This document records the extension's current behavior, holiday-related fields
-observed in NLB's current web client, and the tests required before explicit
-holiday support is implemented.
+observed in NLB's current web client, and the tests still required for
+partial-day closures and area-specific exceptions.
 
 ## Why this needs live testing
 
@@ -36,9 +37,36 @@ The current NLB web client references the following data:
 NLB labels an `ignoreHolidays` area as an extended-hours zone that may remain
 available on public holidays.
 
-These fields have been observed in the web client but have not yet been
-captured and compared across a real holiday, holiday eve, ordinary weekday,
-and extended-hours area.
+The `settings.holidays` shape has now been captured on 8 and 9 August 2026 for
+National Day. The live 9 August response incorrectly marked 17,688 of 21,065
+current-day seat/time entries available while libraries were closed. This
+confirms that an applicable holiday must override `hasAvailableSlots`.
+
+The specific full-day example is:
+
+```json
+"holidays": [
+  {
+    "name": "NationalDay2026",
+    "startTime": "2026-08-09T00:00:00",
+    "endTime": "2026-08-09T00:00:00",
+    "excludedBranches": []
+  }
+]
+```
+
+The empty `excludedBranches` array is interpreted as no branch exemptions, so
+the holiday applies to every normalized branch in the catalog. We have not yet
+captured a non-empty array, so its item shape is not confirmed to be branch
+IDs. The current parser accepts primitive numbers or strings and compares them
+case-insensitively to both the branch ID and branch code. This supports a
+numeric-ID list and a code list provisionally; it is not evidence that NLB
+accepts both forms. Object entries are currently ignored by normalization,
+which intentionally leaves the closure applied rather than risking an
+unverified branch exemption.
+
+Non-empty branch exclusions, a holiday eve, and an extended-hours area have
+not yet been captured and compared.
 
 ## Current extension behavior
 
@@ -60,11 +88,16 @@ The extension currently:
    may reject a selection but cannot turn a current-day false matrix value
    into true.
 8. Relies on `bookings/Book` as the final server-side validation.
+9. Normalizes validated holiday start/end calendar dates as an inclusive
+   full-day range and exempts a branch whose ID or code is listed in
+   `excludedBranches`.
+10. Keeps closed dates in the released date range for inspection, renders
+    their normal intervals as grey non-interactive cells, skips map discovery
+    and availability scans, and rechecks the holiday after the booking-time
+    account refresh.
 
 It does **not** currently:
 
-- exclude a date because it appears in `settings.holidays`;
-- apply branch holiday exclusions;
 - apply `holidayMaxDwellMinutes`;
 - change opening or closing time for a holiday eve;
 - treat `ignoreHolidays` areas differently; or
@@ -72,19 +105,31 @@ It does **not** currently:
 
 ### Consequences on special dates
 
-On a full holiday, the date may remain selectable if it is inside the normal
-advance-booking window. For today, the extension renders NLB's current-day
-`hasAvailableSlots` matrix. For a future holiday, it generates the area's
-normal intervals and asks `SearchAvailableAreas` about each one.
+On a full holiday, an ordinary branch remains selectable if the date is inside
+the released advance-booking window, but every normal interval is rendered as
+a grey closed cell. Favourite seats remain visible, while the cells cannot be
+selected or booked. Holiday handling does not extend the range to the next
+open but unreleased calendar day.
 
-Expected safe outcomes are:
+The captured account payload did not contain `ignoreHolidays`. The extension
+therefore closes those areas as well rather than letting uncertain
+availability override a confirmed branch closure. A verified exception model
+is still needed before an extended-hours area can remain available.
 
-- NLB returns no available seats, so the cells appear red;
-- NLB omits the closed area; or
-- NLB rejects the request and the scan is marked incomplete.
+### Revisit trigger for half-days
 
-An extended-hours area may still return availability. This must be verified
-against `ignoreHolidays`.
+This full-day rule must be revisited when a future holiday-eve or half-day
+capture provides all of the following:
+
+- the same branch and area captured before and after the special date;
+- a holiday record whose clock values differ from midnight, or a separate
+  date-specific opening-hours field;
+- matching `SearchAvailableAreas` responses before, at, and after the alleged
+  closing time; and
+- confirmation that `bookings/Book` accepts only the verified operating window.
+
+Until that evidence exists, changing the clock interpretation would risk
+turning an uncertain closure into selectable green cells.
 
 On a future early-closure day, the extension may make unnecessary calls for
 intervals after the special closing time. Those cells should not become green
@@ -117,7 +162,7 @@ Capture results for the same library and area where possible.
 | --- | --- | --- |
 | Ordinary weekday | Normal metadata, today's matrix, and future interval responses | Existing timeline behavior |
 | Holiday eve with early closure | Area hours, today's matrix, dwell limits, and future responses before/after closure | No selectable green cells after actual closure |
-| Full holiday, ordinary area | Holiday record, branch exclusion, today's matrix, and future interval responses | Date disabled or every interval explicitly closed/unavailable |
+| Full holiday, ordinary area | Holiday record, branch exclusion, today's matrix, and future interval responses | Date remains inspectable and every interval is explicitly closed/unavailable |
 | Full holiday, `ignoreHolidays` area | Area flag, today's matrix, and future interval responses | Only genuinely operating intervals selectable |
 | Holiday excluded for one branch | `excludedBranches` and two branch responses | Excluded branch follows normal behavior if NLB intends that exception |
 | Holiday followed by an open day | Date range before and after release time | Follows confirmed `advanceBookingDays` semantics |
@@ -164,16 +209,13 @@ before storing fixtures in the repository.
 
 ## Proposed implementation after verification
 
-Once the authoritative fields are confirmed:
+Remaining implementation after the other fields are confirmed:
 
-1. Normalize holiday ranges, excluded branches, dwell limits, and
-   `ignoreHolidays`.
-2. Compute date availability for the selected branch and area.
-3. Disable fully closed dates when NLB provides enough information to do so.
-4. Generate only the intervals inside date-specific operating hours.
-5. Label special closures separately from ordinary seat unavailability.
-6. Keep `SearchAvailableAreas` and `bookings/Book` as server-side safeguards.
-7. Fail closed whenever holiday metadata and availability responses conflict.
+1. Normalize verified dwell limits and `ignoreHolidays`.
+2. Generate only the intervals inside verified date-specific operating hours.
+3. Preserve confirmed extended-hours-area access on full holidays.
+4. Keep `SearchAvailableAreas` and `bookings/Book` as server-side safeguards.
+5. Fail closed whenever holiday metadata and availability responses conflict.
 
 ## Acceptance criteria
 

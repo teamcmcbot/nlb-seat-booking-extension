@@ -73,7 +73,8 @@ flowchart TD
     B --> C["Normalize account session"]
     B --> D["Normalize catalog and booking rules"]
     C --> E["Render user, quotas, and existing bookings"]
-    D --> F["Render library, area, date, and seat controls"]
+    D --> V["Apply holiday and branch-exclusion rules"]
+    V --> F["Render library, area, date, and seat controls"]
     F --> G["Today: read hasAvailableSlots matrix"]
     F --> Q["Future date: search each exact interval"]
     G --> H["Render availability timeline"]
@@ -143,7 +144,8 @@ The date selector uses:
 - `advanceBookingDays`;
 - the applicable booking release time;
 - the area's normal closing time; and
-- the area's minimum booking duration.
+- the area's minimum booking duration; and
+- validated inclusive `settings.holidays` date ranges and branch exclusions.
 
 For today, the extension calculates the last possible booking start as:
 
@@ -178,8 +180,21 @@ hardcoded UI timer: the component keeps its current time state updated and
 recalculates the date range from the latest NLB configuration. A privileged
 account can use `privilegeUserBookingReleaseTime` instead.
 
-Dates are calendar dates. The current implementation does not yet adjust the
-range for holidays.
+Dates are calendar dates. A holiday `startTime` and `endTime` are normalized
+to their local `YYYY-MM-DD` portions and treated as an inclusive range of full
+closed days. A branch remains open only when its ID or code appears in that
+holiday's `excludedBranches` list.
+
+Closed dates remain selectable within the already released calendar-day range;
+they do not extend `advanceBookingDays`. Before noon on a closed day, for
+example, today remains selectable for inspection while tomorrow remains
+unreleased. Holiday intervals render as grey, non-interactive cells rather
+than green availability, including when the current-day matrix incorrectly
+reports seats as available.
+
+The holiday timestamps are not interpreted as special-day operating hours.
+Early closures remain dependent on date-specific NLB availability until a
+separate time-specific contract is observed and verified.
 
 ## Interval generation
 
@@ -240,6 +255,14 @@ For today, availability initializes immediately from each catalog seat's
 fetches `GetAccountInfo` once and replaces the current-day matrix. An
 `availableSeats` result from `SearchAvailableAreas` never upgrades a false
 matrix value to true.
+
+Before the matrix is rendered, a matching holiday closes the selected branch
+for the entire date. Normal timeline intervals are retained for display, but
+the extension creates an all-false closed matrix, skips map discovery and
+availability scans, and renders non-interactive grey cells. An incorrect
+all-available matrix therefore cannot override the closure. The account
+refresh immediately before booking checks the holiday again and aborts before
+preflight if the closure is still present.
 
 The matrix has time labels but no booking date. For a future date, the
 extension therefore retains the date-specific flow:

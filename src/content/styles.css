@@ -693,6 +693,10 @@
   color: #168a51;
 }
 
+.nlb-seat-helper__seat-title span.is-closed {
+  color: #68756e;
+}
+
 .nlb-seat-helper__timeline,
 .nlb-seat-helper__timeline-labels {
   display: grid;
@@ -724,6 +728,12 @@
 
 .nlb-seat-helper__timeline .is-busy {
   background: #e7aaa1;
+}
+
+.nlb-seat-helper__timeline .is-closed {
+  border-color: #b7c1bb;
+  background: #cbd2ce;
+  cursor: not-allowed;
 }
 
 .nlb-seat-helper__timeline .is-mine {
@@ -838,6 +848,11 @@
 
 .nlb-seat-helper__timeline-legend .is-busy {
   background: #e7aaa1;
+}
+
+.nlb-seat-helper__timeline-legend .is-closed {
+  border: 1px solid #b7c1bb;
+  background: #cbd2ce;
 }
 
 .nlb-seat-helper__booking-selection {

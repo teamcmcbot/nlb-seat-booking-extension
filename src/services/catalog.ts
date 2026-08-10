@@ -3,6 +3,7 @@ import type {
   BookingRules,
   Branch,
   Catalog,
+  HolidayClosure,
   Seat,
   SeatAvailabilitySlot,
 } from "../models/catalog";
@@ -133,6 +134,7 @@ function extractSeats(area: JsonRecord): Seat[] {
 
 interface ParentBranch {
   id?: string;
+  code?: string;
   name?: string;
 }
 
@@ -178,6 +180,7 @@ function mergeAreas(existing: Area | undefined, candidate: Area): Area {
 function parentBranchFor(record: JsonRecord): ParentBranch {
   return {
     id: stringField(record, ["branchId", "id"]),
+    code: stringField(record, ["branchCode", "code"]),
     name: stringField(record, ["branchName", "name"]),
   };
 }
@@ -202,6 +205,8 @@ function areaFromRecord(
     id,
     name,
     branchId,
+    branchCode:
+      stringField(area, ["branchCode"]) ?? parentBranch.code,
     branchName: branchName ?? `Library ${branchId}`,
     facilityId,
     facilityCode: stringField(area, ["facilityCode"]),
@@ -289,6 +294,61 @@ function extractBookingRules(payload: unknown): BookingRules {
     ]),
     allowAdvanceBooking: booleanField(account, ["allowAdvanceBooking"]),
   };
+}
+
+function calendarDate(value: unknown) {
+  // Observed holiday timestamps are date wrappers, not operating-hour
+  // boundaries. Keep only the local calendar date until a half-day contract
+  // is captured and reviewed.
+  if (typeof value !== "string") {
+    return undefined;
+  }
+
+  const date = value.match(/^(\d{4}-\d{2}-\d{2})(?:T|$)/)?.[1];
+  if (!date) {
+    return undefined;
+  }
+
+  const [year, month, day] = date.split("-").map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+    ? date
+    : undefined;
+}
+
+function extractHolidays(payload: unknown): HolidayClosure[] {
+  const settings = findRecordWithField(payload, "holidays") ?? {};
+
+  return arrayField(settings, ["holidays"])
+    .filter(isRecord)
+    .map((holiday): HolidayClosure | undefined => {
+      const startDate = calendarDate(field(holiday, ["startTime"]));
+      const endDate = calendarDate(field(holiday, ["endTime"]));
+
+      if (!startDate || !endDate || endDate < startDate) {
+        return undefined;
+      }
+
+      // No non-empty excludedBranches example has been observed. Consume
+      // primitive IDs/codes provisionally; unsupported objects cannot grant
+      // an exemption and therefore leave the closure applied.
+      const excludedBranches = arrayField(holiday, ["excludedBranches"])
+        .filter(
+          (value): value is string | number =>
+            typeof value === "string" || typeof value === "number",
+        )
+        .map(String);
+
+      return {
+        name: stringField(holiday, ["name"]) ?? "Library holiday",
+        startDate,
+        endDate,
+        excludedBranches,
+      };
+    })
+    .filter((holiday): holiday is HolidayClosure => Boolean(holiday));
 }
 
 function attachAreaMapMetadata(
@@ -388,9 +448,11 @@ export function extractCatalog(payload: unknown): Catalog {
   for (const area of areasByIdentity.values()) {
     const branch = branchesById.get(area.branchId) ?? {
       id: area.branchId,
+      code: area.branchCode,
       name: area.branchName,
       areas: [],
     };
+    branch.code ??= area.branchCode;
     branch.areas.push(area);
     branchesById.set(area.branchId, branch);
   }
@@ -410,5 +472,6 @@ export function extractCatalog(payload: unknown): Catalog {
   return {
     branches,
     bookingRules: extractBookingRules(payload),
+    holidays: extractHolidays(payload),
   };
 }

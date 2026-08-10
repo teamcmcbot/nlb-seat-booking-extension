@@ -11,6 +11,7 @@ without cloning the repository or running npm.
    - `public/manifest.json`
 3. Make sure the two versions are identical.
 4. Install the locked dependencies with `npm ci`.
+5. Run the regression suite with `npm test`.
 
 ## Build the release asset
 
@@ -45,14 +46,14 @@ content.css
 
 ## Publish
 
-For version `1.1.0`:
+For version `1.1.1`:
 
 ```bash
-git tag v1.1.0
-git push origin v1.1.0
-gh release create v1.1.0 nlb-seat-helper.zip \
+git tag v1.1.1
+git push origin v1.1.1
+gh release create v1.1.1 nlb-seat-helper.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "NLB Seat Helper v1.1.0" \
+  --title "NLB Seat Helper v1.1.1" \
   --notes-file RELEASE_NOTES.md
 ```
 

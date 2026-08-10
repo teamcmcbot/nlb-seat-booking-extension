@@ -14,12 +14,7 @@ import type {
   PlannedBooking,
   SelectedSeatSlot,
 } from "../models/booking";
-import type {
-  Area,
-  Catalog,
-  FavouriteSeat,
-  Seat,
-} from "../models/catalog";
+import type { Area, Catalog, FavouriteSeat, Seat } from "../models/catalog";
 import {
   extractAreaMapUrls,
   extractAvailableSeatIdentities,
@@ -29,17 +24,15 @@ import {
 } from "../services/availability";
 import {
   getBookableDateRange,
-  getBookableSlots,
+  getTimelineSlots,
+  holidayClosureForDate,
 } from "../services/bookingRules";
 import {
   favouriteIdentity,
   loadFavouriteSeats,
   saveFavouriteSeats,
 } from "../services/favourites";
-import {
-  formatQuotaMinutes,
-  quotaForDate,
-} from "../services/accountSession";
+import { formatQuotaMinutes, quotaForDate } from "../services/accountSession";
 import {
   bookingFavouriteCandidates,
   existingBookingKey,
@@ -92,9 +85,7 @@ function isToday(date: string, now: Date) {
 }
 
 function referenceTime(value: string) {
-  return (
-    value.match(/(?:T|\s)?(\d{1,2}:\d{2})/)?.[1] ?? value.slice(0, 5)
-  );
+  return value.match(/(?:T|\s)?(\d{1,2}:\d{2})/)?.[1] ?? value.slice(0, 5);
 }
 
 function referenceAvailability(
@@ -131,6 +122,15 @@ function referenceAvailability(
   }
 
   return knownSlots > 0 ? availability : undefined;
+}
+
+function closedAvailability(seats: Seat[], slots: HourSlot[]) {
+  return Object.fromEntries(
+    seats.map((seat) => [
+      seat.id,
+      Object.fromEntries(slots.map((slot) => [slot.key, false])),
+    ]),
+  ) as SeatAvailability;
 }
 
 function catalogArea(
@@ -241,8 +241,7 @@ function sequenceHint(
     stem === undefined ||
     parsed.some((item) => item.stem !== stem) ||
     parsed.some(
-      (item, index) =>
-        index > 0 && item.value <= parsed[index - 1].value,
+      (item, index) => index > 0 && item.value <= parsed[index - 1].value,
     )
   ) {
     return undefined;
@@ -288,9 +287,7 @@ function seatSearchHint(seats: Seat[]) {
 
   const numeric = names.map((name) => {
     const match = name.match(/^(.*?)(\d+)$/);
-    return match
-      ? { stem: match[1], value: Number(match[2]) }
-      : undefined;
+    return match ? { stem: match[1], value: Number(match[2]) } : undefined;
   });
 
   if (numeric.every((item) => item !== undefined)) {
@@ -348,9 +345,7 @@ function selectedDateLabel(date: string, now: Date) {
 
 function bookingPeriod(booking: PlannedBooking) {
   const start = new Date(booking.startTime);
-  const end = new Date(
-    start.getTime() + booking.durationMinutes * 60_000,
-  );
+  const end = new Date(start.getTime() + booking.durationMinutes * 60_000);
   const date = `${String(start.getDate()).padStart(2, "0")}/${String(
     start.getMonth() + 1,
   ).padStart(2, "0")}`;
@@ -376,9 +371,7 @@ function existingBookingLabel(
       ).padStart(2, "0")}`,
     );
 
-  return `${booking.seat || "an existing seat"} ${label(start)}–${label(
-    end,
-  )}`;
+  return `${booking.seat || "an existing seat"} ${label(start)}–${label(end)}`;
 }
 
 function existingBookingPeriod(booking: ExistingBooking) {
@@ -445,9 +438,7 @@ export function SeatAssistant({
   const [cancellationReasonCode, setCancellationReasonCode] = useState("");
   const [bookingRunning, setBookingRunning] = useState(false);
   const [cancellationRunning, setCancellationRunning] = useState(false);
-  const [bookingProgress, setBookingProgress] = useState<
-    BookingProgress[]
-  >([]);
+  const [bookingProgress, setBookingProgress] = useState<BookingProgress[]>([]);
   const [cancellationProgress, setCancellationProgress] = useState<
     CancellationProgress[]
   >([]);
@@ -516,10 +507,7 @@ export function SeatAssistant({
     () => branch?.areas.find((item) => item.id === areaId),
     [areaId, branch],
   );
-  const seatHint = useMemo(
-    () => seatSearchHint(area?.seats ?? []),
-    [area],
-  );
+  const seatHint = useMemo(() => seatSearchHint(area?.seats ?? []), [area]);
   const areaFavourites = useMemo(
     () =>
       favourites.filter(
@@ -532,8 +520,7 @@ export function SeatAssistant({
     [areaFavourites],
   );
   const favouriteSeats = useMemo(
-    () =>
-      area?.seats.filter((seat) => favouriteIds.has(seat.id)) ?? [],
+    () => area?.seats.filter((seat) => favouriteIds.has(seat.id)) ?? [],
     [area, favouriteIds],
   );
   const bookingFavouriteState = useMemo(
@@ -543,17 +530,33 @@ export function SeatAssistant({
   const dateRange = useMemo(
     () =>
       area
-        ? getBookableDateRange(area, catalog.bookingRules, now)
+        ? getBookableDateRange(
+            area,
+            catalog.bookingRules,
+            now,
+            catalog.holidays,
+          )
         : undefined,
-    [area, catalog.bookingRules, now],
+    [area, catalog.bookingRules, catalog.holidays, now],
   );
   const slots = useMemo(
-    () => (area && date ? getBookableSlots(area, date, now) : []),
+    () =>
+      area && date ? getTimelineSlots(area, date, now) : [],
     [area, date, now],
   );
+  const selectedHoliday =
+    area && date
+      ? holidayClosureForDate(area, date, catalog.holidays)
+      : undefined;
+  const hasSelectedDate = Boolean(
+    date && dateRange?.selectableDates.includes(date),
+  );
   const referenceMatrix = useMemo(
-    () => referenceAvailability(area, favouriteSeats, slots, date, now),
-    [area, date, favouriteSeats, slots],
+    () =>
+      selectedHoliday
+        ? closedAvailability(favouriteSeats, slots)
+        : referenceAvailability(area, favouriteSeats, slots, date, now),
+    [area, date, favouriteSeats, now, selectedHoliday, slots],
   );
   const referenceMatrixKey = JSON.stringify(referenceMatrix ?? null);
   const areaMapPaths = area
@@ -575,7 +578,7 @@ export function SeatAssistant({
     area?.facilityCode ?? "StudyArea",
   );
   const areaSeatCodes = area
-    ? discoveredSeatCodes[`${area.branchId}:${area.id}`] ?? {}
+    ? (discoveredSeatCodes[`${area.branchId}:${area.id}`] ?? {})
     : {};
   const bookingCodeForSeat = (seat: Seat) =>
     seat.code ||
@@ -622,20 +625,18 @@ export function SeatAssistant({
         bookSeparately,
         area?.maxBookingMinutes ?? 240,
       ),
-    [
-      area?.maxBookingMinutes,
-      bookSeparately,
-      selectedSeatSlots,
-    ],
+    [area?.maxBookingMinutes, bookSeparately, selectedSeatSlots],
   );
-  const selectedQuotaTone = !selectedDateQuota
-    ? "unknown"
-    : selectedDateQuota.remainingQuotaInMinutes === 0
-      ? "empty"
-      : selectedDateQuota.remainingQuotaInMinutes <=
-          selectedDateQuota.quotaInMinutes / 2
-        ? "low"
-        : "available";
+  const selectedQuotaTone = selectedHoliday
+    ? "empty"
+    : !selectedDateQuota
+      ? "unknown"
+      : selectedDateQuota.remainingQuotaInMinutes === 0
+        ? "empty"
+        : selectedDateQuota.remainingQuotaInMinutes <=
+            selectedDateQuota.quotaInMinutes / 2
+          ? "low"
+          : "available";
   const orderedFavouriteSeats = useMemo(() => {
     const useAvailabilityPriority =
       scan.status === "complete" || scan.status === "error";
@@ -645,15 +646,15 @@ export function SeatAssistant({
         const seatAvailability = scan.availability[seat.id] ?? {};
         const booked = Boolean(
           area &&
-            slots.some((slot) => {
-              const booking = findBookingForSeatSlot(
-                session?.bookings,
-                slot,
-                area,
-                seat,
-              );
-              return Boolean(booking);
-            }),
+          slots.some((slot) => {
+            const booking = findBookingForSeatSlot(
+              session?.bookings,
+              slot,
+              area,
+              seat,
+            );
+            return Boolean(booking);
+          }),
         );
         const available =
           useAvailabilityPriority &&
@@ -786,14 +787,20 @@ export function SeatAssistant({
       return;
     }
 
-    if (!date || date < dateRange.min || date > dateRange.max) {
+    if (!dateRange.selectableDates.includes(date)) {
       setDate(dateRange.min);
     }
   }, [date, dateRange]);
 
   useEffect(() => {
     const probeSlot = slots[0];
-    if (!area || !storageReady || areaMapImage || !probeSlot) {
+    if (
+      !area ||
+      !storageReady ||
+      areaMapImage ||
+      selectedHoliday ||
+      !probeSlot
+    ) {
       return undefined;
     }
 
@@ -843,6 +850,7 @@ export function SeatAssistant({
     area?.branchId,
     area?.id,
     areaMapImage,
+    selectedHoliday,
     slots[0]?.startTime,
     slots[0]?.minutes,
     storageReady,
@@ -881,6 +889,19 @@ export function SeatAssistant({
       return;
     }
 
+    if (selectedHoliday) {
+      scanController.current?.abort();
+      setSelectedCellKeys(new Set());
+      setScan({
+        status: "complete",
+        availability: closedAvailability(favouriteSeats, slots),
+      });
+      setSelectionMessage(
+        `${selectedHoliday.name}: this library is closed on the selected date.`,
+      );
+      return;
+    }
+
     if (isToday(date, now)) {
       scanController.current?.abort();
       const controller = new AbortController();
@@ -908,13 +929,22 @@ export function SeatAssistant({
             refreshedArea?.seats.find((candidate) => candidate.id === seat.id),
           )
           .filter((seat): seat is Seat => Boolean(seat));
-        const refreshedMatrix = referenceAvailability(
-          refreshedArea,
-          refreshedFavouriteSeats,
-          slots,
-          date,
-          now,
-        );
+        const refreshedHoliday = refreshedArea
+          ? holidayClosureForDate(
+              refreshedArea,
+              date,
+              refreshed.catalog?.holidays ?? [],
+            )
+          : undefined;
+        const refreshedMatrix = refreshedHoliday
+          ? closedAvailability(refreshedFavouriteSeats, slots)
+          : referenceAvailability(
+              refreshedArea,
+              refreshedFavouriteSeats,
+              slots,
+              date,
+              now,
+            );
 
         if (!refreshedMatrix) {
           throw new NlbApiError(
@@ -922,12 +952,10 @@ export function SeatAssistant({
           );
         }
 
-        const unavailableSelections = selectedSeatSlots.filter(
-          (selected) => {
-            const seatAvailability = refreshedMatrix[selected.seatId];
-            return !seatAvailability?.[selected.startTime];
-          },
-        );
+        const unavailableSelections = selectedSeatSlots.filter((selected) => {
+          const seatAvailability = refreshedMatrix[selected.seatId];
+          return !seatAvailability?.[selected.startTime];
+        });
 
         if (unavailableSelections.length > 0) {
           const unavailableKeys = new Set(
@@ -937,9 +965,7 @@ export function SeatAssistant({
           );
           setSelectedCellKeys(
             (current) =>
-              new Set(
-                [...current].filter((key) => !unavailableKeys.has(key)),
-              ),
+              new Set([...current].filter((key) => !unavailableKeys.has(key))),
           );
           setSelectionMessage(
             "One or more selected hours are no longer available and were removed.",
@@ -997,19 +1023,14 @@ export function SeatAssistant({
         startTime: slot.startTime,
         durationMinutes: slot.minutes,
       };
-      const payload = await searchWithTransientRetry(
-        query,
-        controller.signal,
-      );
+      const payload = await searchWithTransientRetry(query, controller.signal);
 
       const maps = extractAreaMapUrls(payload, selectedArea.id);
       if (maps.length > 0) {
         const mapKey = `${selectedArea.branchId}:${selectedArea.id}`;
         setDiscoveredMaps((current) => ({
           ...current,
-          [mapKey]: [
-            ...new Set([...(current[mapKey] ?? []), ...maps]),
-          ],
+          [mapKey]: [...new Set([...(current[mapKey] ?? []), ...maps])],
         }));
       }
 
@@ -1021,12 +1042,10 @@ export function SeatAssistant({
 
           for (const availableSeat of availableSeats) {
             if (availableSeat.id) {
-              codes[seatIdentityKey(availableSeat.id)] =
-                availableSeat.code;
+              codes[seatIdentityKey(availableSeat.id)] = availableSeat.code;
             }
             if (availableSeat.name) {
-              codes[seatIdentityKey(availableSeat.name)] =
-                availableSeat.code;
+              codes[seatIdentityKey(availableSeat.name)] = availableSeat.code;
             }
           }
 
@@ -1100,9 +1119,7 @@ export function SeatAssistant({
               status: "error",
               availability: current.availability,
               message: `${failed} of ${scanSlots.length} time slots could not be checked${
-                firstError instanceof Error
-                  ? `: ${firstError.message}`
-                  : "."
+                firstError instanceof Error ? `: ${firstError.message}` : "."
               }`,
             }
           : {
@@ -1134,10 +1151,7 @@ export function SeatAssistant({
       return;
     }
 
-    const conflictingBooking = findConflictingBooking(
-      session?.bookings,
-      slot,
-    );
+    const conflictingBooking = findConflictingBooking(session?.bookings, slot);
     if (conflictingBooking) {
       setSelectionMessage(
         `This time is blocked by your ${existingBookingLabel(
@@ -1151,8 +1165,7 @@ export function SeatAssistant({
     const slotEnd = slotStart + slot.minutes * 60_000;
     const overlappingSelection = selectedSeatSlots.find((selected) => {
       const selectedStartTime = new Date(selected.startTime).getTime();
-      const selectedEnd =
-        selectedStartTime + selected.durationMinutes * 60_000;
+      const selectedEnd = selectedStartTime + selected.durationMinutes * 60_000;
       return selectedStartTime < slotEnd && selectedEnd > slotStart;
     });
     if (overlappingSelection) {
@@ -1251,18 +1264,16 @@ export function SeatAssistant({
   }
 
   async function runBookings() {
-    if (
-      !area ||
-      !session ||
-      bookingPlan.length === 0 ||
-      bookingRunning
-    ) {
+    if (!area || !session || bookingPlan.length === 0 || bookingRunning) {
       return;
     }
 
-    let refreshedCatalog: Catalog | undefined;
+    let refreshedCatalog: Catalog;
     try {
       const refreshed = await onAccountRefresh();
+      if (!refreshed.catalog) {
+        throw new Error("NLB did not return refreshed library settings.");
+      }
       if (refreshed.session?.userId !== session.userId) {
         setReviewingBooking(false);
         setSelectionMessage(
@@ -1275,6 +1286,19 @@ export function SeatAssistant({
       setReviewingBooking(false);
       setSelectionMessage(
         "The active NLB account could not be verified. Refresh the account and try again.",
+      );
+      return;
+    }
+
+    const refreshedHoliday = holidayClosureForDate(
+      area,
+      date,
+      refreshedCatalog.holidays,
+    );
+    if (refreshedHoliday) {
+      setReviewingBooking(false);
+      setSelectionMessage(
+        `${refreshedHoliday.name}: This library is closed on the selected date.`,
       );
       return;
     }
@@ -1308,8 +1332,7 @@ export function SeatAssistant({
 
       const unavailableBooking = bookingPlan.find((booking) => {
         const bookingStart = new Date(booking.startTime).getTime();
-        const bookingEnd =
-          bookingStart + booking.durationMinutes * 60_000;
+        const bookingEnd = bookingStart + booking.durationMinutes * 60_000;
         return slots.some((slot) => {
           const slotStart = new Date(slot.startTime).getTime();
           return (
@@ -1352,17 +1375,14 @@ export function SeatAssistant({
           const mapKey = `${area.branchId}:${area.id}`;
           setDiscoveredMaps((current) => ({
             ...current,
-            [mapKey]: [
-              ...new Set([...(current[mapKey] ?? []), ...maps]),
-            ],
+            [mapKey]: [...new Set([...(current[mapKey] ?? []), ...maps])],
           }));
         }
 
         const availableSeat = extractAvailableSeatIdentities(payload).find(
           (candidate) =>
             candidate.id === booking.seatId ||
-            candidate.name?.toLowerCase() ===
-              booking.seatName.toLowerCase() ||
+            candidate.name?.toLowerCase() === booking.seatName.toLowerCase() ||
             (booking.seatCode && candidate.code === booking.seatCode),
         );
 
@@ -1503,9 +1523,8 @@ export function SeatAssistant({
     );
     const verifiedBookings = [...selectedCancellationKeys]
       .map((key) => refreshedBookings.get(key))
-      .filter(
-        (booking): booking is ExistingBooking =>
-          Boolean(booking && isBookingCancelable(booking, new Date())),
+      .filter((booking): booking is ExistingBooking =>
+        Boolean(booking && isBookingCancelable(booking, new Date())),
       );
 
     if (verifiedBookings.length === 0) {
@@ -1518,11 +1537,10 @@ export function SeatAssistant({
     }
 
     if (verifiedBookings.length < selectedCancellationKeys.size) {
-      const verifiedKeys = new Set(
-        verifiedBookings.map(existingBookingKey),
-      );
-      setSelectedCancellationKeys((current) =>
-        new Set([...current].filter((key) => verifiedKeys.has(key))),
+      const verifiedKeys = new Set(verifiedBookings.map(existingBookingKey));
+      setSelectedCancellationKeys(
+        (current) =>
+          new Set([...current].filter((key) => verifiedKeys.has(key))),
       );
       setSelectionMessage(
         "One or more bookings changed and were removed from the cancellation request.",
@@ -1780,9 +1798,14 @@ export function SeatAssistant({
             type="date"
             min={dateRange?.min}
             max={dateRange?.max}
-            value={date}
+            value={hasSelectedDate ? date : ""}
             disabled={!dateRange?.hasDates}
-            onChange={(event) => setDate(event.target.value)}
+            onChange={(event) => {
+              const nextDate = event.target.value;
+              if (dateRange?.selectableDates.includes(nextDate)) {
+                setDate(nextDate);
+              }
+            }}
           />
         </label>
       </div>
@@ -1795,29 +1818,31 @@ export function SeatAssistant({
 
       {area && (
         <>
-          <div
-            className={`nlb-seat-helper__date-quota is-${selectedQuotaTone}`}
-          >
-            <span>
-              {selectedDateLabel(date, now)} · {formatSelectedDate(date)}
-            </span>
-            {selectedDateQuota ? (
-              <strong>
-                {formatQuotaMinutes(
-                  selectedDateQuota.remainingQuotaInMinutes,
-                )}{" "}
-                remaining
-                <small>
-                  {" "}
-                  of {formatQuotaMinutes(
-                    selectedDateQuota.quotaInMinutes,
-                  )}
-                </small>
-              </strong>
-            ) : (
-              <strong>Unavailable</strong>
-            )}
-          </div>
+          {hasSelectedDate ? (
+            <div
+              className={`nlb-seat-helper__date-quota is-${selectedQuotaTone}`}
+            >
+              <span>
+                {selectedDateLabel(date, now)} · {formatSelectedDate(date)}
+              </span>
+              {selectedHoliday ? (
+                <strong>Closed</strong>
+              ) : selectedDateQuota ? (
+                <strong>
+                  {formatQuotaMinutes(
+                    selectedDateQuota.remainingQuotaInMinutes,
+                  )}{" "}
+                  remaining
+                  <small>
+                    {" "}
+                    of {formatQuotaMinutes(selectedDateQuota.quotaInMinutes)}
+                  </small>
+                </strong>
+              ) : (
+                <strong>Unavailable</strong>
+              )}
+            </div>
+          ) : null}
 
           {automaticFavouriteMessage && (
             <p className="nlb-seat-helper__notice">
@@ -1828,8 +1853,8 @@ export function SeatAssistant({
           {bookingFavouriteState.unmatched > 0 && (
             <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
               {bookingFavouriteState.unmatched} active booked seat
-              {bookingFavouriteState.unmatched === 1 ? " could" : "s could"}
-              {" "}not be matched to the current NLB catalog.
+              {bookingFavouriteState.unmatched === 1 ? " could" : "s could"} not
+              be matched to the current NLB catalog.
             </p>
           )}
 
@@ -1860,9 +1885,18 @@ export function SeatAssistant({
           </section>
 
           {dateRange && !dateRange.hasDates && (
-            <p className="nlb-seat-helper__notice">
-              No booking dates are currently open. The next date will appear
-              after NLB’s booking release time.
+            <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
+              {dateRange.closedDates.length > 0
+                ? `${dateRange.closedDates[0].holiday.name}: This library is closed on ${formatSelectedDate(dateRange.closedDates[0].date)}. No booking dates are currently open.`
+                : "No booking dates are currently open. The next date will appear after NLB’s booking release time."}
+            </p>
+          )}
+
+          {selectedHoliday && (
+            <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
+              {selectedHoliday.name}: This library is closed on{" "}
+              {formatSelectedDate(date)}. Seat times are shown as closed and
+              cannot be booked.
             </p>
           )}
 
@@ -1870,9 +1904,11 @@ export function SeatAssistant({
             <div>
               <strong>
                 Favourite seats{" "}
-                <span className="nlb-seat-helper__section-date">
-                  ({formatSelectedDate(date)})
-                </span>
+                {hasSelectedDate && (
+                  <span className="nlb-seat-helper__section-date">
+                    ({formatSelectedDate(date)})
+                  </span>
+                )}
               </strong>
               <span>
                 {areaFavourites.length} of {area.seats.length} selected
@@ -1892,7 +1928,9 @@ export function SeatAssistant({
                   className="nlb-seat-helper__refresh"
                   onClick={() => void checkAvailability()}
                   disabled={
-                    scan.status === "scanning" || slots.length === 0
+                    selectedHoliday !== undefined ||
+                    scan.status === "scanning" ||
+                    slots.length === 0
                   }
                 >
                   {scan.status === "scanning"
@@ -1949,7 +1987,9 @@ export function SeatAssistant({
             <>
               {slots.length === 0 ? (
                 <p className="nlb-seat-helper__notice">
-                  Opening hours were not available for this area.
+                  {dateRange?.closedDates.length
+                    ? "Seat availability is not shown while this library is closed."
+                    : "Opening hours were not available for this area."}
                 </p>
               ) : (
                 <>
@@ -1969,8 +2009,7 @@ export function SeatAssistant({
                   )}
                   <div className="nlb-seat-helper__favourite-list">
                     {orderedFavouriteSeats.map((seat) => {
-                      const seatAvailability =
-                        scan.availability[seat.id] ?? {};
+                      const seatAvailability = scan.availability[seat.id] ?? {};
                       const knownSlots = slots.filter(
                         (slot) => seatAvailability[slot.key] !== undefined,
                       );
@@ -1978,9 +2017,7 @@ export function SeatAssistant({
                         (slot) => seatAvailability[slot.key],
                       ).length;
                       const selectedForSeat = slots.filter((slot) =>
-                        selectedCellKeys.has(
-                          selectionKey(seat.id, slot.key),
-                        ),
+                        selectedCellKeys.has(selectionKey(seat.id, slot.key)),
                       ).length;
                       const selectedCancellationForSeat = area
                         ? slots.filter((slot) => {
@@ -1992,9 +2029,9 @@ export function SeatAssistant({
                             );
                             return Boolean(
                               booking &&
-                                selectedCancellationKeys.has(
-                                  existingBookingKey(booking),
-                                ),
+                              selectedCancellationKeys.has(
+                                existingBookingKey(booking),
+                              ),
                             );
                           }).length
                         : 0;
@@ -2019,35 +2056,35 @@ export function SeatAssistant({
                                 availableForSeat > 0 ? "is-available" : ""
                               }
                             >
-                              {selectedForSeat > 0
+                              {selectedHoliday
+                                ? "Closed"
+                                : selectedForSeat > 0
                                 ? `${formatQuotaMinutes(
-                                    selectedForSeat *
-                                      area.intervalMinutes,
+                                    selectedForSeat * area.intervalMinutes,
                                   )} selected`
                                 : selectedCancellationForSeat > 0
                                   ? `${formatQuotaMinutes(
                                       selectedCancellationForSeat *
                                         area.intervalMinutes,
                                     )} selected to cancel`
-                                : bookedForSeat > 0
-                                  ? `${formatQuotaMinutes(
-                                      bookedForSeat *
-                                        area.intervalMinutes,
-                                    )} booked by you`
-                                : scan.status === "idle"
-                                ? "Not checked"
-                                : scan.status === "scanning" &&
-                                    knownSlots.length < slots.length
-                                  ? "Checking…"
-                                  : scan.status === "error" &&
-                                      knownSlots.length < slots.length
-                                    ? "Incomplete"
-                                    : availableForSeat > 0
-                                      ? `${formatQuotaMinutes(
-                                          availableForSeat *
-                                            area.intervalMinutes,
-                                        )} available`
-                                      : "Unavailable"}
+                                  : bookedForSeat > 0
+                                    ? `${formatQuotaMinutes(
+                                        bookedForSeat * area.intervalMinutes,
+                                      )} booked by you`
+                                    : scan.status === "idle"
+                                      ? "Not checked"
+                                      : scan.status === "scanning" &&
+                                          knownSlots.length < slots.length
+                                        ? "Checking…"
+                                        : scan.status === "error" &&
+                                            knownSlots.length < slots.length
+                                          ? "Incomplete"
+                                          : availableForSeat > 0
+                                            ? `${formatQuotaMinutes(
+                                                availableForSeat *
+                                                  area.intervalMinutes,
+                                              )} available`
+                                            : "Unavailable"}
                             </span>
                           </div>
                           <div
@@ -2068,39 +2105,36 @@ export function SeatAssistant({
                                 : undefined;
                               const conflictingBooking =
                                 bookedBooking ??
-                                findConflictingBooking(
-                                  session?.bookings,
-                                  slot,
-                                );
+                                findConflictingBooking(session?.bookings, slot);
                               const bookedByYou = Boolean(bookedBooking);
                               const cancellationEligible = Boolean(
                                 bookedBooking &&
-                                  isBookingCancelable(bookedBooking, now),
+                                isBookingCancelable(bookedBooking, now),
                               );
                               const cancellationSelected = Boolean(
                                 bookedBooking &&
-                                  selectedCancellationKeys.has(
-                                    existingBookingKey(bookedBooking),
-                                  ),
+                                selectedCancellationKeys.has(
+                                  existingBookingKey(bookedBooking),
+                                ),
                               );
                               const blockedByBooking = Boolean(
-                                available &&
-                                  conflictingBooking &&
-                                  !bookedByYou,
+                                available && conflictingBooking && !bookedByYou,
                               );
                               const selected = selectedCellKeys.has(
                                 selectionKey(seat.id, slot.key),
                               );
                               const className = [
-                                bookedByYou
-                                  ? "is-mine"
-                                  : blockedByBooking
-                                    ? "is-conflict"
-                                    : available === undefined
-                                      ? "is-pending"
-                                      : available
-                                        ? "is-free"
-                                        : "is-busy",
+                                selectedHoliday
+                                  ? "is-closed"
+                                  : bookedByYou
+                                    ? "is-mine"
+                                    : blockedByBooking
+                                      ? "is-conflict"
+                                      : available === undefined
+                                        ? "is-pending"
+                                        : available
+                                          ? "is-free"
+                                          : "is-busy",
                                 selected ? "is-selected" : "",
                                 cancellationSelected
                                   ? "is-cancel-selected"
@@ -2109,7 +2143,9 @@ export function SeatAssistant({
                                 .filter(Boolean)
                                 .join(" ");
                               const title = `${timeLabel(slot.label)}: ${
-                                bookedByYou
+                                selectedHoliday
+                                  ? `${selectedHoliday.name} — closed; booking unavailable`
+                                  : bookedByYou
                                   ? cancellationSelected
                                     ? "booked by you — selected for cancellation"
                                     : cancellationEligible && bookedBooking
@@ -2117,21 +2153,26 @@ export function SeatAssistant({
                                           bookedBooking,
                                         )} booking for cancellation`
                                       : "booked by you — this booking cannot be cancelled"
-                                  : blockedByBooking &&
-                                      conflictingBooking
+                                  : blockedByBooking && conflictingBooking
                                     ? `available, but blocked by your ${existingBookingLabel(
                                         conflictingBooking,
                                       )} booking`
-                                : available === undefined
-                                  ? "checking"
-                                  : available
-                                    ? selected
-                                      ? "selected"
-                                      : "available — click to select"
-                                    : "unavailable"
+                                    : available === undefined
+                                      ? "checking"
+                                      : available
+                                        ? selected
+                                          ? "selected"
+                                          : "available — click to select"
+                                        : "unavailable"
                               }`;
 
-                              return bookedBooking && cancellationEligible ? (
+                              return selectedHoliday ? (
+                                <span
+                                  key={slot.key}
+                                  className={className}
+                                  title={title}
+                                />
+                              ) : bookedBooking && cancellationEligible ? (
                                 <button
                                   type="button"
                                   key={slot.key}
@@ -2159,9 +2200,7 @@ export function SeatAssistant({
                                     slot.label,
                                   )}, ${selected ? "selected" : "available"}`}
                                   aria-pressed={selected}
-                                  onClick={() =>
-                                    toggleSelectedSlot(seat, slot)
-                                  }
+                                  onClick={() => toggleSelectedSlot(seat, slot)}
                                 />
                               ) : (
                                 <span
@@ -2197,11 +2236,30 @@ export function SeatAssistant({
                   >
                     <summary>Colors</summary>
                     <div>
-                      <span><i className="is-free" />Available</span>
-                      <span><i className="is-mine" />Booked by you</span>
-                      <span><i className="is-cancel-selected" />Selected to cancel</span>
-                      <span><i className="is-conflict" />Blocked by your booking</span>
-                      <span><i className="is-busy" />Unavailable</span>
+                      <span>
+                        <i className="is-free" />
+                        Available
+                      </span>
+                      <span>
+                        <i className="is-mine" />
+                        Booked by you
+                      </span>
+                      <span>
+                        <i className="is-cancel-selected" />
+                        Selected to cancel
+                      </span>
+                      <span>
+                        <i className="is-conflict" />
+                        Blocked by your booking
+                      </span>
+                      <span>
+                        <i className="is-busy" />
+                        Unavailable
+                      </span>
+                      <span>
+                        <i className="is-closed" />
+                        Library closed
+                      </span>
                     </div>
                   </details>
 
@@ -2216,10 +2274,10 @@ export function SeatAssistant({
                                   : "s"
                               } selected`
                             : selectedMinutes > 0
-                            ? `${formatQuotaMinutes(
-                                selectedMinutes,
-                              )} selected`
-                            : "Select available hours or a booking"}
+                              ? `${formatQuotaMinutes(
+                                  selectedMinutes,
+                                )} selected`
+                              : "Select available hours or a booking"}
                         </strong>
                         <span>
                           {cancellationMode
@@ -2233,9 +2291,7 @@ export function SeatAssistant({
                       </div>
                       <button
                         type="button"
-                        className={
-                          cancellationMode ? "is-cancel-action" : ""
-                        }
+                        className={cancellationMode ? "is-cancel-action" : ""}
                         disabled={
                           cancellationMode
                             ? selectedCancellationBookings.length === 0 ||
@@ -2303,7 +2359,6 @@ export function SeatAssistant({
                         </div>
                       </>
                     )}
-
                   </section>
 
                   {bookingProgress.length > 0 && (
@@ -2488,9 +2543,7 @@ export function SeatAssistant({
                     <strong>{booking.seat}</strong>
                     <span>
                       <small>
-                        {area?.branchName ?? "Selected library"} ·{
-                          " "
-                        }
+                        {area?.branchName ?? "Selected library"} ·{" "}
                         {booking.area || area?.name || "Selected area"}
                       </small>
                       {existingBookingPeriod(booking)}
