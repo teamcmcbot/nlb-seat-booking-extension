@@ -70,6 +70,11 @@ installation and preserves the extension's existing Chrome storage.
 - Remembers the last selected library and area separately for each NLB
   account in Chrome storage.
 - Respects NLB's configured advance-booking days and release time.
+- Treats each validated `settings.holidays` range as inclusive full local
+  calendar days, except for branches listed in `excludedBranches`.
+- Keeps a released holiday date selectable for inspection, renders its
+  favourite-seat timeline as grey closed cells, and never lets the current-day
+  seat matrix override the closure.
 - Uses each area's opening time, closing time, booking interval, and minimum
   and maximum booking durations.
 - Removes elapsed same-day slots. For example, at 12pm only slots beginning
@@ -95,6 +100,10 @@ installation and preserves the extension's existing Chrome storage.
 
 - Shows today's favourite-seat availability immediately from the
   `hasAvailableSlots` matrix returned by `GetAccountInfo`.
+- Overrides every current-day matrix value to closed when the selected branch
+  is covered by `settings.holidays`.
+- Shows closed holiday intervals as non-interactive grey cells for both today
+  and future dates; they cannot be selected or booked.
 - Refreshes today's complete matrix with one account request instead of one
   request per hour.
 - Retains exact interval checks for future dates, whose date-specific
@@ -199,6 +208,7 @@ Available scripts:
 
 ```bash
 npm run typecheck  # TypeScript validation
+npm test           # Run focused service regression tests
 npm run build      # Typecheck and create a production build
 npm run dev        # Rebuild dist/ whenever source files change
 npm run package    # Build and create nlb-seat-helper.zip
@@ -269,8 +279,9 @@ the current NLB Seat Booking website. NLB can change those endpoints or
 response formats, so the extension may require updates when the website
 changes.
 
-Holiday closures, holiday-eve operating hours, branch exclusions, and
-extended-hours areas still require live API verification. See
+Full-day holiday closures are enforced from validated account settings.
+Holiday-eve operating hours, non-empty branch exclusions, and extended-hours
+areas still require additional live API verification. See
 [Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md) for
 the current behavior, known gaps, test matrix, and proposed acceptance
 criteria.

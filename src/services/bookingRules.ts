@@ -1,4 +1,8 @@
-import type { Area, BookingRules } from "../models/catalog";
+import type {
+  Area,
+  BookingRules,
+  HolidayClosure,
+} from "../models/catalog";
 import {
   buildHourSlots,
   type HourSlot,
@@ -37,12 +41,44 @@ export interface BookableDateRange {
   min: string;
   max: string;
   hasDates: boolean;
+  selectableDates: string[];
+  closedDates: Array<{
+    date: string;
+    holiday: HolidayClosure;
+  }>;
+}
+
+function normalizedBranchIdentity(value: string) {
+  return value.trim().toLowerCase();
+}
+
+export function holidayClosureForDate(
+  area: Pick<Area, "branchId" | "branchCode">,
+  date: string,
+  holidays: HolidayClosure[],
+) {
+  const branchIdentities = new Set(
+    [area.branchId, area.branchCode]
+      .filter((value): value is string => Boolean(value))
+      .map(normalizedBranchIdentity),
+  );
+
+  return holidays.find((holiday) => {
+    if (date < holiday.startDate || date > holiday.endDate) {
+      return false;
+    }
+
+    return !holiday.excludedBranches.some((branch) =>
+      branchIdentities.has(normalizedBranchIdentity(branch)),
+    );
+  });
 }
 
 export function getBookableDateRange(
   area: Area,
   rules: BookingRules,
   now: Date,
+  holidays: HolidayClosure[] = [],
 ): BookableDateRange {
   const today = localDateValue(now);
   const closing = timeMinutes(area.closingTime);
@@ -64,17 +100,34 @@ export function getBookableDateRange(
         )
       : 0;
 
-  const min = localDateValue(addDays(now, minimumOffset));
-  const max = localDateValue(addDays(now, maximumOffset));
+  const rangeMin = localDateValue(addDays(now, minimumOffset));
+  const rangeMax = localDateValue(addDays(now, maximumOffset));
+  const selectableDates: string[] = [];
+  const closedDates: BookableDateRange["closedDates"] = [];
+
+  for (let offset = minimumOffset; offset <= maximumOffset; offset += 1) {
+    const candidate = localDateValue(addDays(now, offset));
+    const holiday = holidayClosureForDate(area, candidate, holidays);
+
+    selectableDates.push(candidate);
+    if (holiday) {
+      closedDates.push({ date: candidate, holiday });
+    }
+  }
+
+  const min = selectableDates[0] ?? rangeMin;
+  const max = selectableDates.at(-1) ?? rangeMax;
 
   return {
     min,
     max,
-    hasDates: min <= max && max >= today,
+    hasDates: selectableDates.length > 0 && min <= max && max >= today,
+    selectableDates,
+    closedDates,
   };
 }
 
-export function getBookableSlots(
+export function getTimelineSlots(
   area: Area,
   date: string,
   now: Date,

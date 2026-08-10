@@ -258,11 +258,18 @@ cannot be selected for this pre-start cancellation flow.
 ```ts
 interface Settings {
   system: SystemSettings;
-  holidays?: unknown[];
+  holidays?: Holiday[];
   menus: {
     branchMenus: Branch[];
     cancelReasons?: CancellationReason[];
   };
+}
+
+interface Holiday {
+  name: string;
+  startTime: string;
+  endTime: string;
+  excludedBranches: unknown[];
 }
 
 interface CancellationReason {
@@ -325,6 +332,47 @@ interface Seat {
 | `advanceBookingDays` | `1` | Calculates the furthest selectable calendar date. |
 | `bookingReleaseTime` | no restriction when absent | Determines when the normal advanced date becomes available. |
 | `privilegeUserBookingReleaseTime` | normal release time | Used when `allowAdvanceBooking` is true. |
+
+### Holiday closures
+
+Two point-in-time `GetAccountInfo` captures around National Day 2026 returned:
+
+```json
+{
+  "name": "NationalDay2026",
+  "startTime": "2026-08-09T00:00:00",
+  "endTime": "2026-08-09T00:00:00",
+  "excludedBranches": []
+}
+```
+
+On 9 August, the current-day seat matrix incorrectly marked 17,688 of 21,065
+entries available even though libraries were closed. This establishes that
+`hasAvailableSlots` cannot override an applicable holiday record.
+
+The extension validates each timestamp's calendar-date portion and treats the
+start and end dates as an inclusive range of full local closed days. Equal
+midnight values represent one whole day, not a zero-length closure. A branch
+is exempt when its normalized ID or code appears in `excludedBranches`.
+Malformed or reversed holiday records are not normalized.
+
+This is a date-closure contract only. The timestamps are not used to infer an
+early closing time; no live holiday-eve response has yet established that
+meaning.
+
+The only observed `excludedBranches` value is the empty array in the example
+above. The extension interprets that as no exemptions, applying the closure to
+all branches. No non-empty example has established whether NLB sends branch
+IDs, branch codes, or objects. The current parser provisionally consumes
+primitive number/string values and matches them against both normalized branch
+IDs and branch codes. Unsupported object entries are ignored and do not create
+an exemption; this is a fail-closed compatibility behavior that must be
+revisited when a branch-specific closure is captured.
+
+When a half-day example is captured, revisit this normalization before adding
+time-specific behavior. Compare the same branch and area immediately before,
+at, and after the suspected closing time, and retain `SearchAvailableAreas`
+and `bookings/Book` as the authorities for the actual operating window.
 
 ### Observed next-day release behavior
 
@@ -789,8 +837,10 @@ solely to obtain an error fixture.
 
 ## Known unknowns
 
-- Holiday and holiday-eve authority: account metadata versus availability
-  response versus final booking validation.
+- Holiday-eve and other partial-day opening-hour authority.
+- The observed identifier shape inside a non-empty `excludedBranches` array.
+- Whether an extended-hours area supplies `ignoreHolidays` consistently in
+  account or availability responses.
 - Exact raw availability response schema across every branch/facility type.
 - Complete successful and failed booking and cancellation response schemas.
 - Automatic cancellation scheduling and reconciliation behavior.

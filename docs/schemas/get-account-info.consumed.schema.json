@@ -56,6 +56,32 @@
       },
       "additionalProperties": true
     },
+    "holiday": {
+      "type": "object",
+      "required": [
+        "name",
+        "startTime",
+        "endTime",
+        "excludedBranches"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "excludedBranches": {
+          "description": "Observed as an empty array for NationalDay2026; the non-empty item shape is not yet confirmed.",
+          "type": "array",
+          "items": {}
+        }
+      },
+      "additionalProperties": true
+    },
     "advancedQuota": {
       "type": "object",
       "required": [
@@ -407,7 +433,10 @@
           "$ref": "#/$defs/system"
         },
         "holidays": {
-          "type": "array"
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/holiday"
+          }
         },
         "menus": {
           "type": "object",
