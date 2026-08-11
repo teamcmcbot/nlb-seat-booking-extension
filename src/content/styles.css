@@ -508,6 +508,7 @@
 
 .nlb-seat-helper__interactive-map {
   flex: 1 1 auto;
+  overflow: visible;
 }
 
 .nlb-seat-helper__seat-hotspot {

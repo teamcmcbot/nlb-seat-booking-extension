@@ -100,9 +100,13 @@ export function ClickableSeatPlan({
               const action = favourite ? "Remove" : "Add";
               const toggle = () => void onToggleFavourite(seat);
               const starFontSize = Math.max(
-                10,
-                Math.min(bounds.width, bounds.height) * 0.62,
+                8,
+                Math.min(bounds.width, bounds.height) * 0.5,
               );
+              const starY =
+                bounds.y >= starFontSize + 2
+                  ? bounds.y - starFontSize * 0.5
+                  : bounds.y + starFontSize * 0.5;
 
               return (
                 <g
@@ -138,7 +142,7 @@ export function ClickableSeatPlan({
                   {favourite && (
                     <text
                       x={bounds.x + bounds.width / 2}
-                      y={bounds.y + bounds.height / 2}
+                      y={starY}
                       textAnchor="middle"
                       dominantBaseline="central"
                       fontSize={starFontSize}
