@@ -96,6 +96,11 @@ installation and preserves the extension's existing Chrome storage.
 - Displays NLB's seat-plan image when available, preferring the `-sp` map.
 - Opens a full-screen seat picker with the enlarged plan and searchable
   favourite-seat controls side by side, while keeping the normal panel slim.
+- Provides 100%, 125%, 150%, 175%, and 200% map zoom levels, with visible
+  scrollbar tracks outside the map and mouse, touch, trackpad, or wheel
+  navigation.
+- Allows dragging the map background to pan while keeping annotated seats
+  clickable; selecting a seat from the sidebar centers it in the map.
 - Uses a high-contrast Done button and scales the favourite star to each seat
   hotspot so markers remain consistent across differently sized maps.
 - Adds 2,080 verified clickable hotspots across all 83 inventoried plans,
@@ -127,7 +132,7 @@ installation and preserves the extension's existing Chrome storage.
 - Revalidates selected booking blocks and obtains NLB's internal seat code
   immediately before booking.
 
-Timeline colors:
+Timeline legend:
 
 - Green: available and selectable.
 - Blue with a check mark: selected for a new booking.

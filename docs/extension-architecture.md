@@ -28,7 +28,13 @@ Clicking the seat-plan preview opens a temporary full-screen seat picker. It
 keeps the enlarged NLB plan beside the existing searchable favourite-seat
 controls and writes through the same per-account favourite storage. Closing
 the picker returns focus to the compact panel; the compact panel itself stays
-at its normal width.
+at its normal width. The picker renders the verified plan and hotspots in a
+scrollable viewport with 100%, 125%, 150%, 175%, and 200% zoom levels. Its
+scrollbar tracks sit outside the map, and the map background supports mouse or
+touch drag-to-pan in addition to trackpad and wheel scrolling. Clicking a seat
+in the sidebar centers that seat in the viewport; clicking an annotated seat
+on the map toggles the same favourite state. The timeline's expandable
+**Legend** explains the availability and booking colors.
 
 Verified seat-plan definitions can add interactive hotspots over an exact map
 revision. Definitions use source-image coordinates and resolve each annotated

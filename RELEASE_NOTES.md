@@ -14,6 +14,12 @@ NLB seat plan.
 - Keeps each sidebar seat result at a compact fixed height and scrolls the
   result list when it exceeds the available panel height.
 - Keeps the existing compact right-side panel at its normal width.
+- Adds 100%, 125%, 150%, 175%, and 200% zoom controls to the interactive plan,
+  with scrollbar tracks outside the map and mouse, touch, trackpad, or wheel
+  navigation.
+- Centers a seat in the map when it is selected from the sidebar and supports
+  dragging the map background to pan without interfering with seat clicks.
+- Labels the booking timeline color explanation as **Legend**.
 - Adds 2,080 reviewed pointer- and keyboard-accessible hotspots across all 83
   inventoried plans, including explicit range-order handling for the one range
   and one hybrid plan.

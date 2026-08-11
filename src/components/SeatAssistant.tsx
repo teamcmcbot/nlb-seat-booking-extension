@@ -417,6 +417,7 @@ export function SeatAssistant({
   const [seatSearch, setSeatSearch] = useState("");
   const [now, setNow] = useState(() => new Date());
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [mapFocusSeatId, setMapFocusSeatId] = useState("");
   const [loadingMapKey, setLoadingMapKey] = useState("");
   const [discoveredMaps, setDiscoveredMaps] = useState<
     Record<string, string[]>
@@ -453,7 +454,13 @@ export function SeatAssistant({
 
   function closeMapPicker() {
     setMapExpanded(false);
+    setMapFocusSeatId("");
     window.requestAnimationFrame(() => mapTriggerRef.current?.focus());
+  }
+
+  function openMapPicker() {
+    setMapFocusSeatId("");
+    setMapExpanded(true);
   }
 
   useEffect(() => {
@@ -1747,7 +1754,10 @@ export function SeatAssistant({
       .slice(0, 50);
   }, [area, favouriteIds, seatSearch]);
 
-  function renderSeatManagerContents(autoFocus = false) {
+  function renderSeatManagerContents(
+    autoFocus = false,
+    onSeatSelected?: (seat: Seat) => void,
+  ) {
     return (
       <>
         <input
@@ -1769,7 +1779,10 @@ export function SeatAssistant({
                 type="button"
                 key={seat.id}
                 className={selected ? "is-favourite" : ""}
-                onClick={() => void toggleFavourite(seat)}
+                onClick={() => {
+                  onSeatSelected?.(seat);
+                  void toggleFavourite(seat);
+                }}
                 aria-pressed={selected}
               >
                 <span aria-hidden="true">{selected ? "★" : "☆"}</span>
@@ -1911,7 +1924,7 @@ export function SeatAssistant({
                 <button
                   type="button"
                   ref={mapTriggerRef}
-                  onClick={() => setMapExpanded(true)}
+                  onClick={openMapPicker}
                   aria-label={`Open seat picker for ${area.name}`}
                 >
                   <img
@@ -2250,9 +2263,9 @@ export function SeatAssistant({
                   </div>
                   <details
                     className="nlb-seat-helper__timeline-legend"
-                    aria-label="Timeline color legend"
+                    aria-label="Timeline legend"
                   >
-                    <summary>Colors</summary>
+                    <summary>Legend</summary>
                     <div>
                       <span>
                         <i className="is-free" />
@@ -2632,6 +2645,7 @@ export function SeatAssistant({
                     imageUrl={areaMapImage}
                     mapPath={seatPlanPath}
                     favouriteIds={favouriteIds}
+                    focusSeatId={mapFocusSeatId}
                     onToggleFavourite={toggleFavourite}
                   />
                 </div>
@@ -2650,7 +2664,9 @@ export function SeatAssistant({
                     <span aria-hidden="true">★</span>
                   </div>
                   <div className="nlb-seat-helper__seat-manager">
-                    {renderSeatManagerContents(true)}
+                    {renderSeatManagerContents(true, (seat) =>
+                      setMapFocusSeatId(seat.id),
+                    )}
                   </div>
                   <button
                     type="button"

@@ -485,21 +485,168 @@
   display: flex;
   min-width: 0;
   min-height: 0;
-  overflow: auto;
-  align-items: center;
+  overflow: hidden;
   flex-direction: column;
-  justify-content: center;
-  padding: 20px;
+  gap: 8px;
+  padding: 12px;
   background: #edf2ef;
 }
 
-.nlb-seat-helper__map-dialog-plan > img,
-.nlb-seat-helper__interactive-map {
-  display: block;
-  width: 100%;
+.nlb-seat-helper__interactive-map-shell {
+  display: flex;
+  min-width: 0;
   min-height: 0;
-  max-width: 100%;
-  max-height: 100%;
+  flex: 1 1 auto;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.nlb-seat-helper__interactive-map-toolbar {
+  display: flex;
+  min-height: 28px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  color: #426154;
+  font-size: 10px;
+}
+
+.nlb-seat-helper__interactive-map-toolbar button {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 7px;
+  border: 1px solid #b9d3c4;
+  border-radius: 6px;
+  background: white;
+  color: #20563c;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__interactive-map-toolbar button:hover:not(:disabled),
+.nlb-seat-helper__interactive-map-toolbar button:focus-visible {
+  border-color: #168a51;
+  background: #edf8f1;
+  outline: 2px solid #a6d8ba;
+  outline-offset: 1px;
+}
+
+.nlb-seat-helper__interactive-map-toolbar button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.nlb-seat-helper__interactive-map-toolbar > span {
+  min-width: 36px;
+  color: #315443;
+  font-weight: 700;
+  text-align: center;
+}
+
+.nlb-seat-helper__interactive-map-toolbar small {
+  margin-left: 4px;
+  color: #72847a;
+  font-size: 10px;
+}
+
+.nlb-seat-helper__interactive-map-frame {
+  display: grid;
+  min-width: 0;
+  min-height: 0;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  gap: 4px;
+}
+
+.nlb-seat-helper__interactive-map-frame.has-horizontal-scroll {
+  grid-template-rows: minmax(0, 1fr) 8px;
+}
+
+.nlb-seat-helper__interactive-map-frame.has-vertical-scroll {
+  grid-template-columns: minmax(0, 1fr) 8px;
+}
+
+.nlb-seat-helper__interactive-map-viewport {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  grid-column: 1;
+  grid-row: 1;
+  overflow: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 12px;
+  border: 1px solid #dce7e1;
+  border-radius: 8px;
+  background: #f8fbf9;
+  overscroll-behavior: contain;
+  cursor: grab;
+  scrollbar-width: none;
+  touch-action: none;
+}
+
+.nlb-seat-helper__interactive-map-viewport.is-panning {
+  cursor: grabbing;
+  user-select: none;
+}
+
+.nlb-seat-helper__interactive-map-viewport::-webkit-scrollbar {
+  display: none;
+}
+
+.nlb-seat-helper__interactive-map-scrollbar {
+  position: relative;
+  border-radius: 6px;
+  background: rgb(219 233 224 / 92%);
+}
+
+.nlb-seat-helper__interactive-map-scrollbar span {
+  position: absolute;
+  display: block;
+  border-radius: 6px;
+  background: #4d8968;
+}
+
+.nlb-seat-helper__interactive-map-scrollbar.is-horizontal {
+  grid-column: 1;
+  grid-row: 2;
+  align-self: center;
+  width: 100%;
+  height: 8px;
+}
+
+.nlb-seat-helper__interactive-map-scrollbar.is-horizontal span {
+  top: 0;
+  bottom: 0;
+}
+
+.nlb-seat-helper__interactive-map-scrollbar.is-vertical {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: stretch;
+  width: 8px;
+}
+
+.nlb-seat-helper__interactive-map-scrollbar.is-vertical span {
+  right: 0;
+  left: 0;
+}
+
+.nlb-seat-helper__interactive-map-canvas {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+}
+
+.nlb-seat-helper__interactive-map,
+.nlb-seat-helper__interactive-map-image {
+  display: block;
+  flex: 0 0 auto;
   border-radius: 8px;
   background: white;
   box-shadow: 0 5px 20px rgb(27 52 41 / 12%);
@@ -507,8 +654,13 @@
 }
 
 .nlb-seat-helper__interactive-map {
-  flex: 1 1 auto;
   overflow: visible;
+}
+
+.nlb-seat-helper__interactive-map-image {
+  width: 100%;
+  max-width: 100%;
+  max-height: 100%;
 }
 
 .nlb-seat-helper__seat-hotspot {
@@ -669,6 +821,10 @@
 
   .nlb-seat-helper__map-dialog-plan {
     padding: 10px;
+  }
+
+  .nlb-seat-helper__interactive-map-toolbar small {
+    display: none;
   }
 
   .nlb-seat-helper__map-dialog-sidebar {
