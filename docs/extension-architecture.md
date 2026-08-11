@@ -24,6 +24,26 @@ its natural content height. Longer favourite lists expand up to the browser
 height that remains after the fixed controls, then become the primary scroll
 region so the map remains available while seats are browsed or managed.
 
+Clicking the seat-plan preview opens a temporary full-screen seat picker. It
+keeps the enlarged NLB plan beside the existing searchable favourite-seat
+controls and writes through the same per-account favourite storage. Closing
+the picker returns focus to the compact panel; the compact panel itself stays
+at its normal width.
+
+Verified seat-plan definitions can add interactive hotspots over an exact map
+revision. Definitions use source-image coordinates and resolve each annotated
+seat name to exactly one current catalog seat before calling the normal
+favourite toggle. The complete clickable layer is disabled if the branch,
+area, map revision, image dimensions, seat identity, geometry, or declared
+coverage does not validate. Unmapped and rejected plans remain visible and
+retain seat-number search as the fallback. Hotspots indicate favourite status
+only; they do not represent date-specific availability. Reviewed range and
+hybrid plans carry a `mappingBasis` marker and tell the user that positions
+follow the printed endpoint and arrow order; these assignments are static and
+revision-locked like individually labelled plans. See
+[`seat-plan-annotations.md`](seat-plan-annotations.md) for the annotation and
+review workflow.
+
 The extension has one Chrome permission:
 
 ```json
@@ -108,6 +128,9 @@ flowchart TD
 | `src/services/bookingConflicts.ts` | Detects overlap, resolves bookings to catalog seats, and evaluates cancellation eligibility. |
 | `src/services/bookingPlanner.ts` | Produces separate requests or merges adjacent intervals for the same seat. |
 | `src/services/favourites.ts` | Persists favourite seat identities in Chrome local storage. |
+| `src/services/seatPlanAnnotations.ts` | Matches exact map revisions and validates annotated hotspots against current catalog seats. |
+| `src/data/seatPlans/` | Stores reviewed, non-account-specific seat-plan coordinates. |
+| `src/components/ClickableSeatPlan.tsx` | Renders verified keyboard- and pointer-accessible favourite hotspots over a plan. |
 | `src/services/preferences.ts` | Persists the last selected branch and area. |
 | `src/components/SeatAssistant.tsx` | Coordinates selection, scanning, booking, progress, and the interactive UI. |
 | `src/content/App.tsx` | Owns account loading, top-level status, quota summary, and silent refresh. |

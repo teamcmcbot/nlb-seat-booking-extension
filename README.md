@@ -94,7 +94,17 @@ installation and preserves the extension's existing Chrome storage.
   for longer lists, and scrolls only that list when more seats are available
   than can fit.
 - Displays NLB's seat-plan image when available, preferring the `-sp` map.
-- Opens the seat plan in a full-screen viewer when clicked.
+- Opens a full-screen seat picker with the enlarged plan and searchable
+  favourite-seat controls side by side, while keeping the normal panel slim.
+- Uses a high-contrast Done button and scales the favourite star to each seat
+  hotspot so markers remain consistent across differently sized maps.
+- Adds 2,080 verified clickable hotspots across all 83 inventoried plans,
+  including range-order mappings for the two plans without individual labels.
+- Falls back to seat-number search whenever a plan has no annotation or its
+  filename, dimensions, or catalog seats no longer match the verified map.
+- Documents the current 83-area annotation backlog, map metadata, and visual
+  label classification in
+  [`docs/seat-plan-inventory.md`](docs/seat-plan-inventory.md).
 
 ### Availability
 

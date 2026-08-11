@@ -815,6 +815,12 @@ Absolute URLs and paths containing `..` are rejected. If several maps exist,
 the extension prefers the filename containing `-sp`, which represents the
 seat plan in the observed data.
 
+The observed API does not provide seat coordinates. Clickable seats therefore
+come from reviewed extension annotations tied to an exact branch, area, map
+revision, and source-image size. Each annotation must resolve to one current
+catalog seat before the overlay is enabled. These hotspots modify local
+favourites only and are not an availability or booking authority.
+
 ## Privacy and safe fixture capture
 
 Never commit a raw `GetAccountInfo` response without sanitizing it. Remove or

@@ -423,39 +423,258 @@
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 48px;
+  padding: 24px;
   background: rgb(9 18 14 / 88%);
-  cursor: zoom-out;
+  overscroll-behavior: contain;
 }
 
-.nlb-seat-helper__map-dialog > img {
-  display: block;
-  max-width: calc(100vw - 64px);
-  max-height: calc(100vh - 64px);
-  border-radius: 8px;
+.nlb-seat-helper__map-dialog-shell {
+  display: flex;
+  width: min(1180px, 100%);
+  height: min(780px, calc(100dvh - 48px));
+  max-height: calc(100vh - 48px);
+  overflow: hidden;
+  flex-direction: column;
+  border-radius: 14px;
   background: white;
   box-shadow: 0 18px 60px rgb(0 0 0 / 42%);
-  cursor: default;
+}
+
+.nlb-seat-helper__map-dialog-header {
+  display: flex;
+  min-height: 62px;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 14px 12px 18px;
+  border-bottom: 1px solid #e3e9e6;
+}
+
+.nlb-seat-helper__map-dialog-header > div {
+  min-width: 0;
+}
+
+.nlb-seat-helper__map-dialog-header strong,
+.nlb-seat-helper__map-dialog-header span {
+  display: block;
+}
+
+.nlb-seat-helper__map-dialog-header strong {
+  color: #183e2f;
+  font-size: 16px;
+}
+
+.nlb-seat-helper__map-dialog-header span {
+  overflow: hidden;
+  margin-top: 2px;
+  color: #68776f;
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.nlb-seat-helper__map-dialog-content {
+  display: grid;
+  min-height: 0;
+  flex: 1 1 auto;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 330px);
+}
+
+.nlb-seat-helper__map-dialog-plan {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  padding: 20px;
+  background: #edf2ef;
+}
+
+.nlb-seat-helper__map-dialog-plan > img,
+.nlb-seat-helper__interactive-map {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  max-width: 100%;
+  max-height: 100%;
+  border-radius: 8px;
+  background: white;
+  box-shadow: 0 5px 20px rgb(27 52 41 / 12%);
   object-fit: contain;
 }
 
+.nlb-seat-helper__interactive-map {
+  flex: 1 1 auto;
+}
+
+.nlb-seat-helper__seat-hotspot {
+  cursor: pointer;
+  outline: none;
+}
+
+.nlb-seat-helper__seat-hotspot rect {
+  fill: transparent;
+  stroke: transparent;
+  stroke-width: 3px;
+  transition:
+    fill 120ms ease,
+    stroke 120ms ease;
+}
+
+.nlb-seat-helper__seat-hotspot:hover rect {
+  fill: rgb(22 138 81 / 18%);
+}
+
+.nlb-seat-helper__seat-hotspot:focus-visible rect {
+  fill: rgb(22 138 81 / 18%);
+  stroke: #0b7440;
+}
+
+.nlb-seat-helper__seat-hotspot.is-favourite rect {
+  fill: rgb(22 138 81 / 26%);
+  stroke: #08713d;
+}
+
+.nlb-seat-helper__seat-hotspot text {
+  fill: #08713d;
+  font-weight: 800;
+  paint-order: stroke;
+  pointer-events: none;
+  stroke: white;
+}
+
+.nlb-seat-helper__interactive-map-status {
+  flex: 0 0 auto;
+  margin: 10px 0 0;
+  color: #67766e;
+  font-size: 10px;
+  text-align: center;
+}
+
+.nlb-seat-helper__interactive-map-status.is-ready {
+  color: #27694b;
+  font-weight: 650;
+}
+
+.nlb-seat-helper__map-dialog-sidebar {
+  display: flex;
+  min-width: 0;
+  min-height: 0;
+  flex-direction: column;
+  padding: 16px;
+  border-left: 1px solid #e3e9e6;
+  background: white;
+}
+
+.nlb-seat-helper__map-dialog-summary {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.nlb-seat-helper__map-dialog-summary strong,
+.nlb-seat-helper__map-dialog-summary span {
+  display: block;
+}
+
+.nlb-seat-helper__map-dialog-summary strong {
+  color: #263b31;
+  font-size: 13px;
+}
+
+.nlb-seat-helper__map-dialog-summary div > span {
+  margin-top: 2px;
+  color: #718078;
+  font-size: 10px;
+}
+
+.nlb-seat-helper__map-dialog-summary > span {
+  color: #168a51;
+  font-size: 20px;
+}
+
+.nlb-seat-helper__map-dialog-sidebar .nlb-seat-helper__seat-manager {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  margin-top: 12px;
+}
+
+.nlb-seat-helper__map-dialog-sidebar .nlb-seat-helper__seat-results {
+  min-height: 0;
+  max-height: none;
+  flex: 1 1 auto;
+}
+
 .nlb-seat-helper__map-dialog-close {
-  position: fixed;
-  top: 18px;
-  right: 20px;
   display: grid;
-  width: 38px;
-  height: 38px;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
   place-items: center;
   padding: 0;
-  border: 1px solid rgb(255 255 255 / 30%);
+  border: 0;
   border-radius: 50%;
-  background: rgb(255 255 255 / 14%);
-  color: white;
+  background: #edf3f0;
+  color: #315443;
   font: inherit;
-  font-size: 26px;
+  font-size: 24px;
   line-height: 1;
   cursor: pointer;
+}
+
+.nlb-seat-helper__map-dialog-done {
+  width: 100%;
+  min-height: 38px;
+  flex: 0 0 auto;
+  margin-top: 12px;
+  border: 1px solid #78be94;
+  border-radius: 8px;
+  background: #c9edd6;
+  color: #123d29;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__map-dialog-done:hover,
+.nlb-seat-helper__map-dialog-done:focus-visible {
+  background: #b5e4c7;
+  outline: 2px solid #1c6c49;
+  outline-offset: 1px;
+}
+
+@media (max-width: 760px) {
+  .nlb-seat-helper__map-dialog {
+    padding: 10px;
+  }
+
+  .nlb-seat-helper__map-dialog-shell {
+    height: calc(100dvh - 20px);
+    max-height: calc(100vh - 20px);
+  }
+
+  .nlb-seat-helper__map-dialog-content {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(220px, 1fr) minmax(260px, 0.9fr);
+  }
+
+  .nlb-seat-helper__map-dialog-plan {
+    padding: 10px;
+  }
+
+  .nlb-seat-helper__map-dialog-sidebar {
+    padding: 12px;
+    border-top: 1px solid #e3e9e6;
+    border-left: 0;
+  }
 }
 
 .nlb-seat-helper__section-heading strong,
@@ -545,10 +764,13 @@
 
 .nlb-seat-helper__seat-results {
   display: grid;
+  align-content: start;
   max-height: 220px;
   gap: 5px;
+  grid-auto-rows: 38px;
   margin-top: 8px;
   overflow-y: auto;
+  scrollbar-gutter: stable;
 }
 
 .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__seat-results {
@@ -559,9 +781,10 @@
 
 .nlb-seat-helper__seat-results button {
   display: flex;
+  height: 38px;
   align-items: center;
   gap: 8px;
-  min-height: 34px;
+  min-height: 38px;
   padding: 6px 9px;
   border: 1px solid #dce5e0;
   border-radius: 8px;

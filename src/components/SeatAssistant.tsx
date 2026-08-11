@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ClickableSeatPlan } from "./ClickableSeatPlan";
 import { bookSeat } from "../api/booking";
 import { cancelBooking } from "../api/cancellation";
 import {
@@ -448,6 +449,12 @@ export function SeatAssistant({
   });
   const scanController = useRef<AbortController>();
   const mapRequests = useRef(new Set<string>());
+  const mapTriggerRef = useRef<HTMLButtonElement>(null);
+
+  function closeMapPicker() {
+    setMapExpanded(false);
+    window.requestAnimationFrame(() => mapTriggerRef.current?.focus());
+  }
 
   useEffect(() => {
     if (!reviewingBooking && !reviewingCancellation) {
@@ -767,7 +774,7 @@ export function SeatAssistant({
 
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setMapExpanded(false);
+        closeMapPicker();
       }
     };
 
@@ -1740,6 +1747,45 @@ export function SeatAssistant({
       .slice(0, 50);
   }, [area, favouriteIds, seatSearch]);
 
+  function renderSeatManagerContents(autoFocus = false) {
+    return (
+      <>
+        <input
+          type="search"
+          aria-label="Search seats by number"
+          placeholder={`Search seat number, e.g. ${
+            area?.seats[0]?.name ?? "S1"
+          }`}
+          value={seatSearch}
+          onChange={(event) => setSeatSearch(event.target.value)}
+          autoFocus={autoFocus}
+        />
+        {!seatSearch.trim() && <p>{seatHint}</p>}
+        <div className="nlb-seat-helper__seat-results">
+          {searchedSeats.map((seat) => {
+            const selected = favouriteIds.has(seat.id);
+            return (
+              <button
+                type="button"
+                key={seat.id}
+                className={selected ? "is-favourite" : ""}
+                onClick={() => void toggleFavourite(seat)}
+                aria-pressed={selected}
+              >
+                <span aria-hidden="true">{selected ? "★" : "☆"}</span>
+                <strong>{seat.name}</strong>
+                {seat.disabled && <small>Unavailable</small>}
+              </button>
+            );
+          })}
+        </div>
+        {seatSearch.trim() && searchedSeats.length === 0 && (
+          <p>No matching seats found.</p>
+        )}
+      </>
+    );
+  }
+
   return (
     <section className="nlb-seat-helper__assistant">
       <div className="nlb-seat-helper__fields">
@@ -1864,15 +1910,16 @@ export function SeatAssistant({
               <figure className="nlb-seat-helper__area-map">
                 <button
                   type="button"
+                  ref={mapTriggerRef}
                   onClick={() => setMapExpanded(true)}
-                  aria-label={`Open full seat plan for ${area.name}`}
+                  aria-label={`Open seat picker for ${area.name}`}
                 >
                   <img
                     src={areaMapImage}
                     alt={`${area.name} seat plan`}
                     loading="lazy"
                   />
-                  <span>Click to enlarge</span>
+                  <span>Open seat picker</span>
                 </button>
               </figure>
             ) : (
@@ -1945,36 +1992,7 @@ export function SeatAssistant({
 
           {managing ? (
             <div className="nlb-seat-helper__seat-manager">
-              <input
-                type="search"
-                placeholder={`Search seat number, e.g. ${
-                  area.seats[0]?.name ?? "S1"
-                }`}
-                value={seatSearch}
-                onChange={(event) => setSeatSearch(event.target.value)}
-                autoFocus
-              />
-              {!seatSearch.trim() && <p>{seatHint}</p>}
-              <div className="nlb-seat-helper__seat-results">
-                {searchedSeats.map((seat) => {
-                  const selected = favouriteIds.has(seat.id);
-                  return (
-                    <button
-                      type="button"
-                      key={seat.id}
-                      className={selected ? "is-favourite" : ""}
-                      onClick={() => void toggleFavourite(seat)}
-                    >
-                      <span aria-hidden="true">{selected ? "★" : "☆"}</span>
-                      <strong>{seat.name}</strong>
-                      {seat.disabled && <small>Unavailable</small>}
-                    </button>
-                  );
-                })}
-              </div>
-              {seatSearch.trim() && searchedSeats.length === 0 && (
-                <p>No matching seats found.</p>
-              )}
+              {renderSeatManagerContents(true)}
             </div>
           ) : areaFavourites.length === 0 ? (
             <div className="nlb-seat-helper__empty nlb-seat-helper__empty--card">
@@ -2575,27 +2593,75 @@ export function SeatAssistant({
 
       {mapExpanded &&
         areaMapImage &&
+        area &&
+        seatPlanPath &&
         createPortal(
           <div
             className="nlb-seat-helper__map-dialog"
             role="dialog"
             aria-modal="true"
-            aria-label={`${area?.name ?? "Area"} seat plan`}
-            onClick={() => setMapExpanded(false)}
+            aria-labelledby="nlb-seat-helper-map-dialog-title"
+            onClick={closeMapPicker}
           >
-            <button
-              type="button"
-              className="nlb-seat-helper__map-dialog-close"
-              onClick={() => setMapExpanded(false)}
-              aria-label="Close full seat plan"
-            >
-              ×
-            </button>
-            <img
-              src={areaMapImage}
-              alt={`${area?.name ?? "Area"} full seat plan`}
+            <div
+              className="nlb-seat-helper__map-dialog-shell"
               onClick={(event) => event.stopPropagation()}
-            />
+            >
+              <header className="nlb-seat-helper__map-dialog-header">
+                <div>
+                  <strong id="nlb-seat-helper-map-dialog-title">
+                    Pick favourite seats
+                  </strong>
+                  <span>
+                    {area.branchName} · {area.name}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="nlb-seat-helper__map-dialog-close"
+                  onClick={closeMapPicker}
+                  aria-label="Close seat picker"
+                >
+                  ×
+                </button>
+              </header>
+              <div className="nlb-seat-helper__map-dialog-content">
+                <div className="nlb-seat-helper__map-dialog-plan">
+                  <ClickableSeatPlan
+                    area={area}
+                    imageUrl={areaMapImage}
+                    mapPath={seatPlanPath}
+                    favouriteIds={favouriteIds}
+                    onToggleFavourite={toggleFavourite}
+                  />
+                </div>
+                <aside
+                  className="nlb-seat-helper__map-dialog-sidebar"
+                  aria-label="Favourite seat selection"
+                >
+                  <div className="nlb-seat-helper__map-dialog-summary">
+                    <div>
+                      <strong>Favourite seats</strong>
+                      <span>
+                        {areaFavourites.length} of {area.seats.length}{" "}
+                        selected
+                      </span>
+                    </div>
+                    <span aria-hidden="true">★</span>
+                  </div>
+                  <div className="nlb-seat-helper__seat-manager">
+                    {renderSeatManagerContents(true)}
+                  </div>
+                  <button
+                    type="button"
+                    className="nlb-seat-helper__map-dialog-done"
+                    onClick={closeMapPicker}
+                  >
+                    Done
+                  </button>
+                </aside>
+              </div>
+            </div>
           </div>,
           document.getElementById("nlb-seat-helper-root")!,
         )}

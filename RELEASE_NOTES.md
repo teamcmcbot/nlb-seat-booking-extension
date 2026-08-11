@@ -1,24 +1,28 @@
-# NLB Seat Helper v1.1.1
+# NLB Seat Helper v1.2.0
 
-This patch release prevents NLB's incorrect current-day availability matrix
-from making seats appear bookable while a library is closed for a configured
-holiday.
+This release makes it easier to choose favourite seats while referring to the
+NLB seat plan.
 
 ## Highlights
 
-- Treats validated `settings.holidays` start/end values as inclusive full
-  local calendar dates.
-- Respects branch exemptions listed by branch ID or code in
-  `excludedBranches`.
-- Keeps a released holiday date selectable for inspection without exposing the
-  next unreleased calendar day.
-- Renders favourite-seat holiday intervals as grey, non-interactive closed
-  cells while skipping availability scans and map discovery.
-- Rechecks holiday settings after the booking-time account refresh.
-- Adds regression coverage for National Day, booking release time, calendar
-  boundaries, branch exclusions, and malformed holiday ranges.
-- Leaves partial-day holiday-eve hours and extended-hours-area exceptions
-  pending further live API evidence.
+- Replaces the image-only full-screen viewer with a responsive seat picker.
+- Keeps the enlarged seat plan visible beside seat-number search and favourite
+  controls.
+- Uses a light-green, high-contrast Done button and scales map favourite stars
+  relative to each seat hotspot.
+- Lets users add or remove favourites without repeatedly closing the plan.
+- Keeps each sidebar seat result at a compact fixed height and scrolls the
+  result list when it exceeds the available panel height.
+- Keeps the existing compact right-side panel at its normal width.
+- Adds 2,080 reviewed pointer- and keyboard-accessible hotspots across all 83
+  inventoried plans, including explicit range-order handling for the one range
+  and one hybrid plan.
+- Validates the exact map revision, image dimensions, geometry, catalog seat
+  identities, and full coverage before enabling a clickable layer.
+- Retains seat-number search as the reliable fallback for unmapped or changed
+  NLB plans.
+- Adds an audited inventory of all 83 current branch/area plans, including
+  seat counts, map metadata, visual label type, and annotation status.
 
 ## Installation
 
