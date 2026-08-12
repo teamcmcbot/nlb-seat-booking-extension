@@ -23,6 +23,12 @@ export interface SeatPlanDefinition {
   hotspots: readonly SeatHotspotDefinition[];
 }
 
+export interface SeatPlanImageEvidence {
+  width: number;
+  height: number;
+  sha256?: string;
+}
+
 export interface ResolvedSeatHotspot {
   seat: Seat;
   bounds: SeatHotspotBounds;
@@ -32,6 +38,8 @@ export type SeatPlanInvalidReason =
   | "ambiguous-definition"
   | "invalid-definition"
   | "image-size-mismatch"
+  | "image-fingerprint-missing"
+  | "image-fingerprint-mismatch"
   | "duplicate-seat"
   | "unknown-seat"
   | "ambiguous-seat"

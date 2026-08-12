@@ -2,3 +2,5 @@ node_modules/
 dist/
 nlb-seat-helper.zip
 .DS_Store
+.cache/seat-plans/
+seat-plan-work/

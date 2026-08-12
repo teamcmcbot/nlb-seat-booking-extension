@@ -817,9 +817,11 @@ seat plan in the observed data.
 
 The observed API does not provide seat coordinates. Clickable seats therefore
 come from reviewed extension annotations tied to an exact branch, area, map
-revision, and source-image size. Each annotation must resolve to one current
-catalog seat before the overlay is enabled. These hotspots modify local
-favourites only and are not an availability or booking authority.
+revision, source-image size, and SHA-256 of the fetched bytes. The API does not
+provide this digest; the maintenance capture computes it from the resolved map
+asset. Each annotation must resolve to one current catalog seat before the
+overlay is enabled. These hotspots modify local favourites only and are not an
+availability or booking authority.
 
 ## Privacy and safe fixture capture
 

@@ -100,6 +100,44 @@ describe("seat-plan annotations", () => {
     });
   });
 
+  it("requires a matching fingerprint when image evidence includes one", () => {
+    const key = `2:43:${mapPath}`;
+    const matchingFingerprint = "a".repeat(64);
+    expect(
+      resolveSeatPlan(
+        area([seat("S1"), seat("S2")]),
+        mapPath,
+        { width: 100, height: 80, sha256: matchingFingerprint },
+        [baseDefinition],
+        { [key]: matchingFingerprint },
+      ).status,
+    ).toBe("ready");
+    expect(
+      resolveSeatPlan(
+        area([seat("S1"), seat("S2")]),
+        mapPath,
+        { width: 100, height: 80, sha256: "b".repeat(64) },
+        [baseDefinition],
+        { [key]: matchingFingerprint },
+      ),
+    ).toMatchObject({
+      status: "invalid",
+      reason: "image-fingerprint-mismatch",
+    });
+    expect(
+      resolveSeatPlan(
+        area([seat("S1"), seat("S2")]),
+        mapPath,
+        { width: 100, height: 80, sha256: matchingFingerprint },
+        [baseDefinition],
+        {},
+      ),
+    ).toMatchObject({
+      status: "invalid",
+      reason: "image-fingerprint-missing",
+    });
+  });
+
   it("rejects duplicate, overlapping, and out-of-bounds hotspots", () => {
     expect(
       resolveSeatPlan(

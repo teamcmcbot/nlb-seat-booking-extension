@@ -1,0 +1,4 @@
+interface:
+  display_name: "Maintain Seat Plans"
+  short_description: "Audit and update seat-plan annotations"
+  default_prompt: "Use $maintain-seat-plans to audit current NLB seat plans and prepare verified annotation updates."

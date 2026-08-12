@@ -1,8 +1,10 @@
 import { SEAT_PLAN_DEFINITIONS } from "../data/seatPlans";
+import { SEAT_PLAN_FINGERPRINTS } from "../data/seatPlanFingerprints";
 import type { Area } from "../models/catalog";
 import type {
   ResolvedSeatHotspot,
   SeatPlanDefinition,
+  SeatPlanImageEvidence,
   SeatPlanInvalidReason,
   SeatPlanResolution,
 } from "../models/seatPlan";
@@ -12,6 +14,10 @@ function mapPathKey(path: string) {
     .trim()
     .replace(/^\/+/, "")
     .replace(/^seatbooking\/img\/areas\//, "");
+}
+
+function fingerprintKey(definition: SeatPlanDefinition) {
+  return `${definition.branchId}:${definition.areaId}:${mapPathKey(definition.mapPath)}`;
 }
 
 function invalid(
@@ -64,8 +70,9 @@ function validBounds(definition: SeatPlanDefinition) {
 export function resolveSeatPlan(
   area: Area,
   mapPath: string,
-  imageSize?: { width: number; height: number },
+  imageEvidence?: SeatPlanImageEvidence,
   definitions: readonly SeatPlanDefinition[] = SEAT_PLAN_DEFINITIONS,
+  fingerprints: Readonly<Record<string, string>> = SEAT_PLAN_FINGERPRINTS,
 ): SeatPlanResolution {
   const wantedPath = mapPathKey(mapPath);
   const matches = definitions.filter(
@@ -88,15 +95,25 @@ export function resolveSeatPlan(
     return invalid("invalid-definition", definition);
   }
 
-  if (!imageSize) {
+  if (!imageEvidence) {
     return { status: "pending", definition };
   }
 
   if (
-    imageSize.width !== definition.imageWidth ||
-    imageSize.height !== definition.imageHeight
+    imageEvidence.width !== definition.imageWidth ||
+    imageEvidence.height !== definition.imageHeight
   ) {
     return invalid("image-size-mismatch", definition);
+  }
+
+  if (imageEvidence.sha256) {
+    const expectedFingerprint = fingerprints[fingerprintKey(definition)];
+    if (!expectedFingerprint) {
+      return invalid("image-fingerprint-missing", definition);
+    }
+    if (expectedFingerprint !== imageEvidence.sha256.toLowerCase()) {
+      return invalid("image-fingerprint-mismatch", definition);
+    }
   }
 
   const seenNames = new Set<string>();

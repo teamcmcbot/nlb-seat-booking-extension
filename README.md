@@ -105,11 +105,17 @@ installation and preserves the extension's existing Chrome storage.
   hotspot so markers remain consistent across differently sized maps.
 - Adds 2,080 verified clickable hotspots across all 83 inventoried plans,
   including range-order mappings for the two plans without individual labels.
-- Falls back to seat-number search whenever a plan has no annotation or its
-  filename, dimensions, or catalog seats no longer match the verified map.
-- Documents the current 83-area annotation backlog, map metadata, and visual
-  label classification in
+- Verifies the exact rendered image bytes against a reviewed SHA-256 and falls
+  back to seat-number search whenever the path, image, dimensions, or catalog
+  seats no longer match.
+- Tracks the current 83-area baseline, map fingerprints, seat identities, and
+  visual label classification in
   [`docs/seat-plan-inventory.md`](docs/seat-plan-inventory.md).
+- Provides repeatable capture, drift-audit, overlay, and verification commands
+  documented in
+  [`docs/seat-plan-maintenance.md`](docs/seat-plan-maintenance.md).
+- Supports an explicitly confirmed maintenance export that discovers map URLs
+  across all areas with sequential, read-only availability probes.
 
 ### Availability
 
@@ -261,6 +267,9 @@ versioned download.
 - [Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md)
   tracks the fields, unknowns, and live tests needed for special operating
   days.
+- [Seat-plan Maintenance](docs/seat-plan-maintenance.md) documents sanitized
+  catalog capture, image fingerprints, drift auditing, overlays, and reviewed
+  annotation updates.
 
 ## Usage
 
@@ -284,6 +293,8 @@ src/components/               Favourite-seat and booking interface
 src/content/                  Injected application shell and styles
 src/models/                   Normalized account, catalog, and booking types
 src/services/                 Parsing, rules, persistence, conflicts, and plans
+scripts/                      Packaging and seat-plan maintenance commands
+docs/data/                    Reviewed machine-readable seat-plan baseline
 vite.config.ts                Content-script production build
 ```
 

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { Area, Seat } from "../models/catalog";
+import type { SeatPlanImageEvidence } from "../models/seatPlan";
 import { resolveSeatPlan } from "../services/seatPlanAnnotations";
 
 interface ClickableSeatPlanProps {
@@ -14,6 +15,13 @@ interface ClickableSeatPlanProps {
 interface ImageSize {
   width: number;
   height: number;
+}
+
+async function sha256Hex(bytes: ArrayBuffer) {
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return Array.from(new Uint8Array(digest), (value) =>
+    value.toString(16).padStart(2, "0"),
+  ).join("");
 }
 
 interface ScrollMetrics {
@@ -47,7 +55,8 @@ export function ClickableSeatPlan({
   focusSeatId,
   onToggleFavourite,
 }: ClickableSeatPlanProps) {
-  const [imageSize, setImageSize] = useState<ImageSize>();
+  const [imageEvidence, setImageEvidence] = useState<SeatPlanImageEvidence>();
+  const [verifiedImageUrl, setVerifiedImageUrl] = useState<string>();
   const [imageFailed, setImageFailed] = useState(false);
   const [zoomIndex, setZoomIndex] = useState(0);
   const [viewportSize, setViewportSize] = useState<ImageSize>();
@@ -73,7 +82,8 @@ export function ClickableSeatPlan({
   );
 
   useEffect(() => {
-    setImageSize(undefined);
+    setImageEvidence(undefined);
+    setVerifiedImageUrl(undefined);
     setImageFailed(false);
 
     if (initialResolution.status !== "pending") {
@@ -81,30 +91,58 @@ export function ClickableSeatPlan({
     }
 
     let active = true;
-    const image = new Image();
-    image.onload = () => {
-      if (active) {
-        setImageSize({
-          width: image.naturalWidth,
-          height: image.naturalHeight,
+    let objectUrl: string | undefined;
+    const load = async () => {
+      try {
+        const response = await fetch(imageUrl, {
+          credentials: "include",
+          cache: "no-store",
         });
+        if (!response.ok) {
+          throw new Error(`Seat plan returned ${response.status}.`);
+        }
+        const bytes = await response.arrayBuffer();
+        const sha256 = await sha256Hex(bytes);
+        const imageBlob = new Blob([bytes], {
+          type: response.headers.get("content-type") ?? "image/png",
+        });
+        objectUrl = URL.createObjectURL(imageBlob);
+        const image = new Image();
+        await new Promise<void>((resolve, reject) => {
+          image.onload = () => resolve();
+          image.onerror = () => reject(new Error("Seat plan image could not be decoded."));
+          image.src = objectUrl ?? "";
+        });
+        if (active) {
+          setVerifiedImageUrl(objectUrl);
+          setImageEvidence({
+            width: image.naturalWidth,
+            height: image.naturalHeight,
+            sha256,
+          });
+        } else {
+          URL.revokeObjectURL(objectUrl);
+          objectUrl = undefined;
+        }
+      } catch {
+        if (active) {
+          setImageFailed(true);
+        }
       }
     };
-    image.onerror = () => {
-      if (active) {
-        setImageFailed(true);
-      }
-    };
-    image.src = imageUrl;
+    void load();
 
     return () => {
       active = false;
+      if (objectUrl) {
+        URL.revokeObjectURL(objectUrl);
+      }
     };
   }, [imageUrl, initialResolution.status]);
 
   const resolution = useMemo(
-    () => resolveSeatPlan(area, mapPath, imageSize),
-    [area, imageSize, mapPath],
+    () => resolveSeatPlan(area, mapPath, imageEvidence),
+    [area, imageEvidence, mapPath],
   );
   const definition =
     resolution.status === "unmapped" ? undefined : resolution.definition;
@@ -238,11 +276,13 @@ export function ClickableSeatPlan({
         aria-label={`${area.name} seat plan`}
       >
         <title>{`${area.name} seat plan with favourite-seat controls`}</title>
-        <image
-          href={imageUrl}
-          width={definition.imageWidth}
-          height={definition.imageHeight}
-        />
+        {verifiedImageUrl && (
+          <image
+            href={verifiedImageUrl}
+            width={definition.imageWidth}
+            height={definition.imageHeight}
+          />
+        )}
         {resolution.status === "ready" &&
           resolution.hotspots.map(({ seat, bounds }) => {
             const favourite = favouriteIds.has(seat.id);
@@ -316,7 +356,7 @@ export function ClickableSeatPlan({
   ) : (
     <img
       className="nlb-seat-helper__interactive-map-image"
-      src={imageUrl}
+      src={verifiedImageUrl ?? imageUrl}
       alt={`${area.name} full seat plan`}
     />
   );
@@ -465,7 +505,16 @@ export function ClickableSeatPlan({
             ? "Loading clickable seats…"
             : resolution.status === "unmapped"
               ? "Clickable seats are not mapped for this plan yet. Use seat-number search."
-              : "Clickable seats are unavailable because this plan could not be verified. Use seat-number search."
+              : resolution.status === "invalid" &&
+                  resolution.reason === "image-fingerprint-mismatch"
+                ? "This seat-plan image has changed since its annotation was reviewed. Use seat-number search until the map is re-verified."
+                : resolution.status === "invalid" &&
+                    resolution.reason === "image-fingerprint-missing"
+                  ? "This plan has no verified image fingerprint. Use seat-number search until it is reviewed."
+                  : resolution.status === "invalid" &&
+                      resolution.reason === "image-size-mismatch"
+                    ? "This seat-plan layout has changed size since its annotation was reviewed. Use seat-number search until the map is re-verified."
+                    : "Clickable seats are unavailable because the current map or seat catalog no longer matches its annotation. Use seat-number search."
         }
       </p>
     </div>

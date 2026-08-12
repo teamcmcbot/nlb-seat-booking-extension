@@ -15,8 +15,8 @@ import type {
 import { resolveSeatPlan } from "./seatPlanAnnotations";
 
 const ZONE_A_SEATS = [
-  "S01", "S02", "S03", "S04", "S05", "S06", "S07", "S08",
-  "S09", "S10", "S11", "S12", "S13", "S14", "S15", "S16",
+  "S1", "S2", "S3", "S4", "S5", "S6", "S7", "S8",
+  "S9", "S10", "S11", "S12", "S13", "S14", "S15", "S16",
 ] as const;
 const ZONE_B_SEATS = ["S17", "S18", "S19", "S20", "S21", "S22"] as const;
 const ZONE_C_SEATS = [
@@ -181,17 +181,17 @@ describe("Woodlands Library Zones A-E seat-plan annotations", () => {
 
   it("preserves Zone A's four top-to-bottom columns", () => {
     for (const column of [
-      ["S01", "S02", "S03", "S04"],
-      ["S05", "S06", "S07", "S08"],
-      ["S09", "S10", "S11", "S12"],
+      ["S1", "S2", "S3", "S4"],
+      ["S5", "S6", "S7", "S8"],
+      ["S9", "S10", "S11", "S12"],
       ["S13", "S14", "S15", "S16"],
     ]) {
       expectTopToBottom(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, column);
     }
-    expect(hotspot(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, "S01").x).toBeLessThan(
-      hotspot(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, "S05").x,
+    expect(hotspot(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, "S1").x).toBeLessThan(
+      hotspot(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, "S5").x,
     );
-    expect(hotspot(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, "S09").x).toBeLessThan(
+    expect(hotspot(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, "S9").x).toBeLessThan(
       hotspot(WOODLANDS_LEVEL_1_ZONE_A_SEAT_PLAN, "S13").x,
     );
   });

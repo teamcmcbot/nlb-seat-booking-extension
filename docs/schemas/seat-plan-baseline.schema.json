@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/teamcmcbot/nlb-seat-booking-extension/docs/schemas/seat-plan-baseline.schema.json",
+  "title": "Sanitized seat-plan maintenance baseline",
+  "type": "object",
+  "required": ["schemaVersion", "observedAt", "catalogSource", "imageSource", "areas"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "catalogSource": {
+      "enum": ["sanitized-get-account-info", "reviewed-annotation-inventory"]
+    },
+    "imageSource": { "const": "nlb-seat-plan-assets" },
+    "areas": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/area" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "seat": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string", "minLength": 1 },
+        "disabled": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "image": {
+      "type": "object",
+      "required": ["width", "height", "sha256", "byteLength", "contentType"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "byteLength": { "type": "integer", "minimum": 1 },
+        "contentType": { "type": "string", "minLength": 1 },
+        "etag": { "type": "string" },
+        "lastModified": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "area": {
+      "type": "object",
+      "required": [
+        "branchId",
+        "branchName",
+        "areaId",
+        "areaName",
+        "labelType",
+        "observedMapUrls",
+        "seats",
+        "annotationStatus"
+      ],
+      "properties": {
+        "branchId": { "type": "string", "minLength": 1 },
+        "branchCode": { "type": "string" },
+        "branchName": { "type": "string", "minLength": 1 },
+        "areaId": { "type": "string", "minLength": 1 },
+        "areaName": { "type": "string", "minLength": 1 },
+        "floor": { "type": "string" },
+        "labelType": { "enum": ["full", "range", "hybrid", "unknown"] },
+        "mapPath": { "type": "string", "minLength": 1 },
+        "observedMapUrls": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "image": { "$ref": "#/$defs/image" },
+        "seats": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/seat" }
+        },
+        "annotationStatus": { "enum": ["implemented", "missing"] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

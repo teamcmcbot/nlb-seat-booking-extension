@@ -39,10 +39,12 @@ on the map toggles the same favourite state. The timeline's expandable
 Verified seat-plan definitions can add interactive hotspots over an exact map
 revision. Definitions use source-image coordinates and resolve each annotated
 seat name to exactly one current catalog seat before calling the normal
-favourite toggle. The complete clickable layer is disabled if the branch,
-area, map revision, image dimensions, seat identity, geometry, or declared
-coverage does not validate. Unmapped and rejected plans remain visible and
-retain seat-number search as the fallback. Hotspots indicate favourite status
+favourite toggle. The exact fetched bytes are hashed with Web Crypto and
+rendered from the same in-memory blob. The complete clickable layer is
+disabled if the branch, area, map revision, image dimensions, SHA-256, seat
+identity, geometry, or declared coverage does not validate. Unmapped and
+rejected plans remain visible and retain seat-number search as the fallback.
+Hotspots indicate favourite status
 only; they do not represent date-specific availability. Reviewed range and
 hybrid plans carry a `mappingBasis` marker and tell the user that positions
 follow the printed endpoint and arrow order; these assignments are static and
@@ -137,6 +139,8 @@ flowchart TD
 | `src/services/seatPlanAnnotations.ts` | Matches exact map revisions and validates annotated hotspots against current catalog seats. |
 | `src/data/seatPlans/` | Stores reviewed, non-account-specific seat-plan coordinates. |
 | `src/components/ClickableSeatPlan.tsx` | Renders verified keyboard- and pointer-accessible favourite hotspots over a plan. |
+| `docs/data/seat-plan-baseline.json` | Stores the point-in-time normalized catalog, map metadata, and SHA-256 evidence. |
+| `scripts/seat-plan-*.mjs` | Captures, audits, verifies, and prepares annotation maintenance evidence. |
 | `src/services/preferences.ts` | Persists the last selected branch and area. |
 | `src/components/SeatAssistant.tsx` | Coordinates selection, scanning, booking, progress, and the interactive UI. |
 | `src/content/App.tsx` | Owns account loading, top-level status, quota summary, and silent refresh. |
@@ -146,6 +150,21 @@ flowchart TD
 `GetAccountInfo` is accepted as `unknown` rather than cast directly to a rigid
 server type. The parsers validate individual values and ignore malformed or
 unneeded fields.
+
+For seat-plan maintenance, `SeatAssistant` registers a dormant custom export
+event without altering the NLB URL or making an extra request. Dispatching the
+event from DevTools requires confirmation before downloading the normalized
+branch, area, seat identity, disabled state, map URL, and exact-area discovered
+seat-code fields needed by the audit scripts. The export excludes the account
+session, user ID, bookings, quotas, availability slots, and all raw server
+payloads.
+
+The optional `discoverMaps: true` event detail requires a second confirmation.
+It deliberately awaits one exact-area `SearchAvailableAreas` probe at a time,
+records per-area success or failure, and merges observed map URLs and booking
+seat codes into the sanitized export. Those interval-scoped seat results are
+metadata enrichment only and never become evidence that an absent seat was
+removed from the catalog.
 
 Catalog extraction recursively searches the response for area collections.
 This tolerates duplicated or differently nested catalog data. Areas with the

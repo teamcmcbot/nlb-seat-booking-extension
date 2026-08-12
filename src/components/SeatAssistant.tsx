@@ -46,6 +46,11 @@ import {
   loadLastSeatSelection,
   saveLastSeatSelection,
 } from "../services/preferences";
+import {
+  discoverSeatPlanMetadata,
+  sanitizedSeatPlanCatalog,
+  SEAT_PLAN_CATALOG_EXPORT_EVENT,
+} from "../services/seatPlanMaintenance";
 
 interface SeatAssistantProps {
   catalog: Catalog;
@@ -221,6 +226,28 @@ function selectionKey(seatId: string, slotKey: string) {
 
 function seatIdentityKey(value: string) {
   return value.trim().toLowerCase();
+}
+
+function mergeNestedArrays(
+  current: Record<string, string[]>,
+  additions: Record<string, string[]>,
+) {
+  const merged = { ...current };
+  for (const [key, values] of Object.entries(additions)) {
+    merged[key] = [...new Set([...(merged[key] ?? []), ...values])];
+  }
+  return merged;
+}
+
+function mergeNestedRecords(
+  current: Record<string, Record<string, string>>,
+  additions: Record<string, Record<string, string>>,
+) {
+  const merged = { ...current };
+  for (const [key, values] of Object.entries(additions)) {
+    merged[key] = { ...(merged[key] ?? {}), ...values };
+  }
+  return merged;
 }
 
 function joinSeatNames(names: string[]) {
@@ -444,6 +471,83 @@ export function SeatAssistant({
   const [cancellationProgress, setCancellationProgress] = useState<
     CancellationProgress[]
   >([]);
+
+  useEffect(() => {
+    const exportCatalog = async (event: Event) => {
+      const confirmed = window.confirm(
+        "Export sanitized seat-plan maintenance data?\n\n" +
+          "The download contains branch, area, map, and seat identity fields. " +
+          "It excludes account IDs, bookings, quotas, availability slots, and authentication data.",
+      );
+      if (!confirmed) {
+        return;
+      }
+
+      const discoverMaps =
+        event instanceof CustomEvent &&
+        Boolean((event.detail as { discoverMaps?: unknown } | null)?.discoverMaps);
+      let exportMaps = discoveredMaps;
+      let exportSeatCodes = discoveredSeatCodes;
+      let discoveryReport;
+      if (discoverMaps) {
+        const discoveryConfirmed = window.confirm(
+          "Discover current map metadata before exporting?\n\n" +
+            `This makes up to ${catalog.branches.reduce((total, branch) => total + branch.areas.length, 0)} sequential NLB availability requests and may take several minutes.`,
+        );
+        if (!discoveryConfirmed) {
+          return;
+        }
+        const controller = new AbortController();
+        const discovery = await discoverSeatPlanMetadata(
+          catalog,
+          searchWithTransientRetry,
+          new Date(),
+          controller.signal,
+        );
+        exportMaps = mergeNestedArrays(discoveredMaps, discovery.maps);
+        exportSeatCodes = mergeNestedRecords(
+          discoveredSeatCodes,
+          discovery.seatCodes,
+        );
+        discoveryReport = discovery.report;
+        setDiscoveredMaps(exportMaps);
+        setDiscoveredSeatCodes(exportSeatCodes);
+      }
+
+      const snapshot = sanitizedSeatPlanCatalog(
+        catalog,
+        new Date().toISOString(),
+        exportMaps,
+        exportSeatCodes,
+        discoveryReport,
+      );
+      const blob = new Blob([`${JSON.stringify(snapshot, null, 2)}\n`], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `nlb-seat-plan-catalog-${new Date()
+        .toISOString()
+        .slice(0, 10)}.json`;
+      anchor.click();
+      window.setTimeout(() => URL.revokeObjectURL(url), 0);
+    };
+
+    const handleExport = (event: Event) => {
+      void exportCatalog(event).catch((error: unknown) => {
+        console.error("Seat-plan maintenance export failed.", error);
+        window.alert(
+          error instanceof Error
+            ? `Seat-plan maintenance export failed: ${error.message}`
+            : "Seat-plan maintenance export failed.",
+        );
+      });
+    };
+    window.addEventListener(SEAT_PLAN_CATALOG_EXPORT_EVENT, handleExport);
+    return () =>
+      window.removeEventListener(SEAT_PLAN_CATALOG_EXPORT_EVENT, handleExport);
+  }, [catalog, discoveredMaps, discoveredSeatCodes]);
   const [scan, setScan] = useState<ScanState>({
     status: "idle",
     availability: {},
