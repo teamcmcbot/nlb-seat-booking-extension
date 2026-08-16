@@ -95,14 +95,14 @@ Content-Type: application/json
 - `SearchAvailableAreas` requests time out after six seconds.
 - A `429` or `5xx` `SearchAvailableAreas` response is retried once after
   approximately 600 milliseconds.
-- Future-date timeline calls and booking-preflight calls run sequentially
-  rather than concurrently.
+- Future-date timeline calls, current-day zero-match fallback calls, and
+  booking-preflight calls run sequentially rather than concurrently.
 - Routine seat-plan audit export refreshes `GetAccountInfo` once and makes no
   `SearchAvailableAreas` calls. Optional selected-library maintenance probes
   run sequentially and associate metadata only by exact returned `areaId`.
 - A failed interval never becomes selectable. Successful intervals from the
-  same future-date scan remain usable, while the overall scan is marked
-  incomplete.
+  same future-date or current-day fallback scan remain usable, while the
+  overall scan is marked incomplete.
 - Booking requests run sequentially and are not automatically retried. An
   automatic retry could create a duplicate booking when the server completed
   the first request but the response was lost.
@@ -492,14 +492,18 @@ URLs. The extension therefore does not call this endpoint: `GetAccountInfo`
 already supplies the same current-day matrix together with account, catalog,
 quota, and booking data. This avoids a redundant request.
 
-A separate point-in-time test around 00:30 found that `GetAccountInfo` did not
-return the expected current-seat availability data. The affected time window,
-payload shape, and reproducibility have not yet been established. Until that
-testing is complete, this is an observed reliability gap rather than a stable
-API contract. The extension does not yet fall back to
-`SearchSeatAvailability`; absent or malformed current-day data continues to
-fail closed. A future fix may use this endpoint as a fallback while retaining
-the normal one-call `GetAccountInfo` path when its matrix is usable.
+At approximately 00:26 SGT on 14 August 2026, a refreshed `GetAccountInfo`
+response contained 2,103 seats, each with exactly one all-false `01:00` slot
+and no other availability time. The selected areas opened at 09:00 or later,
+so zero entries matched a generated timeline interval. A same-window check of
+NLB's public availability page showed the same repeated placeholder through
+`SearchSeatAvailability`. This endpoint is therefore not used as a fallback.
+
+The normal one-call `GetAccountInfo` matrix remains preferred whenever the
+refreshed selected area contains matching timeline evidence. When it contains
+zero matches, the extension uses exact `SearchAvailableAreas` interval checks
+instead. The response was confirmed working again after 08:00 SGT, but the
+recovery point between shortly after 01:00 and 08:00 remains unverified.
 
 This endpoint and the embedded `hasAvailableSlots` matrix should be treated as
 reference availability, not as the final authority for creating a booking.
@@ -509,9 +513,10 @@ and `bookings/Book` remains the server-side authority.
 ## `GET /areas/SearchAvailableAreas`
 
 This endpoint answers booking availability for one area and one exact
-interval. It is used for future-date timeline checks, one-time map discovery,
-and selected-block preflight. Its result does not upgrade a current-day
-`hasAvailableSlots` false value.
+interval. It is used for future-date timeline checks, today's remaining
+intervals when the refreshed matrix has zero matching evidence, one-time map
+discovery, and selected-block preflight. Its result does not upgrade a valid
+current-day `hasAvailableSlots` false value.
 
 ### Query parameters
 
@@ -546,9 +551,11 @@ misrepresent the client context. The extension therefore continues to use
 ### Call pattern
 
 For an area open from 10:00 to 20:30 with a 60-minute interval, the extension
-generates starts at 10:00 through 19:00. On a future date that is ten
-availability calls. Today uses the `GetAccountInfo` slot matrix and one account
-refresh instead.
+generates starts at 10:00 through 19:00. On a future date that is ten logical
+availability calls. Today normally uses the `GetAccountInfo` slot matrix and
+one account refresh. If that refreshed matrix contains zero entries matching
+the selected area's remaining timeline, today uses the same sequential exact
+interval calls. Each call may retry once only after a `429` or `5xx` response.
 
 For today, it removes every start that is not strictly later than the current
 time. At 12:00, the displayed matrix begins at 13:00. Past cells are not
@@ -896,9 +903,8 @@ solely to obtain an error fixture.
 - Whether server times always omit an offset and must always be interpreted as
   Singapore local time.
 - Whether `advanceBookingDays` always counts calendar days.
-- The exact overnight interval and response shape in which `GetAccountInfo`
-  omits expected current-day seat availability, and whether
-  `SearchSeatAvailability` is consistently usable as a fallback.
+- The exact recovery time between NLB's observed post-midnight all-false
+  `01:00` placeholder and the confirmed working matrix after 08:00 SGT.
 
 See
 [`holiday-and-closure-testing.md`](holiday-and-closure-testing.md) for the

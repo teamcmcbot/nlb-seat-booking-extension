@@ -45,6 +45,11 @@ map and seat-catalog changes.
   image and fingerprint directly.
 - Adds optional selected-library URL discovery with at most two sequential
   branch-level searches and exact-area response association.
+- Rejects NLB's observed all-false post-midnight `01:00` placeholder and reuses
+  the bounded future-date interval scanner for today's otherwise-unknown
+  timeline without overriding valid false matrix values.
+- Invalidates date-less availability and refreshes account state once when the
+  Singapore calendar date rolls over.
 - Adds one-command candidate capture plus JSON/HTML drift reporting, with a
   distinct incomplete-evidence outcome when exact-area discovery fails.
 - Adds proposal-only batch preparation and an HTML review index for every
@@ -62,9 +67,9 @@ map and seat-catalog changes.
 
 ## Known limitations
 
-- A point-in-time test around 00:30 found that NLB did not return the expected
-  current-seat availability data through `GetAccountInfo`. More live testing
-  is required before adding a `SearchSeatAvailability` fallback.
+- NLB was confirmed to return a placeholder shortly after midnight and a
+  normal matrix after 08:00 SGT; the exact recovery time between those points
+  remains unknown.
 
 ## Installation
 

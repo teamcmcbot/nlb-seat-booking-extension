@@ -133,8 +133,9 @@ installation and preserves the extension's existing Chrome storage.
   is covered by `settings.holidays`.
 - Shows closed holiday intervals as non-interactive grey cells for both today
   and future dates; they cannot be selected or booked.
-- Refreshes today's complete matrix with one account request instead of one
-  request per hour.
+- Refreshes today's matrix with one account request. If the refreshed selected
+  area has zero entries matching its remaining daytime timeline, it reuses the
+  future-date exact-interval scanner instead of trusting out-of-hours data.
 - Retains exact interval checks for future dates, whose date-specific
   availability is not represented by the current-day matrix.
 - Loads and caches the selected area's map with one metadata request without
@@ -299,8 +300,10 @@ versioned download.
 1. Open the Seat Booking page and sign in from the extension header.
 2. Select a library, a specific area, and an available date.
 3. Open **Manage** and choose favourite seats.
-4. For today, review the immediately loaded matrix or click **Refresh**. For a
-   future date, click **Check** to run the date-specific interval searches.
+4. For today, review the immediately loaded matrix or click **Refresh**. If
+   NLB's refreshed matrix is unusable, the extension explains that it is
+   checking the remaining intervals individually. For a future date, click
+   **Check** to run the same date-specific interval searches.
 5. To book, select green intervals, choose the adjacent-hour mode, click
    **Book**, and confirm the request summary.
 6. To cancel, select a cancelable purple booking, click **Cancel**, review the
@@ -335,8 +338,9 @@ areas still require additional live API verification. See
 the current behavior, known gaps, test matrix, and proposed acceptance
 criteria.
 
-Current-day availability also depends on the undated `GetAccountInfo` seat
-matrix. A point-in-time test around 00:30 found that NLB did not return the
-expected current-seat availability data. This remains under investigation;
-the extension currently fails closed rather than issuing a fallback
-`SearchSeatAvailability` request.
+Current-day availability normally uses the undated `GetAccountInfo` seat
+matrix. Shortly after midnight, NLB was observed returning only an all-false
+`01:00` entry for every seat, which matches no daytime timeline interval. The
+extension rejects that placeholder and checks each remaining exact interval
+through `SearchAvailableAreas`. `SearchSeatAvailability` is not used because
+it showed the same overnight placeholder in a same-window comparison.

@@ -103,10 +103,13 @@ flowchart TD
     C --> E["Render user, quotas, and existing bookings"]
     D --> V["Apply holiday and branch-exclusion rules"]
     V --> F["Render library, area, date, and seat controls"]
-    F --> G["Today: read hasAvailableSlots matrix"]
-    F --> Q["Future date: search each exact interval"]
-    G --> H["Render availability timeline"]
+    F --> G["Today: validate hasAvailableSlots matrix"]
+    G --> W{"Any matching timeline evidence?"}
+    W -->|"Yes"| H
+    W -->|"No"| Q
+    F -->|"Future date"| Q["Search each exact interval"]
     Q --> H
+    H["Render availability timeline"]
     H --> I["Validate selections against quota and bookings"]
     I --> M["Build booking plan"]
     H --> R["Select complete cancelable bookings by booking ID"]
@@ -314,12 +317,20 @@ fetches `GetAccountInfo` once and replaces the current-day matrix. An
 `availableSeats` result from `SearchAvailableAreas` never upgrades a false
 matrix value to true.
 
-This one-call current-day path has an observed but not yet reproducible
-overnight reliability gap: around 00:30, NLB did not return the expected seat
-availability data in `GetAccountInfo`. The extension currently fails closed;
-it does not synthesize availability or fall back to
-`SearchSeatAvailability`. That endpoint is a candidate fallback only after the
-affected time window and response contract are tested more thoroughly.
+Shortly after midnight, `GetAccountInfo` was observed returning exactly one
+all-false `01:00` entry for every seat even though the selected areas opened
+later. The extension classifies current-day evidence against the selected
+area's complete refreshed seat catalog and remaining generated timeline. If
+zero entries match, it clears stale availability and selections and reuses the
+future-date exact-interval scanner. If any matching daytime entry exists, the
+matrix remains authoritative: matching false values stay false and missing
+cells stay unknown rather than being upgraded by searches.
+
+The fallback makes one logical `SearchAvailableAreas` request per remaining
+interval, sequentially, with the same timeout, bounded transient retry,
+exact-area parsing, progress, partial-failure, and abort behavior as a future
+date. `SearchSeatAvailability` is not used because NLB's own availability page
+showed the same `01:00` placeholder during a same-window comparison.
 
 Before the matrix is rendered, a matching holiday closes the selected branch
 for the entire date. Normal timeline intervals are retained for display, but
@@ -329,8 +340,9 @@ all-available matrix therefore cannot override the closure. The account
 refresh immediately before booking checks the holiday again and aborts before
 preflight if the closure is still present.
 
-The matrix has time labels but no booking date. For a future date, the
-extension therefore retains the date-specific flow:
+The matrix has time labels but no booking date. Future dates, and today only
+when its refreshed matrix has zero matching evidence, use the date-specific
+flow:
 
 1. It computes the remaining valid intervals.
 2. It sends one `SearchAvailableAreas` request for each interval.
@@ -343,6 +355,19 @@ Availability responses may contain records for areas other than the requested
 one. Future scans and booking preflight extract seat identities only from the
 record whose area ID matches the query, so a neighboring area cannot make a
 seat available or supply its booking code.
+
+Immediately before a current-day booking, the account and matrix are refreshed
+again. A usable matrix can reject a false or missing selected block and cannot
+be overridden. A zero-match overnight matrix supplies no negative evidence, so
+the flow continues to the existing exact selected-block preflight. A missing
+area or selected seat still fails closed. `bookings/Book` remains final
+authority.
+
+The local clock is checked every 30 seconds. When the Singapore calendar date
+changes, the assistant aborts scans, clears availability and selections from
+the previous date, moves an expired today selection to the new date, and
+refreshes account state once. It does not automatically launch interval
+searches after rollover.
 
 When an area with no map is selected, one exact availability request is used
 to extract and cache `areaMapUrls`. A response may list several areas, so maps
@@ -560,9 +585,9 @@ Seat availability and quota can change between scan and booking.
 - Check-in, ending an active session early, and booking extension are not
   implemented.
 - The extension cannot correct a delayed or stale NLB booking lifecycle state.
-- `GetAccountInfo` may omit expected current-day seat availability around
-  midnight; the exact window is unconfirmed and no
-  `SearchSeatAvailability` fallback is implemented yet.
+- NLB's exact recovery time between the observed post-midnight placeholder and
+  a confirmed working matrix after 08:00 SGT remains unknown. The extension
+  validates the response rather than hardcoding an overnight cutoff.
 - Unpacked distribution requires Chrome Developer mode.
 
 See [`holiday-and-closure-testing.md`](holiday-and-closure-testing.md) and the
