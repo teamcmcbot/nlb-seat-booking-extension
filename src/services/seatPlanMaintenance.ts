@@ -7,11 +7,12 @@ import {
 import {
   getBookableDateRange,
   getTimelineSlots,
-  holidayClosureForDate,
 } from "./bookingRules";
 
-export const SEAT_PLAN_CATALOG_EXPORT_EVENT =
-  "nlb-seat-helper:export-seat-plan-catalog";
+export interface SeatPlanExportMetadata {
+  extensionVersion: string;
+  mode: "catalog" | "targeted-discovery";
+}
 
 export function sanitizedSeatPlanCatalog(
   catalog: Catalog,
@@ -21,10 +22,12 @@ export function sanitizedSeatPlanCatalog(
     Record<string, Readonly<Record<string, string>>>
   > = {},
   mapDiscovery?: SeatPlanMapDiscoveryReport,
+  exportMetadata?: SeatPlanExportMetadata,
 ) {
   return {
     schemaVersion: 1,
     capturedAt,
+    exportMetadata,
     mapDiscovery,
     branches: catalog.branches.map((branch) => ({
       id: branch.id,
@@ -63,7 +66,10 @@ export function sanitizedSeatPlanCatalog(
 }
 
 export interface SeatPlanMapDiscoveryReport {
-  requested: boolean;
+  requested: true;
+  scope: "branch";
+  branchId: string;
+  requestCount: number;
   attempted: number;
   succeeded: number;
   failed: Array<{ branchId: string; areaId: string; message: string }>;
@@ -80,66 +86,137 @@ type SearchArea = (
   signal: AbortSignal,
 ) => Promise<unknown>;
 
-export async function discoverSeatPlanMetadata(
+function localDateValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function mostWidelyApplicableSlot(
+  slotsByArea: ReadonlyArray<ReturnType<typeof getTimelineSlots>>,
+  preference: "earliest" | "latest",
+) {
+  const counts = new Map<
+    string,
+    { count: number; slot: ReturnType<typeof getTimelineSlots>[number] }
+  >();
+  for (const slots of slotsByArea) {
+    for (const slot of slots) {
+      const current = counts.get(slot.startTime);
+      counts.set(slot.startTime, {
+        count: (current?.count ?? 0) + 1,
+        slot,
+      });
+    }
+  }
+  return [...counts.values()]
+    .sort((left, right) => {
+      const coverage = right.count - left.count;
+      if (coverage !== 0) {
+        return coverage;
+      }
+      return preference === "earliest"
+        ? left.slot.startTime.localeCompare(right.slot.startTime)
+        : right.slot.startTime.localeCompare(left.slot.startTime);
+    })
+    .at(0)?.slot;
+}
+
+function branchDiscoveryProbeSlots(
+  branch: Catalog["branches"][number],
   catalog: Catalog,
+  now: Date,
+) {
+  const today = localDateValue(now);
+  const futureSlots = branch.areas.map((area) => {
+    const range = getBookableDateRange(
+      area,
+      catalog.bookingRules,
+      now,
+      catalog.holidays,
+    );
+    const date = range.selectableDates.find((candidate) => candidate > today);
+    return date ? getTimelineSlots(area, date, now) : [];
+  });
+  const currentSlots = branch.areas.map((area) => {
+    const range = getBookableDateRange(
+      area,
+      catalog.bookingRules,
+      now,
+      catalog.holidays,
+    );
+    return range.selectableDates.includes(today)
+      ? getTimelineSlots(area, today, now)
+      : [];
+  });
+  const futureSlot = mostWidelyApplicableSlot(futureSlots, "earliest");
+  const currentDaySlot = mostWidelyApplicableSlot(currentSlots, "latest");
+
+  const slots = [futureSlot, currentDaySlot].filter(
+    (slot): slot is NonNullable<typeof slot> => slot !== undefined,
+  );
+  return slots.filter(
+    (slot, index) =>
+      slots.findIndex(
+        (candidate) => candidate.startTime === slot.startTime,
+      ) === index,
+  );
+}
+
+export async function discoverBranchSeatPlanMetadata(
+  catalog: Catalog,
+  branchId: string,
   searchArea: SearchArea,
   now = new Date(),
   signal = new AbortController().signal,
 ): Promise<SeatPlanMapDiscovery> {
   const maps: Record<string, string[]> = {};
   const seatCodes: Record<string, Record<string, string>> = {};
+  const branch = catalog.branches.find(
+    (candidate) => candidate.id === branchId,
+  );
+  if (!branch) {
+    throw new Error(
+      `Branch ${branchId} is not present in the refreshed catalog.`,
+    );
+  }
   const report: SeatPlanMapDiscoveryReport = {
     requested: true,
-    attempted: 0,
+    scope: "branch",
+    branchId,
+    requestCount: 0,
+    attempted: branch.areas.length,
     succeeded: 0,
     failed: [],
   };
+  const slots = branchDiscoveryProbeSlots(branch, catalog, now);
+  const errors: string[] = [];
+  let successfulResponse = false;
 
-  for (const branch of catalog.branches) {
-    for (const area of branch.areas) {
-      if (signal.aborted) {
-        throw new DOMException("Seat-plan discovery was canceled.", "AbortError");
-      }
-      const range = getBookableDateRange(
-        area,
-        catalog.bookingRules,
-        now,
-        catalog.holidays,
+  for (const slot of slots) {
+    if (signal.aborted) {
+      throw new DOMException("Seat-plan discovery was canceled.", "AbortError");
+    }
+    try {
+      report.requestCount += 1;
+      const payload = await searchArea(
+        {
+          branchId,
+          startTime: slot.startTime,
+          durationMinutes: slot.minutes,
+        },
+        signal,
       );
-      const slot = range.selectableDates
-        .filter(
-          (date) =>
-            !holidayClosureForDate(area, date, catalog.holidays),
-        )
-        .flatMap((date) => getTimelineSlots(area, date, now))
-        .at(0);
-      const key = `${area.branchId}:${area.id}`;
-      if (!slot) {
-        report.failed.push({
-          branchId: area.branchId,
-          areaId: area.id,
-          message: "No selectable probe interval was available.",
-        });
-        continue;
-      }
-
-      report.attempted += 1;
-      try {
-        const payload = await searchArea(
-          {
-            branchId: area.branchId,
-            areaId: area.id,
-            startTime: slot.startTime,
-            durationMinutes: slot.minutes,
-          },
-          signal,
-        );
+      successfulResponse = true;
+      for (const area of branch.areas) {
+        const key = `${area.branchId}:${area.id}`;
         const discoveredMaps = extractAreaMapUrls(payload, area.id);
         if (discoveredMaps.length > 0) {
-          maps[key] = [...new Set(discoveredMaps)];
+          maps[key] = [...new Set([...(maps[key] ?? []), ...discoveredMaps])];
         }
-        const codes: Record<string, string> = {};
-        for (const seat of extractAvailableSeatIdentities(payload)) {
+        const codes = seatCodes[key] ?? {};
+        for (const seat of extractAvailableSeatIdentities(payload, area.id)) {
           if (seat.id) {
             codes[seatIdentityKey(seat.id)] = seat.code;
           }
@@ -150,14 +227,42 @@ export async function discoverSeatPlanMetadata(
         if (Object.keys(codes).length > 0) {
           seatCodes[key] = codes;
         }
-        report.succeeded += 1;
-      } catch (error) {
-        report.failed.push({
-          branchId: area.branchId,
-          areaId: area.id,
-          message: error instanceof Error ? error.message : "Discovery failed.",
-        });
       }
+      if (
+        branch.areas.every(
+          (area) => maps[`${area.branchId}:${area.id}`]?.length,
+        )
+      ) {
+        break;
+      }
+    } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        throw error;
+      }
+      errors.push(error instanceof Error ? error.message : "Discovery failed.");
+    }
+  }
+
+  for (const area of branch.areas) {
+    const key = `${area.branchId}:${area.id}`;
+    if (maps[key]?.length) {
+      report.succeeded += 1;
+    } else {
+      report.failed.push({
+        branchId: area.branchId,
+        areaId: area.id,
+        message:
+          slots.length === 0
+            ? "No selectable branch probe interval was available."
+            : [
+                ...errors,
+                successfulResponse
+                  ? "No exact-area areaMapUrls were returned by the branch probe."
+                  : undefined,
+              ]
+                .filter((message): message is string => Boolean(message))
+                .join("; ") || "Discovery failed.",
+      });
     }
   }
 

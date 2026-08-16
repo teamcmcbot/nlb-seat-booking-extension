@@ -27,13 +27,45 @@ function stringArrayField(record: JsonRecord, names: string[]) {
     : [];
 }
 
+function exactAreaRecords(payload: unknown, areaId: string) {
+  const matches: JsonRecord[] = [];
+  const visited = new WeakSet<object>();
+
+  function visit(value: unknown, depth: number) {
+    if (!value || typeof value !== "object" || depth > 12) {
+      return;
+    }
+
+    if (visited.has(value)) {
+      return;
+    }
+    visited.add(value);
+
+    if (Array.isArray(value)) {
+      value.forEach((item) => visit(item, depth + 1));
+      return;
+    }
+
+    const record = value as JsonRecord;
+    if (stringField(record, ["areaId", "id"]) === areaId) {
+      matches.push(record);
+      return;
+    }
+
+    Object.values(record).forEach((child) => visit(child, depth + 1));
+  }
+
+  visit(payload, 0);
+  return matches;
+}
+
 export function seatMatchKeys(seat: Seat) {
   return [seat.id, seat.code, seat.name]
     .filter(Boolean)
     .map((value) => value.toLowerCase());
 }
 
-export function extractAvailableSeatKeys(payload: unknown) {
+export function extractAvailableSeatKeys(payload: unknown, areaId?: string) {
   const keys = new Set<string>();
   const visited = new WeakSet<object>();
 
@@ -77,7 +109,8 @@ export function extractAvailableSeatKeys(payload: unknown) {
     });
   }
 
-  visit(payload, false, 0);
+  const roots = areaId ? exactAreaRecords(payload, areaId) : [payload];
+  roots.forEach((root) => visit(root, false, 0));
   return keys;
 }
 
@@ -87,7 +120,10 @@ interface AvailableSeatIdentity {
   name?: string;
 }
 
-export function extractAvailableSeatIdentities(payload: unknown) {
+export function extractAvailableSeatIdentities(
+  payload: unknown,
+  areaId?: string,
+) {
   const seats = new Map<string, AvailableSeatIdentity>();
   const visited = new WeakSet<object>();
 
@@ -135,13 +171,13 @@ export function extractAvailableSeatIdentities(payload: unknown) {
     });
   }
 
-  visit(payload, false, 0);
+  const roots = areaId ? exactAreaRecords(payload, areaId) : [payload];
+  roots.forEach((root) => visit(root, false, 0));
   return [...seats.values()];
 }
 
 export function extractAreaMapUrls(payload: unknown, areaId: string) {
   const exactMatches = new Set<string>();
-  const fallbackCollections: string[][] = [];
   const visited = new WeakSet<object>();
 
   function visit(value: unknown, depth: number) {
@@ -160,26 +196,14 @@ export function extractAreaMapUrls(payload: unknown, areaId: string) {
     }
 
     const record = value as JsonRecord;
-    const maps = stringArrayField(record, ["areaMapUrls", "mapUrls"]);
-
-    if (maps.length > 0) {
-      fallbackCollections.push(maps);
-      const recordAreaId = stringField(record, ["id", "areaId"]);
-
-      if (recordAreaId === areaId) {
-        maps.forEach((map) => exactMatches.add(map));
-      }
-    }
+    const maps = stringArrayField(record, ["areaMapUrls"]);
+    maps.forEach((map) => exactMatches.add(map));
 
     Object.values(record).forEach((child) => visit(child, depth + 1));
   }
 
-  visit(payload, 0);
-  return exactMatches.size > 0
-    ? [...exactMatches]
-    : fallbackCollections.length === 1
-      ? fallbackCollections[0]
-      : [];
+  exactAreaRecords(payload, areaId).forEach((record) => visit(record, 0));
+  return [...exactMatches];
 }
 
 function parseMinutes(value?: string) {

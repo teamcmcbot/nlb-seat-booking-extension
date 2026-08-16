@@ -3,7 +3,10 @@ import { SEAT_PLAN_DEFINITIONS } from "../data/seatPlans";
 import { JURONG_LEVEL_3_ESCALATOR_SEAT_PLAN } from "../data/seatPlans/jurongLibrary";
 import type { Area, Seat } from "../models/catalog";
 import type { SeatPlanDefinition } from "../models/seatPlan";
-import { resolveSeatPlan } from "./seatPlanAnnotations";
+import {
+  resolveSeatPlan,
+  selectSeatPlanPath,
+} from "./seatPlanAnnotations";
 
 function seat(name: string, id = name): Seat {
   return {
@@ -45,6 +48,28 @@ const baseDefinition: SeatPlanDefinition = {
 };
 
 describe("seat-plan annotations", () => {
+  it("prefers the reviewed map instead of a neighboring observed map", () => {
+    expect(
+      selectSeatPlanPath(
+        area([seat("S1"), seat("S2")]),
+        ["neighbor-sp-full.png"],
+        [baseDefinition],
+      ),
+    ).toBe(mapPath);
+    expect(
+      selectSeatPlanPath(
+        { branchId: "26", id: "51" },
+        ["sbpl-5-adultsection-sp-full.png"],
+      ),
+    ).toBe("sbpl-5-readinglounge-sp-full.png");
+  });
+
+  it("uses the observed seat plan for an unreviewed area", () => {
+    expect(
+      selectSeatPlanPath(area([seat("S1")]), ["floor.png", "area-sp.png"], []),
+    ).toBe("area-sp.png");
+  });
+
   it("registers every reviewed plan exactly once", () => {
     const keys = SEAT_PLAN_DEFINITIONS.map(
       (definition) =>

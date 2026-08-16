@@ -44,7 +44,7 @@
         "canCancelStatus": false,
         "canCheckInStatus": false,
         "canExtendStatus": false,
-        "mapUrls": [
+        "areaMapUrls": [
           "jrl-3-studyareaescalator-fp.png",
           "jrl-3-studyareaescalator-sp-full.png?t=20221130"
         ]
@@ -68,7 +68,7 @@
         "canCancelStatus": true,
         "canCheckInStatus": true,
         "canExtendStatus": false,
-        "mapUrls": [
+        "areaMapUrls": [
           "jrl-3-studyareaescalator-fp.png",
           "jrl-3-studyareaescalator-sp-full.png?t=20221130"
         ]

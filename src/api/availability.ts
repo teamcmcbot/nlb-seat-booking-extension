@@ -5,7 +5,7 @@ const SEARCH_AVAILABLE_AREAS_URL =
 
 export interface AvailabilityQuery {
   branchId: string;
-  areaId: string;
+  areaId?: string;
   startTime: string;
   durationMinutes: number;
 }
@@ -25,10 +25,12 @@ export async function searchAvailableAreas(
   const parameters = new URLSearchParams({
     Mode: "OffsiteMode",
     BranchId: query.branchId,
-    AreaId: query.areaId,
     StartTime: query.startTime,
     DurationInMinutes: String(query.durationMinutes),
   });
+  if (query.areaId) {
+    parameters.set("AreaId", query.areaId);
+  }
   try {
     const response = await fetch(
       `${SEARCH_AVAILABLE_AREAS_URL}?${parameters.toString()}`,

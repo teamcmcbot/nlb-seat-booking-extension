@@ -38,12 +38,33 @@ map and seat-catalog changes.
   changing the NLB URL, plus sequential map capture, drift auditing, generated
   inventory/fingerprints, static verification, and visual annotation work
   packets.
-- Adds an explicitly confirmed full-discovery export that probes all areas
-  sequentially to refresh map URLs and observed booking seat codes.
+- Keeps developer maintenance controls out of normal release builds and adds a
+  dedicated maintenance build with embedded extension provenance.
+- Makes the routine audit export refresh `GetAccountInfo` once with zero
+  `SearchAvailableAreas` calls, using reviewed map paths to refresh every known
+  image and fingerprint directly.
+- Adds optional selected-library URL discovery with at most two sequential
+  branch-level searches and exact-area response association.
+- Adds one-command candidate capture plus JSON/HTML drift reporting, with a
+  distinct incomplete-evidence outcome when exact-area discovery fails.
+- Adds proposal-only batch preparation and an HTML review index for every
+  annotation-affecting drifted area without changing the reviewed baseline.
+- Prevents multi-area availability responses from assigning a neighboring
+  area's seat plan or seat identities to the requested area, and keeps a
+  reviewed area's expected map path subject to its existing fingerprint check.
 - Matches Woodlands Zone A seats S1–S9 to the artwork labels S01–S09 while
   retaining the live catalog identities used by favourite-seat selection.
 - Adds a repository maintenance skill and detailed workflow for safely updating
   added, removed, renamed, or visually moved seats.
+- Documents the signed-in Chrome, unpacked-build, download, network, reusable
+  agent prompts, and optional subagent boundaries for a complete seat-plan
+  audit. DevTools and Apple Events permissions are not required.
+
+## Known limitations
+
+- A point-in-time test around 00:30 found that NLB did not return the expected
+  current-seat availability data through `GetAccountInfo`. More live testing
+  is required before adding a `SearchSeatAvailability` fallback.
 
 ## Installation
 

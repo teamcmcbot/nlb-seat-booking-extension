@@ -221,7 +221,7 @@ export function normalizedCatalogAreas(catalog) {
         areaId,
         areaName: String(area.name ?? ""),
         floor: stringOrUndefined(area.floor),
-        areaMapUrls: uniqueStrings(area.areaMapUrls ?? area.mapUrls ?? []),
+        areaMapUrls: uniqueStrings(area.areaMapUrls ?? []),
         seats: (area.seats ?? []).map((seat) => ({
           id: String(seat.id ?? ""),
           code: stringOrUndefined(seat.code),

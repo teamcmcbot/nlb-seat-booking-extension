@@ -11,6 +11,7 @@
       "enum": ["sanitized-get-account-info", "reviewed-annotation-inventory"]
     },
     "imageSource": { "const": "nlb-seat-plan-assets" },
+    "catalogEvidence": { "$ref": "#/$defs/catalogEvidence" },
     "areas": {
       "type": "array",
       "items": { "$ref": "#/$defs/area" }
@@ -18,6 +19,58 @@
   },
   "additionalProperties": false,
   "$defs": {
+    "catalogEvidence": {
+      "type": "object",
+      "properties": {
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "exportMetadata": {
+          "type": "object",
+          "required": ["extensionVersion", "mode"],
+          "properties": {
+            "extensionVersion": { "type": "string", "minLength": 1 },
+            "mode": {
+              "enum": ["catalog", "targeted-discovery"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapDiscovery": {
+          "type": "object",
+          "required": [
+            "requested",
+            "scope",
+            "branchId",
+            "requestCount",
+            "attempted",
+            "succeeded",
+            "failed"
+          ],
+          "properties": {
+            "requested": { "type": "boolean" },
+            "scope": { "const": "branch" },
+            "branchId": { "type": "string", "minLength": 1 },
+            "requestCount": { "type": "integer", "minimum": 0 },
+            "attempted": { "type": "integer", "minimum": 0 },
+            "succeeded": { "type": "integer", "minimum": 0 },
+            "failed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["branchId", "areaId", "message"],
+                "properties": {
+                  "branchId": { "type": "string", "minLength": 1 },
+                  "areaId": { "type": "string", "minLength": 1 },
+                  "message": { "type": "string", "minLength": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
     "seat": {
       "type": "object",
       "required": ["name"],

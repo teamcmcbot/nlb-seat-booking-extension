@@ -38,62 +38,152 @@ retained only as diagnostic hints. A future decoded-pixel or perceptual hash
 may help classify re-encoding and visual similarity, but must not authorize a
 map automatically.
 
+## Prerequisites for a complete audit
+
+A full live audit of the current catalog and refreshed image fingerprints
+requires all of the following. Fresh URL association is an optional targeted
+step, not a routine prerequisite:
+
+| Prerequisite | Why it is needed | How to confirm it |
+| --- | --- | --- |
+| Current maintenance build | Normal release builds intentionally omit developer controls. | Run `npm run build:maintenance`, reload the unpacked extension from `dist/`, and refresh the NLB tab. |
+| Chrome Developer mode | Chrome requires it to load or reload this unpacked extension. | `chrome://extensions` shows **Developer mode** enabled and NLB Seat Helper loaded from `dist/`. |
+| Active NLB Seat Booking session | `GetAccountInfo` and `SearchAvailableAreas` use the tab's same-origin session. | The extension header reports a signed-in account and its refresh action succeeds. |
+| Normal Seat Booking tab | The content script and maintenance event exist only on the configured NLB route. | Open `https://www.nlb.gov.sg/seatbooking/` and wait for the extension catalog to load. |
+| Visible maintenance control | The export exists only in a maintenance build. | Expand **Seat-plan maintenance** and confirm **Export audit catalog** is enabled. |
+| Download access | The export is delivered as a sanitized JSON download. | Allow the confirmation prompts and retain the downloaded `nlb-seat-plan-catalog-YYYY-MM-DD.json`. |
+| Node.js, npm, and NLB image access | The capture, audit, and verification scripts run locally; `--refresh` retrieves current map bytes. | `npm ci` succeeds and the capture command can reach NLB's seat-plan image URLs. |
+| Reviewed baseline in the worktree | Drift is measured against the committed point-in-time evidence. | `npm run seat-plans:verify` succeeds before the live audit. |
+
+No cookie permission, cookie export, GPS permission, password access, or
+**Allow JavaScript from Apple Events** setting is required. The extension and
+scripts must not read browser cookies; authenticated API requests continue to
+use `credentials: "include"` in the NLB tab.
+
+For agent-assisted audits, browser control can expand the visible maintenance
+section, click the export button, and accept its confirmation dialog. A
+person only needs to intervene if browser control cannot access the Chrome tab,
+the NLB session is signed out, Chrome blocks the download, or the extension has
+not been reloaded. No DevTools injection is part of the normal flow. After the
+sanitized file is downloaded, the agent can run capture, drift audit,
+verification, and visual packet preparation without further access to
+credentials. Granting permission to update the reviewed baseline is a separate
+decision and is not required for an audit.
+
+### Single-run rule and dialog recovery
+
+A complete audit initiates exactly one routine catalog export. Before clicking,
+record the matching files already in Downloads and the audit start time. Click
+**Export audit catalog** once only. The dialog confirms the sanitized download
+and states the request budget: one `GetAccountInfo` refresh and zero
+`SearchAvailableAreas` calls.
+
+A browser-control timeout while clicking or accepting a dialog is ambiguous:
+the page event handler may still be active. It must never trigger another click.
+Inspect the visible export status and wait for one new download instead. If the
+person using Chrome accepts or dismisses either dialog, the agent must stop
+interacting with the tab until that one run either downloads a file or visibly
+returns to idle. Agent and person must not both retry the control.
+
+If no new JSON appears, stop and ask for help; do not retry. If multiple new
+JSON files appear, report the duplicate runs and do not choose one silently.
+The synchronous in-page single-flight guard prevents a second export handler
+from starting while the first is active, including while its dialog is open.
+
+### Recommended optional live-discovery window
+
+Live URL discovery is availability-sensitive and is not needed to check known
+map files, dimensions, metadata, or fingerprints. Use it only when the audit
+needs fresh map-to-area association evidence. For a normal account whose
+current `GetAccountInfo` rules release tomorrow at 12:00 Singapore time, start
+the maintenance run at **12:01 SGT**. The one-minute offset avoids the exact
+release boundary while reducing the chance that people or automated booking
+clients have already taken every seat in a small area.
+
+For one selected library, the preferred bounded probes are:
+
+1. tomorrow's first valid interval, typically 10:00; then
+2. only if the first response contains no exact-area `areaMapUrls`, today's
+   last valid full interval, typically 19:00.
+
+Treat 10:00 and 19:00 as common examples, not universal constants. The code
+selects the earliest tomorrow interval and latest today interval that cover the
+most areas in the selected branch, based on each area's current hours and slot
+rules. Also use the release time returned by the account rules: for example,
+start at 11:01 when privileged booking is released at 11:00. An unresolved
+area remains incomplete evidence; do not repeat the operation merely to chase
+an availability-scoped omission.
+
+The export embeds the extension version and whether targeted discovery was used.
+Do not reuse a
+discovery export produced by a build that predates exact-area response
+scoping: a multi-area response could have associated a neighboring map with
+the requested area. Regenerate it with the current build instead.
+
 ## Capture a current catalog
 
-Build and reload the unpacked extension, then open the normal Seat Booking page
+Build and reload the maintenance extension, then open the normal Seat Booking page
 and wait for the extension catalog to load:
 
 ```text
 https://www.nlb.gov.sg/seatbooking/
 ```
 
-In that tab's DevTools console, run:
+Expand **Seat-plan maintenance**, click **Export audit catalog**, and accept
+the confirmation. Click once; apply the single-run and dialog-recovery rules.
+The extension refreshes `GetAccountInfo` and downloads
+`nlb-seat-plan-catalog-YYYY-MM-DD.json`. It makes no availability searches.
+Canceling the prompt makes no API calls or download.
 
-```js
-window.dispatchEvent(
-  new Event("nlb-seat-helper:export-seat-plan-catalog"),
-);
+The reviewed `mapPath` in each annotation definition is the source of truth
+for an already known area. Candidate capture downloads that file again and
+records current dimensions, SHA-256, byte length, content type, ETag, and
+Last-Modified. A changed image at an unchanged URL is therefore detected.
+`GetAccountInfo` remains authoritative for the complete current branch, area,
+and seat catalog and can expose newly added branches or areas.
+
+If a new area has no map URL, or fresh association evidence is specifically
+required, select one library and use **Discover selected library maps** as a
+separate operation. It refreshes `GetAccountInfo` and makes at most two
+sequential branch-level searches without `AreaId`. Each returned area record
+is still matched by exact `areaId`; omitted areas are listed in
+`mapDiscovery.failed`. The export mode is `targeted-discovery`, and a non-empty
+failure list makes the resulting report incomplete.
+
+For a complete audit, run the wrapper that captures a candidate without
+overwriting the reviewed baseline and produces both machine-readable and HTML
+reports:
+
+```bash
+npm run seat-plans:full-audit -- \
+  --catalog /path/to/nlb-seat-plan-catalog-YYYY-MM-DD.json
 ```
 
-The event is handled entirely inside the extension and does not add a query
-parameter or make a maintenance request to NLB. Confirm the export when
-prompted. The extension then downloads a sanitized JSON file. Canceling the
-prompt does nothing.
+Outputs are written beneath an ignored timestamped directory in
+`seat-plan-work/`: `candidate.json`, `drift.json`, and `report.html`. Exit code
+`0` means clean, `2` means drift was found, and `3` means requested targeted
+discovery evidence is incomplete. The report is still generated for codes `2`
+and `3`.
 
-When a complete map-URL and booking-code refresh is required, use the explicit
-discovery form instead:
-
-```js
-window.dispatchEvent(
-  new CustomEvent("nlb-seat-helper:export-seat-plan-catalog", {
-    detail: { discoverMaps: true },
-  }),
-);
-```
-
-After a second confirmation, the extension probes every area with at most one
-`SearchAvailableAreas` request in flight. This may make one request per area
-and take several minutes. The downloaded catalog includes a discovery summary,
-all map URLs observed for each exact area, and booking seat codes observed in
-the selected probe interval. A missing booking code is not evidence that a
-seat was removed: date- and interval-scoped search results may contain only
-currently available seats.
-
-Capture a candidate baseline without overwriting the reviewed baseline:
+The lower-level candidate command remains available:
 
 ```bash
 npm run seat-plans:capture -- \
   --catalog /path/to/nlb-seat-plan-catalog-YYYY-MM-DD.json \
-  --output /tmp/seat-plan-candidate.json \
-  --refresh
+  --output /tmp/seat-plan-candidate.json
 ```
 
 The command downloads maps sequentially and refreshes every image by default;
 `--cache-only` is intended only for offline tooling development. If
-`GetAccountInfo` omits a map URL,
-use the existing exact-area map-discovery behavior to produce a sanitized
-catalog with that URL before concluding that the map was removed. Do not run
-parallel live API or map discovery requests.
+`GetAccountInfo` omits a known map URL, the candidate still checks the reviewed
+definition path. Use optional targeted branch discovery before concluding that
+NLB changed the area-to-map association. Do not run parallel live API or map
+discovery requests.
+
+A directly guessed image URL can establish that an asset exists, but cannot by
+itself establish that NLB currently associates that asset with the requested
+area. Keep the reviewed baseline unchanged until exact-area API evidence and a
+human review agree.
 
 ## Audit drift
 
@@ -102,11 +192,14 @@ Compare the candidate with the committed baseline:
 ```bash
 npm run seat-plans:audit -- \
   --snapshot /tmp/seat-plan-candidate.json \
-  --output /tmp/seat-plan-drift.json
+  --output /tmp/seat-plan-drift.json \
+  --html /tmp/seat-plan-drift.html
 ```
 
 Exit code `0` means no differences. Exit code `2` means the report contains
-changes requiring review.
+changes requiring review. Exit code `3` means requested targeted discovery did
+not return one or more areas; do not interpret missing availability-scoped
+evidence as clean or as a removal.
 
 | Change | Required action |
 | --- | --- |
@@ -124,6 +217,20 @@ Range and hybrid plans always require manual verification of endpoint order
 and arrow direction. OCR must not decide those assignments.
 
 ## Prepare an annotation update
+
+Prepare all annotation-affecting drift in one proposal-only review index:
+
+```bash
+npm run seat-plans:prepare-drift -- \
+  --report /path/to/drift.json
+```
+
+The command writes an ignored `annotation-review/index.html`, links all area
+comparison packets it could prepare, and lists lifecycle or failed cases that
+still require manual handling. It does not edit annotation definitions or the
+reviewed baseline.
+
+To prepare one known area directly, generate an ignored review packet:
 
 Generate an ignored review packet:
 
@@ -158,7 +265,7 @@ resolution and confirm every seat name against the sanitized catalog.
    capture without `--output` using the sanitized catalog.
 4. Regenerate fingerprints and inventory with `npm run seat-plans:capture`.
 5. Run `npm run seat-plans:verify`, `npm test`, `npm run typecheck`, and
-   `npm run build`.
+   `npm run build` for the normal release artifact.
 6. Inspect the generated overlay and smoke-test the area in Chrome.
 
 `seat-plans:verify` checks one-to-one baseline/definition coverage, dimensions,

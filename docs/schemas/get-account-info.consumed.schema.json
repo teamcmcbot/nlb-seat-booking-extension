@@ -357,12 +357,6 @@
             "type": "string"
           }
         },
-        "mapUrls": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
         "seats": {
           "type": "array",
           "items": {

@@ -76,3 +76,19 @@ describe("catalog holiday normalization", () => {
     ).toEqual([]);
   });
 });
+
+describe("catalog map normalization", () => {
+  it("consumes areaMapUrls and ignores the unsupported mapUrls alias", () => {
+    const payload = payloadWithHoliday("2026-08-09", "2026-08-09");
+    const area = payload.settings.menus.branchMenus[0].areas[0] as Record<
+      string,
+      unknown
+    >;
+    area.areaMapUrls = ["expected-sp-full.png"];
+    area.mapUrls = ["ignored-sp-full.png"];
+
+    expect(extractCatalog(payload).branches[0].areas[0].areaMapUrls).toEqual([
+      "expected-sp-full.png",
+    ]);
+  });
+});

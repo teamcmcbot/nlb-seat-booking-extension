@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { ClickableSeatPlan } from "./ClickableSeatPlan";
+import { SeatPlanMaintenancePanel } from "./SeatPlanMaintenancePanel";
 import { bookSeat } from "../api/booking";
 import { cancelBooking } from "../api/cancellation";
 import {
@@ -46,11 +47,7 @@ import {
   loadLastSeatSelection,
   saveLastSeatSelection,
 } from "../services/preferences";
-import {
-  discoverSeatPlanMetadata,
-  sanitizedSeatPlanCatalog,
-  SEAT_PLAN_CATALOG_EXPORT_EVENT,
-} from "../services/seatPlanMaintenance";
+import { selectSeatPlanPath } from "../services/seatPlanAnnotations";
 
 interface SeatAssistantProps {
   catalog: Catalog;
@@ -226,28 +223,6 @@ function selectionKey(seatId: string, slotKey: string) {
 
 function seatIdentityKey(value: string) {
   return value.trim().toLowerCase();
-}
-
-function mergeNestedArrays(
-  current: Record<string, string[]>,
-  additions: Record<string, string[]>,
-) {
-  const merged = { ...current };
-  for (const [key, values] of Object.entries(additions)) {
-    merged[key] = [...new Set([...(merged[key] ?? []), ...values])];
-  }
-  return merged;
-}
-
-function mergeNestedRecords(
-  current: Record<string, Record<string, string>>,
-  additions: Record<string, Record<string, string>>,
-) {
-  const merged = { ...current };
-  for (const [key, values] of Object.entries(additions)) {
-    merged[key] = { ...(merged[key] ?? {}), ...values };
-  }
-  return merged;
 }
 
 function joinSeatNames(names: string[]) {
@@ -471,83 +446,6 @@ export function SeatAssistant({
   const [cancellationProgress, setCancellationProgress] = useState<
     CancellationProgress[]
   >([]);
-
-  useEffect(() => {
-    const exportCatalog = async (event: Event) => {
-      const confirmed = window.confirm(
-        "Export sanitized seat-plan maintenance data?\n\n" +
-          "The download contains branch, area, map, and seat identity fields. " +
-          "It excludes account IDs, bookings, quotas, availability slots, and authentication data.",
-      );
-      if (!confirmed) {
-        return;
-      }
-
-      const discoverMaps =
-        event instanceof CustomEvent &&
-        Boolean((event.detail as { discoverMaps?: unknown } | null)?.discoverMaps);
-      let exportMaps = discoveredMaps;
-      let exportSeatCodes = discoveredSeatCodes;
-      let discoveryReport;
-      if (discoverMaps) {
-        const discoveryConfirmed = window.confirm(
-          "Discover current map metadata before exporting?\n\n" +
-            `This makes up to ${catalog.branches.reduce((total, branch) => total + branch.areas.length, 0)} sequential NLB availability requests and may take several minutes.`,
-        );
-        if (!discoveryConfirmed) {
-          return;
-        }
-        const controller = new AbortController();
-        const discovery = await discoverSeatPlanMetadata(
-          catalog,
-          searchWithTransientRetry,
-          new Date(),
-          controller.signal,
-        );
-        exportMaps = mergeNestedArrays(discoveredMaps, discovery.maps);
-        exportSeatCodes = mergeNestedRecords(
-          discoveredSeatCodes,
-          discovery.seatCodes,
-        );
-        discoveryReport = discovery.report;
-        setDiscoveredMaps(exportMaps);
-        setDiscoveredSeatCodes(exportSeatCodes);
-      }
-
-      const snapshot = sanitizedSeatPlanCatalog(
-        catalog,
-        new Date().toISOString(),
-        exportMaps,
-        exportSeatCodes,
-        discoveryReport,
-      );
-      const blob = new Blob([`${JSON.stringify(snapshot, null, 2)}\n`], {
-        type: "application/json",
-      });
-      const url = URL.createObjectURL(blob);
-      const anchor = document.createElement("a");
-      anchor.href = url;
-      anchor.download = `nlb-seat-plan-catalog-${new Date()
-        .toISOString()
-        .slice(0, 10)}.json`;
-      anchor.click();
-      window.setTimeout(() => URL.revokeObjectURL(url), 0);
-    };
-
-    const handleExport = (event: Event) => {
-      void exportCatalog(event).catch((error: unknown) => {
-        console.error("Seat-plan maintenance export failed.", error);
-        window.alert(
-          error instanceof Error
-            ? `Seat-plan maintenance export failed: ${error.message}`
-            : "Seat-plan maintenance export failed.",
-        );
-      });
-    };
-    window.addEventListener(SEAT_PLAN_CATALOG_EXPORT_EVENT, handleExport);
-    return () =>
-      window.removeEventListener(SEAT_PLAN_CATALOG_EXPORT_EVENT, handleExport);
-  }, [catalog, discoveredMaps, discoveredSeatCodes]);
   const [scan, setScan] = useState<ScanState>({
     status: "idle",
     availability: {},
@@ -685,10 +583,9 @@ export function SeatAssistant({
         ]),
       ]
     : [];
-  const seatPlanPath =
-    areaMapPaths.find((path) => path.toLowerCase().includes("-sp")) ??
-    areaMapPaths[1] ??
-    areaMapPaths[0];
+  const seatPlanPath = area
+    ? selectSeatPlanPath(area, areaMapPaths)
+    : undefined;
   const areaMapImage = mapImageUrl(seatPlanPath);
   const selectedDateQuota = quotaForDate(
     session,
@@ -1152,7 +1049,10 @@ export function SeatAssistant({
         }));
       }
 
-      const availableSeats = extractAvailableSeatIdentities(payload);
+      const availableSeats = extractAvailableSeatIdentities(
+        payload,
+        selectedArea.id,
+      );
       if (availableSeats.length > 0) {
         const areaKey = `${selectedArea.branchId}:${selectedArea.id}`;
         setDiscoveredSeatCodes((current) => {
@@ -1174,7 +1074,7 @@ export function SeatAssistant({
         });
       }
 
-      const availableKeys = extractAvailableSeatKeys(payload);
+      const availableKeys = extractAvailableSeatKeys(payload, selectedArea.id);
       completed += 1;
 
       setScan((current) => {
@@ -1497,7 +1397,10 @@ export function SeatAssistant({
           }));
         }
 
-        const availableSeat = extractAvailableSeatIdentities(payload).find(
+        const availableSeat = extractAvailableSeatIdentities(
+          payload,
+          area.id,
+        ).find(
           (candidate) =>
             candidate.id === booking.seatId ||
             candidate.name?.toLowerCase() === booking.seatName.toLowerCase() ||
@@ -1905,6 +1808,14 @@ export function SeatAssistant({
 
   return (
     <section className="nlb-seat-helper__assistant">
+      {__SEAT_PLAN_MAINTENANCE__ && (
+        <SeatPlanMaintenancePanel
+          branchId={branchId}
+          catalog={catalog}
+          session={session}
+          onAccountRefresh={onAccountRefresh}
+        />
+      )}
       <div className="nlb-seat-helper__fields">
         <label>
           <span>Library</span>

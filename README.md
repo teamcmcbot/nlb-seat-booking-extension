@@ -93,7 +93,9 @@ installation and preserves the extension's existing Chrome storage.
 - Grows to fit short favourite lists, uses up to the remaining browser height
   for longer lists, and scrolls only that list when more seats are available
   than can fit.
-- Displays NLB's seat-plan image when available, preferring the `-sp` map.
+- Displays the reviewed `-sp` map for an annotated branch and area. For an
+  unreviewed area, it uses only `areaMapUrls` attached to that exact area in
+  the NLB response.
 - Opens a full-screen seat picker with the enlarged plan and searchable
   favourite-seat controls side by side, while keeping the normal panel slim.
 - Provides 100%, 125%, 150%, 175%, and 200% map zoom levels, with visible
@@ -114,8 +116,14 @@ installation and preserves the extension's existing Chrome storage.
 - Provides repeatable capture, drift-audit, overlay, and verification commands
   documented in
   [`docs/seat-plan-maintenance.md`](docs/seat-plan-maintenance.md).
-- Supports an explicitly confirmed maintenance export that discovers map URLs
-  across all areas with sequential, read-only availability probes.
+- Provides an agent-run operator guide with exact audit and annotation-prep
+  prompts in [`docs/seat-plan-agent-audit.md`](docs/seat-plan-agent-audit.md).
+- Keeps seat-plan maintenance controls out of normal release builds. A
+  dedicated `npm run build:maintenance` build can export a freshly refreshed,
+  sanitized catalog with zero availability searches.
+- Supports optional selected-library map discovery with at most two sequential
+  branch-level availability probes. Returned records remain exact-area scoped
+  and availability omissions are treated as incomplete evidence.
 
 ### Availability
 
@@ -233,6 +241,12 @@ npm test           # Run focused service regression tests
 npm run build      # Typecheck and create a production build
 npm run dev        # Rebuild dist/ whenever source files change
 npm run package    # Build and create nlb-seat-helper.zip
+npm run seat-plans:capture  # Capture a candidate seat-plan baseline
+npm run seat-plans:audit    # Compare a candidate with reviewed evidence
+npm run seat-plans:full-audit  # Capture and generate JSON + HTML reports
+npm run seat-plans:prepare  # Generate an ignored visual review packet
+npm run seat-plans:prepare-drift  # Prepare all drifted annotation packets
+npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 ```
 
 `npm run dev` is optional. A completed `npm run build` produces a working
@@ -268,8 +282,17 @@ versioned download.
   tracks the fields, unknowns, and live tests needed for special operating
   days.
 - [Seat-plan Maintenance](docs/seat-plan-maintenance.md) documents sanitized
-  catalog capture, image fingerprints, drift auditing, overlays, and reviewed
-  annotation updates.
+  catalog capture, the prerequisites for complete and agent-assisted audits,
+  image fingerprints, drift auditing, overlays, and reviewed annotation
+  updates.
+- [Agent-run Seat-plan Audit](docs/seat-plan-agent-audit.md) provides the exact
+  prerequisites and reusable prompts for a complete read-only audit and
+  proposal-only annotation preparation.
+- [Seat-plan Annotations](docs/seat-plan-annotations.md) documents runtime
+  validation and the human-review rules for clickable hotspots.
+- [Seat-plan Inventory](docs/seat-plan-inventory.md) is the generated
+  point-in-time summary of reviewed areas, maps, fingerprints, and annotation
+  status.
 
 ## Usage
 
@@ -311,3 +334,9 @@ areas still require additional live API verification. See
 [Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md) for
 the current behavior, known gaps, test matrix, and proposed acceptance
 criteria.
+
+Current-day availability also depends on the undated `GetAccountInfo` seat
+matrix. A point-in-time test around 00:30 found that NLB did not return the
+expected current-seat availability data. This remains under investigation;
+the extension currently fails closed rather than issuing a fallback
+`SearchSeatAvailability` request.

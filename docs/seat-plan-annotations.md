@@ -27,6 +27,12 @@ image and seat-number search remain available. A hotspot changes only the
 account's local favourite list; it never represents availability or booking
 authority.
 
+When exactly one reviewed definition exists for the selected branch and area,
+the picker starts from that definition's map path rather than trusting the
+order of maps in a live multi-area response. The normal path, dimensions, and
+SHA-256 checks still apply before any hotspot is enabled. Unreviewed areas use
+only map paths discovered on their exact area record.
+
 ## Adding a labelled plan
 
 1. Capture and audit the current sanitized catalog and image fingerprint using

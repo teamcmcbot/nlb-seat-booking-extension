@@ -6,10 +6,11 @@ without cloning the repository or running npm.
 ## Before packaging
 
 1. Make sure `main` contains the intended release.
-2. Update the version in both:
+2. Update the version in all three:
    - `package.json`
+   - `package-lock.json`
    - `public/manifest.json`
-3. Make sure the two versions are identical.
+3. Make sure the three versions are identical.
 4. Install the locked dependencies with `npm ci`.
 5. Run the regression suite with `npm test`.
 

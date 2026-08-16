@@ -131,12 +131,13 @@ flowchart TD
 | `src/api/cancellation.ts` | Cancels one complete booking without automatic retry. |
 | `src/services/catalog.ts` | Extracts, merges, filters, and sorts branches, areas, seats, maps, and booking rules. |
 | `src/services/accountSession.ts` | Normalizes user ID, quota, advanced quota, and existing bookings. |
-| `src/services/availability.ts` | Generates intervals and recursively extracts available seat identities and map URLs. |
+| `src/services/availability.ts` | Generates intervals and extracts available seat identities and `areaMapUrls`, scoped to the exact requested area when an area ID is supplied. |
 | `src/services/bookingRules.ts` | Calculates selectable dates and removes elapsed same-day intervals. |
 | `src/services/bookingConflicts.ts` | Detects overlap, resolves bookings to catalog seats, and evaluates cancellation eligibility. |
 | `src/services/bookingPlanner.ts` | Produces separate requests or merges adjacent intervals for the same seat. |
 | `src/services/favourites.ts` | Persists favourite seat identities in Chrome local storage. |
-| `src/services/seatPlanAnnotations.ts` | Matches exact map revisions and validates annotated hotspots against current catalog seats. |
+| `src/services/seatPlanAnnotations.ts` | Selects a reviewed area's expected map path, matches exact revisions, and validates annotated hotspots against current catalog seats. |
+| `src/services/seatPlanMaintenance.ts` | Produces sanitized exports and runs optional bounded branch-level metadata discovery with exact-area response parsing. |
 | `src/data/seatPlans/` | Stores reviewed, non-account-specific seat-plan coordinates. |
 | `src/components/ClickableSeatPlan.tsx` | Renders verified keyboard- and pointer-accessible favourite hotspots over a plan. |
 | `docs/data/seat-plan-baseline.json` | Stores the point-in-time normalized catalog, map metadata, and SHA-256 evidence. |
@@ -151,20 +152,29 @@ flowchart TD
 server type. The parsers validate individual values and ignore malformed or
 unneeded fields.
 
-For seat-plan maintenance, `SeatAssistant` registers a dormant custom export
-event without altering the NLB URL or making an extra request. Dispatching the
-event from DevTools requires confirmation before downloading the normalized
-branch, area, seat identity, disabled state, map URL, and exact-area discovered
-seat-code fields needed by the audit scripts. The export excludes the account
-session, user ID, bookings, quotas, availability slots, and all raw server
-payloads.
+Seat-plan maintenance controls compile only in `vite --mode maintenance`
+builds; normal development, release, and package builds omit the panel and its
+handlers. The visible routine export synchronously enters a single-flight
+state, requires confirmation, refreshes `GetAccountInfo` once, and downloads
+normalized branch, area, seat identity, disabled state, and map URL fields. It
+makes zero `SearchAvailableAreas` calls and excludes the account session, user
+ID, bookings, quotas, availability slots, and raw payloads.
 
-The optional `discoverMaps: true` event detail requires a second confirmation.
-It deliberately awaits one exact-area `SearchAvailableAreas` probe at a time,
-records per-area success or failure, and merges observed map URLs and booking
-seat codes into the sanitized export. Those interval-scoped seat results are
-metadata enrichment only and never become evidence that an absent seat was
-removed from the catalog.
+The optional selected-library action is a separate explicit operation. After
+the same account refresh it makes one branch-level `SearchAvailableAreas`
+request without `AreaId`, then a second bounded fallback only when some areas
+remain unresolved. Responses may contain multiple areas, but maps and booking
+seat codes are associated only through each exact returned `areaId`.
+Availability-scoped omissions are recorded as incomplete evidence and never
+become proof that a catalog seat or area was removed. The handler uses the raw
+request function rather than the normal transient retry wrapper, keeping the
+strict live-search budget at two.
+
+The full-audit wrapper uses reviewed map paths as the source of truth for known
+areas, refreshes those map bytes into an ignored candidate, and emits JSON and
+self-contained HTML reports. Targeted discovery failures produce an incomplete
+status rather than a clean result. Annotation-preparation wrappers generate
+proposal-only comparison indexes and never alter the reviewed baseline.
 
 Catalog extraction recursively searches the response for area collections.
 This tolerates duplicated or differently nested catalog data. Areas with the
@@ -304,6 +314,13 @@ fetches `GetAccountInfo` once and replaces the current-day matrix. An
 `availableSeats` result from `SearchAvailableAreas` never upgrades a false
 matrix value to true.
 
+This one-call current-day path has an observed but not yet reproducible
+overnight reliability gap: around 00:30, NLB did not return the expected seat
+availability data in `GetAccountInfo`. The extension currently fails closed;
+it does not synthesize availability or fall back to
+`SearchSeatAvailability`. That endpoint is a candidate fallback only after the
+affected time window and response contract are tested more thoroughly.
+
 Before the matrix is rendered, a matching holiday closes the selected branch
 for the entire date. Normal timeline intervals are retained for display, but
 the extension creates an all-false closed matrix, skips map discovery and
@@ -322,9 +339,22 @@ extension therefore retains the date-specific flow:
 5. Each request has a six-second timeout.
 6. Failed intervals are marked incomplete and never selectable.
 
+Availability responses may contain records for areas other than the requested
+one. Future scans and booking preflight extract seat identities only from the
+record whose area ID matches the query, so a neighboring area cannot make a
+seat available or supply its booking code.
+
 When an area with no map is selected, one exact availability request is used
-to extract and cache `areaMapUrls`. Availability and seat identities from this
-map-discovery request are ignored.
+to extract and cache `areaMapUrls`. A response may list several areas, so maps
+are accepted only from the record whose `areaId` matches the request; a
+neighboring area's map is never used as a fallback. Availability and seat
+identities from this map-discovery request are ignored.
+
+For an area with one reviewed annotation, the UI renders that definition's
+reviewed map path and verifies its bytes, dimensions, and fingerprint. This
+prevents unrelated response ordering from replacing the map before runtime
+verification. An unreviewed area falls back to its exact-area observed `-sp`
+path.
 
 The timeline always represents every currently bookable interval for the
 selected date. Users choose booking times directly from green timeline cells;
@@ -530,6 +560,9 @@ Seat availability and quota can change between scan and booking.
 - Check-in, ending an active session early, and booking extension are not
   implemented.
 - The extension cannot correct a delayed or stale NLB booking lifecycle state.
+- `GetAccountInfo` may omit expected current-day seat availability around
+  midnight; the exact window is unconfirmed and no
+  `SearchSeatAvailability` fallback is implemented yet.
 - Unpacked distribution requires Chrome Developer mode.
 
 See [`holiday-and-closure-testing.md`](holiday-and-closure-testing.md) and the

@@ -245,6 +245,54 @@
   border-top: 1px solid #e8eeeb;
 }
 
+.nlb-seat-helper__maintenance {
+  margin-bottom: 8px;
+  padding: 7px 9px;
+  border: 1px solid #dce7e1;
+  border-radius: 8px;
+  background: #f7faf8;
+  color: #52675d;
+  font-size: 10px;
+}
+
+.nlb-seat-helper__maintenance summary {
+  width: max-content;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__maintenance p {
+  margin: 7px 0;
+  line-height: 1.4;
+}
+
+.nlb-seat-helper__maintenance button {
+  margin: 0 6px 6px 0;
+  padding: 6px 9px;
+  border: 1px solid #287753;
+  border-radius: 7px;
+  background: #287753;
+  color: white;
+  font: inherit;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__maintenance button:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.nlb-seat-helper__maintenance small {
+  display: block;
+  margin-top: 6px;
+  line-height: 1.35;
+}
+
+.nlb-seat-helper__maintenance small.is-error {
+  color: #9b4f46;
+}
+
 .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__assistant {
   display: flex;
   min-height: 0;

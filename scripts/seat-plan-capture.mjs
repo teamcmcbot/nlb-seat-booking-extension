@@ -117,6 +117,13 @@ const baseline = {
     ? "sanitized-get-account-info"
     : "reviewed-annotation-inventory",
   imageSource: "nlb-seat-plan-assets",
+  catalogEvidence: catalog
+    ? {
+        capturedAt: catalog.capturedAt,
+        exportMetadata: catalog.exportMetadata,
+        mapDiscovery: catalog.mapDiscovery,
+      }
+    : undefined,
   areas: sortAreas(areas),
 };
 

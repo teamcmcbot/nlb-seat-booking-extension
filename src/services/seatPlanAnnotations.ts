@@ -20,6 +20,36 @@ function fingerprintKey(definition: SeatPlanDefinition) {
   return `${definition.branchId}:${definition.areaId}:${mapPathKey(definition.mapPath)}`;
 }
 
+export function selectSeatPlanPath(
+  area: Pick<Area, "branchId" | "id">,
+  observedPaths: readonly string[],
+  definitions: readonly SeatPlanDefinition[] = SEAT_PLAN_DEFINITIONS,
+) {
+  const reviewedDefinitions = definitions.filter(
+    (definition) =>
+      definition.branchId === area.branchId && definition.areaId === area.id,
+  );
+  const observedReviewedDefinitions = reviewedDefinitions.filter((definition) =>
+    observedPaths.some(
+      (path) => mapPathKey(path) === mapPathKey(definition.mapPath),
+    ),
+  );
+
+  if (observedReviewedDefinitions.length === 1) {
+    return observedReviewedDefinitions[0].mapPath;
+  }
+
+  if (reviewedDefinitions.length === 1) {
+    return reviewedDefinitions[0].mapPath;
+  }
+
+  return (
+    observedPaths.find((path) => path.toLowerCase().includes("-sp")) ??
+    observedPaths[1] ??
+    observedPaths[0]
+  );
+}
+
 function invalid(
   reason: SeatPlanInvalidReason,
   definition?: SeatPlanDefinition,

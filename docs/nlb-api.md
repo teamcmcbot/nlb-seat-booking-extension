@@ -9,10 +9,12 @@ the endpoints or fields will remain stable.
 
 The notes are based on:
 
-- the extension source through version `1.1.0`;
+- the extension source through version `1.3.0`;
 - a `GetAccountInfo` response captured on 30 July 2026;
-- booking-state observations made on 31 July 2026; and
-- successful availability and booking requests made during extension testing.
+- booking-state observations made on 31 July 2026;
+- successful availability and booking requests made during extension testing;
+  and
+- exact-area map-discovery observations made on 12 and 13 August 2026.
 
 All times in the captured data are interpreted in Singapore time
 (`Asia/Singapore`, UTC+08:00). Examples in this repository are sanitized.
@@ -95,6 +97,9 @@ Content-Type: application/json
   approximately 600 milliseconds.
 - Future-date timeline calls and booking-preflight calls run sequentially
   rather than concurrently.
+- Routine seat-plan audit export refreshes `GetAccountInfo` once and makes no
+  `SearchAvailableAreas` calls. Optional selected-library maintenance probes
+  run sequentially and associate metadata only by exact returned `areaId`.
 - A failed interval never becomes selectable. Successful intervals from the
   same future-date scan remain usable, while the overall scan is marked
   incomplete.
@@ -307,7 +312,6 @@ interface Area {
   minBookingMinutes?: number;
   maxBookingMinutes?: number;
   areaMapUrls?: string[];
-  mapUrls?: string[];
   seats: Seat[];
 }
 
@@ -437,7 +441,8 @@ all bookings in a cancellation run.
 | `bookingTimeslotInMinutes` | `60` | Size and spacing of timeline intervals. |
 | `minBookingMinutes` | `60` | Minimum duration and today's last possible start. |
 | `maxBookingMinutes` | `240` | Maximum duration and adjacent-slot merge limit. |
-| `areaMapUrls` or `mapUrls` | empty list | Seat-plan discovery; filenames containing `-sp` are preferred. |
+| `areaMapUrls` | empty list | Observed seat-plan paths; a reviewed area prefers its exact reviewed path. |
+| `mapUrls` | ignored | Not an observed `SearchAvailableAreas` seat-plan source and not consumed by the extension. |
 | `seats` | empty list | Favourite management and availability matching. |
 
 Discussion rooms and paid facilities observed as `facilityId: 2` are removed
@@ -486,6 +491,15 @@ Neither observed response supplied all booking-ready seat codes or area map
 URLs. The extension therefore does not call this endpoint: `GetAccountInfo`
 already supplies the same current-day matrix together with account, catalog,
 quota, and booking data. This avoids a redundant request.
+
+A separate point-in-time test around 00:30 found that `GetAccountInfo` did not
+return the expected current-seat availability data. The affected time window,
+payload shape, and reproducibility have not yet been established. Until that
+testing is complete, this is an observed reliability gap rather than a stable
+API contract. The extension does not yet fall back to
+`SearchSeatAvailability`; absent or malformed current-day data continues to
+fail closed. A future fix may use this endpoint as a fallback while retaining
+the normal one-call `GetAccountInfo` path when its matrix is usable.
 
 This endpoint and the embedded `hasAvailableSlots` matrix should be treated as
 reference availability, not as the final authority for creating a booking.
@@ -544,6 +558,22 @@ The timeline represents every generated interval. Users select booking times
 directly from the returned green cells; there is no separate Start or Duration
 filter.
 
+Routine maintenance does not call this endpoint. Optional selected-library
+discovery omits `AreaId` and first requests the most widely applicable earliest
+interval on the first released future date. It makes one sequential fallback at
+the most widely applicable latest remaining current-day interval only when
+branch areas remain unresolved. This is at most two searches for the selected
+branch, not two per area. Holiday status does not suppress the metadata-only
+future probe and does not change timeline or booking availability.
+
+On 13 August 2026, a point-in-time test for branch `26`, area `51`, at
+`2026-08-13T11:00` returned HTTP 200 with `found: false`, both area 50 and area
+51 records, and the correct Reading Lounge `areaMapUrls` on the area 51 record.
+Before the configured future-date release time, otherwise equivalent probes
+for 14, 15, and 16 August returned HTTP 400 validation responses. This supports
+using `found` only as availability state, returned `areaId` for metadata
+association, and the released date range rather than arbitrary future dates.
+
 ### Accepted response contract
 
 We do not currently have a sanitized raw wire fixture for this endpoint in the
@@ -571,9 +601,17 @@ interface AvailableSeatIdentity {
 At least one identity field is used to match catalog seats. A booking-ready
 identity requires `code`/`seatCode` plus either ID or name.
 
-The parser also looks for `areaMapUrls` or `mapUrls`. It prefers maps attached
-to the requested area ID; a single unambiguous map collection is accepted as
-a fallback.
+For map discovery, the parser accepts only `areaMapUrls` inside a record whose
+`areaId` (or observed `id` alias) exactly matches the requested area. It does
+not consume `areaImageUrls`, does not treat `mapUrls` as a
+`SearchAvailableAreas` alias, and does not fall back to another area's only map
+collection. A response can contain multiple areas and can contain useful map
+metadata even when its top-level `found` value is `false`.
+
+The same exact-area scope applies when future availability scans and booking
+preflight extract available seat identities. A neighboring area in the same
+payload cannot provide an availability match or booking-ready seat code for
+the requested area.
 
 The following is an **illustrative minimal shape accepted by the parser**, not
 a claim that NLB always returns this exact envelope:
@@ -805,15 +843,18 @@ booking whose start time has passed remains purple and non-cancelable even if
 
 ## Seat-plan image URLs
 
-Map filenames from `areaMapUrls` or `mapUrls` are resolved against:
+Map filenames normalized from account catalog data, plus exact-area
+`areaMapUrls` discovered through `SearchAvailableAreas`, are resolved against:
 
 ```text
 https://www.nlb.gov.sg/seatbooking/img/areas/{filename}
 ```
 
-Absolute URLs and paths containing `..` are rejected. If several maps exist,
-the extension prefers the filename containing `-sp`, which represents the
-seat plan in the observed data.
+Absolute URLs and paths containing `..` are rejected. For an area with one
+reviewed annotation, the extension prefers that exact reviewed map path and
+then verifies the fetched image. An unreviewed area prefers the exact-area
+filename containing `-sp`, which represents the seat plan in the observed
+data.
 
 The observed API does not provide seat coordinates. Clickable seats therefore
 come from reviewed extension annotations tied to an exact branch, area, map
@@ -855,6 +896,9 @@ solely to obtain an error fixture.
 - Whether server times always omit an offset and must always be interpreted as
   Singapore local time.
 - Whether `advanceBookingDays` always counts calendar days.
+- The exact overnight interval and response shape in which `GetAccountInfo`
+  omits expected current-day seat availability, and whether
+  `SearchSeatAvailability` is consistently usable as a fallback.
 
 See
 [`holiday-and-closure-testing.md`](holiday-and-closure-testing.md) for the
