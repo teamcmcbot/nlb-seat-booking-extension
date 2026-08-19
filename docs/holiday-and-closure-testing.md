@@ -78,11 +78,20 @@ The extension currently:
    `closingTime`, and booking interval.
 3. Removes elapsed intervals when the selected date is today.
 4. Uses `GetAccountInfo` → `seats[].hasAvailableSlots` for today's reference
-   availability. The matrix has times but no calendar date.
+   availability. If the refreshed selected area has zero entries matching its
+   remaining generated timeline, it rejects the observed overnight `01:00`
+   placeholder and treats those cells as unknown.
 5. Calls `SearchAvailableAreas` once for each generated interval when the
-   selected date is tomorrow or another future date.
+   selected date is tomorrow or another future date, and for today's remaining
+   intervals only when the refreshed current-day matrix is unusable. A holiday
+   closure prevents both paths.
 6. Makes one map-discovery `SearchAvailableAreas` call when the selected area
    has no cached map; that response does not change timeline availability.
+   Routine maintenance export makes no availability probe. Optional targeted
+   library discovery first probes the first released future date, even when it
+   is a holiday, and falls back once to today's latest remaining interval when
+   branch areas remain unresolved. These metadata probes never make a holiday
+   timeline selectable.
 7. Refreshes `GetAccountInfo` and preflights selected booking blocks with
    exact `SearchAvailableAreas` calls immediately before booking. A preflight
    may reject a selection but cannot turn a current-day false matrix value
@@ -184,6 +193,14 @@ For each scenario, record:
   `ignoreHolidays`; and
 - relevant seats' `hasAvailableSlots` entries for a current-day test; and
 - the selected date's quota.
+
+For an overnight reliability test, also record repeated sanitized samples
+before midnight and at regular intervals after midnight until the complete
+current-day matrix returns. Compare the same area with
+`SearchSeatAvailability` and one exact `SearchAvailableAreas` interval. The
+14 August comparison found the same placeholder in `SearchSeatAvailability`
+and usable exact-area results in `SearchAvailableAreas`; repeat the comparison
+to identify NLB's recovery time without assuming a fixed cutoff.
 
 ### `SearchAvailableAreas`
 

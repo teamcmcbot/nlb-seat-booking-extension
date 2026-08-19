@@ -1,10 +1,11 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [react()],
   define: {
     "process.env.NODE_ENV": JSON.stringify("production"),
+    __SEAT_PLAN_MAINTENANCE__: JSON.stringify(mode === "maintenance"),
   },
   build: {
     outDir: "dist",
@@ -25,4 +26,4 @@ export default defineConfig({
       },
     },
   },
-});
+}));

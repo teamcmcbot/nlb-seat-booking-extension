@@ -231,7 +231,7 @@ function areaFromRecord(
       numberField(area, ["minBookingMinutes", "minimumBookingMinutes"]) ?? 60,
     maxBookingMinutes:
       numberField(area, ["maxBookingMinutes", "maximumBookingMinutes"]) ?? 240,
-    areaMapUrls: stringArrayField(area, ["areaMapUrls", "mapUrls"]),
+    areaMapUrls: stringArrayField(area, ["areaMapUrls"]),
     seats: extractSeats(area),
   };
 }
@@ -373,7 +373,7 @@ function attachAreaMapMetadata(
     }
 
     const record = value as JsonRecord;
-    const maps = stringArrayField(record, ["areaMapUrls", "mapUrls"]);
+    const maps = stringArrayField(record, ["areaMapUrls"]);
     const areaId = stringField(record, ["areaId", "id"]);
     const branchId = stringField(record, ["branchId"]);
 

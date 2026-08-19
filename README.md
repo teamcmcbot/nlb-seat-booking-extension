@@ -11,7 +11,9 @@ session.
 - Book multiple seats and time slots together, such as 10am-12pm and
   2pm-4pm.
 
-![NLB Seat Helper screenshot](screenshots/nlb-seat-booking-extension.png)
+![NLB Seat Helper availability overview](screenshots/store-overview.png)
+
+![NLB Seat Helper interactive seat picker](screenshots/store-seat-picker.png)
 
 ## Install the latest release
 
@@ -93,8 +95,39 @@ installation and preserves the extension's existing Chrome storage.
 - Grows to fit short favourite lists, uses up to the remaining browser height
   for longer lists, and scrolls only that list when more seats are available
   than can fit.
-- Displays NLB's seat-plan image when available, preferring the `-sp` map.
-- Opens the seat plan in a full-screen viewer when clicked.
+- Displays the reviewed `-sp` map for an annotated branch and area. For an
+  unreviewed area, it uses only `areaMapUrls` attached to that exact area in
+  the NLB response.
+- Opens a full-screen seat picker with the enlarged plan and searchable
+  favourite-seat controls side by side, while keeping the normal panel slim.
+- Provides 100%, 125%, 150%, 175%, and 200% map zoom levels, with visible
+  scrollbar tracks outside the map and mouse, touch, trackpad, or wheel
+  navigation.
+- Allows dragging the map background to pan while keeping annotated seats
+  clickable; selecting a seat from the sidebar centers it in the map.
+- Uses a high-contrast Done button and scales the favourite star to each seat
+  hotspot so markers remain consistent across differently sized maps.
+- Adds 2,080 verified clickable hotspots across all 83 inventoried plans,
+  including range-order mappings for the two plans without individual labels.
+- Verifies the exact rendered image bytes against a reviewed SHA-256 and falls
+  back to seat-number search whenever the path, image, dimensions, or catalog
+  seats no longer match.
+- Tracks the current 83-area baseline, map fingerprints, seat identities, and
+  visual label classification in
+  [`docs/seat-plan-inventory.md`](docs/seat-plan-inventory.md).
+- Provides repeatable capture, drift-audit, overlay, and verification commands
+  documented in
+  [`docs/seat-plan-maintenance.md`](docs/seat-plan-maintenance.md).
+- Provides an agent-run operator guide with exact audit and annotation-prep
+  prompts in [`docs/seat-plan-agent-audit.md`](docs/seat-plan-agent-audit.md).
+- Keeps seat-plan maintenance controls out of normal release builds. A
+  dedicated `npm run build:maintenance` build can export a freshly refreshed,
+  sanitized catalog with zero availability searches. Chrome identifies that
+  build as **NLB Seat Helper (Maintenance)** with a `-maintenance` display
+  version and developer-only description.
+- Supports optional selected-library map discovery with at most two sequential
+  branch-level availability probes. Returned records remain exact-area scoped
+  and availability omissions are treated as incomplete evidence.
 
 ### Availability
 
@@ -104,8 +137,9 @@ installation and preserves the extension's existing Chrome storage.
   is covered by `settings.holidays`.
 - Shows closed holiday intervals as non-interactive grey cells for both today
   and future dates; they cannot be selected or booked.
-- Refreshes today's complete matrix with one account request instead of one
-  request per hour.
+- Refreshes today's matrix with one account request. If the refreshed selected
+  area has zero entries matching its remaining daytime timeline, it reuses the
+  future-date exact-interval scanner instead of trusting out-of-hours data.
 - Retains exact interval checks for future dates, whose date-specific
   availability is not represented by the current-day matrix.
 - Loads and caches the selected area's map with one metadata request without
@@ -117,7 +151,7 @@ installation and preserves the extension's existing Chrome storage.
 - Revalidates selected booking blocks and obtains NLB's internal seat code
   immediately before booking.
 
-Timeline colors:
+Timeline legend:
 
 - Green: available and selectable.
 - Blue with a check mark: selected for a new booking.
@@ -210,12 +244,23 @@ Available scripts:
 npm run typecheck  # TypeScript validation
 npm test           # Run focused service regression tests
 npm run build      # Typecheck and create a production build
+npm run build:maintenance  # Create a visibly marked maintainer-only audit build
 npm run dev        # Rebuild dist/ whenever source files change
 npm run package    # Build and create nlb-seat-helper.zip
+npm run seat-plans:capture  # Capture a candidate seat-plan baseline
+npm run seat-plans:audit    # Compare a candidate with reviewed evidence
+npm run seat-plans:full-audit  # Capture and generate JSON + HTML reports
+npm run seat-plans:prepare  # Generate an ignored visual review packet
+npm run seat-plans:prepare-drift  # Prepare all drifted annotation packets
+npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 ```
 
 `npm run dev` is optional. A completed `npm run build` produces a working
 extension without a development process running.
+
+`npm run build:maintenance` is only for repository maintainers performing a
+read-only seat-plan audit. Chrome labels this unpacked build **NLB Seat Helper
+(Maintenance)**; normal release builds do not expose the maintenance controls.
 
 ## Load a development build in Chrome
 
@@ -246,14 +291,28 @@ versioned download.
 - [Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md)
   tracks the fields, unknowns, and live tests needed for special operating
   days.
+- [Seat-plan Maintenance](docs/seat-plan-maintenance.md) documents sanitized
+  catalog capture, the prerequisites for complete and agent-assisted audits,
+  image fingerprints, drift auditing, overlays, and reviewed annotation
+  updates.
+- [Agent-run Seat-plan Audit](docs/seat-plan-agent-audit.md) provides the exact
+  prerequisites and reusable prompts for a complete read-only audit and
+  proposal-only annotation preparation.
+- [Seat-plan Annotations](docs/seat-plan-annotations.md) documents runtime
+  validation and the human-review rules for clickable hotspots.
+- [Seat-plan Inventory](docs/seat-plan-inventory.md) is the generated
+  point-in-time summary of reviewed areas, maps, fingerprints, and annotation
+  status.
 
 ## Usage
 
 1. Open the Seat Booking page and sign in from the extension header.
 2. Select a library, a specific area, and an available date.
 3. Open **Manage** and choose favourite seats.
-4. For today, review the immediately loaded matrix or click **Refresh**. For a
-   future date, click **Check** to run the date-specific interval searches.
+4. For today, review the immediately loaded matrix or click **Refresh**. If
+   NLB's refreshed matrix is unusable, the extension explains that it is
+   checking the remaining intervals individually. For a future date, click
+   **Check** to run the same date-specific interval searches.
 5. To book, select green intervals, choose the adjacent-hour mode, click
    **Book**, and confirm the request summary.
 6. To cancel, select a cancelable purple booking, click **Cancel**, review the
@@ -269,6 +328,8 @@ src/components/               Favourite-seat and booking interface
 src/content/                  Injected application shell and styles
 src/models/                   Normalized account, catalog, and booking types
 src/services/                 Parsing, rules, persistence, conflicts, and plans
+scripts/                      Packaging and seat-plan maintenance commands
+docs/data/                    Reviewed machine-readable seat-plan baseline
 vite.config.ts                Content-script production build
 ```
 
@@ -285,3 +346,10 @@ areas still require additional live API verification. See
 [Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md) for
 the current behavior, known gaps, test matrix, and proposed acceptance
 criteria.
+
+Current-day availability normally uses the undated `GetAccountInfo` seat
+matrix. Shortly after midnight, NLB was observed returning only an all-false
+`01:00` entry for every seat, which matches no daytime timeline interval. The
+extension rejects that placeholder and checks each remaining exact interval
+through `SearchAvailableAreas`. `SearchSeatAvailability` is not used because
+it showed the same overnight placeholder in a same-window comparison.

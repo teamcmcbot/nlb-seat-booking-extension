@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { ClickableSeatPlan } from "./ClickableSeatPlan";
+import { SeatPlanMaintenancePanel } from "./SeatPlanMaintenancePanel";
 import { bookSeat } from "../api/booking";
 import { cancelBooking } from "../api/cancellation";
 import {
@@ -18,10 +20,14 @@ import type { Area, Catalog, FavouriteSeat, Seat } from "../models/catalog";
 import {
   extractAreaMapUrls,
   extractAvailableSeatIdentities,
-  extractAvailableSeatKeys,
-  seatMatchKeys,
   type HourSlot,
 } from "../services/availability";
+import {
+  currentDayReferenceEvidence,
+  scanExactAreaIntervals,
+  selectedDateAfterRollover,
+  type SeatAvailability,
+} from "../services/availabilityScan";
 import {
   getBookableDateRange,
   getTimelineSlots,
@@ -45,6 +51,7 @@ import {
   loadLastSeatSelection,
   saveLastSeatSelection,
 } from "../services/preferences";
+import { selectSeatPlanPath } from "../services/seatPlanAnnotations";
 
 interface SeatAssistantProps {
   catalog: Catalog;
@@ -56,8 +63,6 @@ interface SeatAssistantProps {
   }>;
 }
 
-type SeatAvailability = Record<string, Record<string, boolean>>;
-
 type ScanState =
   | { status: "idle"; availability: SeatAvailability }
   | {
@@ -65,6 +70,7 @@ type ScanState =
       availability: SeatAvailability;
       completed: number;
       total: number;
+      message?: string;
     }
   | { status: "complete"; availability: SeatAvailability }
   | { status: "error"; availability: SeatAvailability; message: string };
@@ -82,46 +88,6 @@ function todayValue() {
 
 function isToday(date: string, now: Date) {
   return date === localDateValue(now);
-}
-
-function referenceTime(value: string) {
-  return value.match(/(?:T|\s)?(\d{1,2}:\d{2})/)?.[1] ?? value.slice(0, 5);
-}
-
-function referenceAvailability(
-  area: Area | undefined,
-  seats: Seat[],
-  slots: HourSlot[],
-  date: string,
-  now: Date,
-) {
-  if (!area || !isToday(date, now)) {
-    return undefined;
-  }
-
-  const availability: SeatAvailability = {};
-  let knownSlots = 0;
-
-  for (const seat of seats) {
-    const slotsByTime = new Map(
-      seat.availableSlots.map((slot) => [referenceTime(slot.time), slot]),
-    );
-
-    for (const slot of slots) {
-      const referenceSlot = slotsByTime.get(referenceTime(slot.label));
-      if (!referenceSlot) {
-        continue;
-      }
-
-      availability[seat.id] = {
-        ...availability[seat.id],
-        [slot.key]: !seat.disabled && referenceSlot.isAvailable,
-      };
-      knownSlots += 1;
-    }
-  }
-
-  return knownSlots > 0 ? availability : undefined;
 }
 
 function closedAvailability(seats: Seat[], slots: HourSlot[]) {
@@ -163,10 +129,6 @@ function seatToFavourite(area: Area, seat: Seat): FavouriteSeat {
     seatCode: seat.code,
     seatName: seat.name,
   };
-}
-
-function seatMatchesKeys(seat: Seat, availableKeys: Set<string>) {
-  return seatMatchKeys(seat).some((key) => availableKeys.has(key));
 }
 
 function retryDelay(signal: AbortSignal) {
@@ -416,6 +378,7 @@ export function SeatAssistant({
   const [seatSearch, setSeatSearch] = useState("");
   const [now, setNow] = useState(() => new Date());
   const [mapExpanded, setMapExpanded] = useState(false);
+  const [mapFocusSeatId, setMapFocusSeatId] = useState("");
   const [loadingMapKey, setLoadingMapKey] = useState("");
   const [discoveredMaps, setDiscoveredMaps] = useState<
     Record<string, string[]>
@@ -448,6 +411,20 @@ export function SeatAssistant({
   });
   const scanController = useRef<AbortController>();
   const mapRequests = useRef(new Set<string>());
+  const mapTriggerRef = useRef<HTMLButtonElement>(null);
+  const currentLocalDate = localDateValue(now);
+  const previousLocalDate = useRef(currentLocalDate);
+
+  function closeMapPicker() {
+    setMapExpanded(false);
+    setMapFocusSeatId("");
+    window.requestAnimationFrame(() => mapTriggerRef.current?.focus());
+  }
+
+  function openMapPicker() {
+    setMapFocusSeatId("");
+    setMapExpanded(true);
+  }
 
   useEffect(() => {
     if (!reviewingBooking && !reviewingCancellation) {
@@ -551,13 +528,16 @@ export function SeatAssistant({
   const hasSelectedDate = Boolean(
     date && dateRange?.selectableDates.includes(date),
   );
-  const referenceMatrix = useMemo(
+  const referenceEvidence = useMemo(
     () =>
-      selectedHoliday
-        ? closedAvailability(favouriteSeats, slots)
-        : referenceAvailability(area, favouriteSeats, slots, date, now),
-    [area, date, favouriteSeats, now, selectedHoliday, slots],
+      currentDayReferenceEvidence(area, favouriteSeats, slots, date, now),
+    [area, date, favouriteSeats, now, slots],
   );
+  const referenceMatrix = selectedHoliday
+    ? closedAvailability(favouriteSeats, slots)
+    : referenceEvidence.status === "usable"
+      ? referenceEvidence.availability
+      : undefined;
   const referenceMatrixKey = JSON.stringify(referenceMatrix ?? null);
   const areaMapPaths = area
     ? [
@@ -567,10 +547,9 @@ export function SeatAssistant({
         ]),
       ]
     : [];
-  const seatPlanPath =
-    areaMapPaths.find((path) => path.toLowerCase().includes("-sp")) ??
-    areaMapPaths[1] ??
-    areaMapPaths[0];
+  const seatPlanPath = area
+    ? selectSeatPlanPath(area, areaMapPaths)
+    : undefined;
   const areaMapImage = mapImageUrl(seatPlanPath);
   const selectedDateQuota = quotaForDate(
     session,
@@ -761,13 +740,44 @@ export function SeatAssistant({
   }, []);
 
   useEffect(() => {
+    const previousDate = previousLocalDate.current;
+    if (previousDate === currentLocalDate) {
+      return;
+    }
+
+    previousLocalDate.current = currentLocalDate;
+    scanController.current?.abort();
+    setScan({ status: "idle", availability: {} });
+    setSelectedCellKeys(new Set());
+    setSelectedCancellationKeys(new Set());
+    setSelectionMessage("");
+    setReviewingBooking(false);
+    setReviewingCancellation(false);
+    setDate((selectedDate) =>
+      selectedDateAfterRollover(
+        previousDate,
+        currentLocalDate,
+        selectedDate,
+      ),
+    );
+    void onAccountRefresh().catch(() => {
+      setScan({
+        status: "error",
+        availability: {},
+        message:
+          "The calendar date changed, but current NLB availability could not be refreshed.",
+      });
+    });
+  }, [currentLocalDate, onAccountRefresh]);
+
+  useEffect(() => {
     if (!mapExpanded) {
       return;
     }
 
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
-        setMapExpanded(false);
+        closeMapPicker();
       }
     };
 
@@ -872,6 +882,86 @@ export function SeatAssistant({
     return () => scanController.current?.abort();
   }, [scanContextKey]);
 
+  async function runExactAvailabilityScan(
+    selectedArea: Area,
+    seats: Seat[],
+    scanSlots: HourSlot[],
+    controller: AbortController,
+    options: {
+      preserveCancellationSelection?: boolean;
+      message?: string;
+    } = {},
+  ) {
+    setSelectedCellKeys(new Set());
+    if (!options.preserveCancellationSelection) {
+      setSelectedCancellationKeys(new Set());
+    }
+    setSelectionMessage("");
+    setReviewingBooking(false);
+    setReviewingCancellation(false);
+    setScan({
+      status: "scanning",
+      availability: {},
+      completed: 0,
+      total: scanSlots.length,
+      message: options.message,
+    });
+
+    const result = await scanExactAreaIntervals({
+      area: selectedArea,
+      seats,
+      slots: scanSlots,
+      signal: controller.signal,
+      search: searchWithTransientRetry,
+      onProgress: ({ availability, completed, total }) => {
+        if (!controller.signal.aborted) {
+          setScan({
+            status: "scanning",
+            availability,
+            completed,
+            total,
+            message: options.message,
+          });
+        }
+      },
+    });
+
+    if (controller.signal.aborted) {
+      return;
+    }
+
+    if (result.mapUrls.length > 0) {
+      const mapKey = `${selectedArea.branchId}:${selectedArea.id}`;
+      setDiscoveredMaps((current) => ({
+        ...current,
+        [mapKey]: [
+          ...new Set([...(current[mapKey] ?? []), ...result.mapUrls]),
+        ],
+      }));
+    }
+    if (Object.keys(result.seatCodes).length > 0) {
+      const areaKey = `${selectedArea.branchId}:${selectedArea.id}`;
+      setDiscoveredSeatCodes((current) => ({
+        ...current,
+        [areaKey]: { ...(current[areaKey] ?? {}), ...result.seatCodes },
+      }));
+    }
+
+    setScan(
+      result.failed > 0
+        ? {
+            status: "error",
+            availability: result.availability,
+            message: `${result.failed} of ${scanSlots.length} time slots could not be checked${
+              result.firstError instanceof Error
+                ? `: ${result.firstError.message}`
+                : "."
+            }`,
+          }
+        : { status: "complete", availability: result.availability },
+    );
+  }
+
   async function checkAvailability(
     refreshedAccount?: {
       session?: AccountSession;
@@ -929,6 +1019,14 @@ export function SeatAssistant({
             refreshedArea?.seats.find((candidate) => candidate.id === seat.id),
           )
           .filter((seat): seat is Seat => Boolean(seat));
+        if (
+          !refreshedArea ||
+          refreshedFavouriteSeats.length !== favouriteSeats.length
+        ) {
+          throw new NlbApiError(
+            "NLB did not return the refreshed area and favourite-seat catalog.",
+          );
+        }
         const refreshedHoliday = refreshedArea
           ? holidayClosureForDate(
               refreshedArea,
@@ -936,20 +1034,35 @@ export function SeatAssistant({
               refreshed.catalog?.holidays ?? [],
             )
           : undefined;
+        const refreshedEvidence = currentDayReferenceEvidence(
+          refreshedArea,
+          refreshedFavouriteSeats,
+          slots,
+          date,
+          now,
+        );
+        if (!refreshedHoliday && refreshedEvidence.status === "unusable") {
+          await runExactAvailabilityScan(
+            refreshedArea,
+            refreshedFavouriteSeats,
+            slots,
+            controller,
+            {
+              preserveCancellationSelection:
+                options.preserveCancellationSelection,
+              message:
+                "NLB's current-day matrix is unavailable; checking the remaining intervals individually.",
+            },
+          );
+          return;
+        }
         const refreshedMatrix = refreshedHoliday
           ? closedAvailability(refreshedFavouriteSeats, slots)
-          : referenceAvailability(
-              refreshedArea,
-              refreshedFavouriteSeats,
-              slots,
-              date,
-              now,
-            );
-
+          : refreshedEvidence.status === "usable"
+            ? refreshedEvidence.availability
+            : undefined;
         if (!refreshedMatrix) {
-          throw new NlbApiError(
-            "NLB did not return current seat availability.",
-          );
+          throw new NlbApiError("Current availability could not be validated.");
         }
 
         const unavailableSelections = selectedSeatSlots.filter((selected) => {
@@ -994,140 +1107,13 @@ export function SeatAssistant({
     scanController.current?.abort();
     const controller = new AbortController();
     scanController.current = controller;
-    const selectedArea = area;
-    const seats = favouriteSeats;
-    const scanSlots = slots;
-    let nextIndex = 0;
-    let completed = 0;
-    let failed = 0;
-    let firstError: unknown;
-
-    setSelectedCellKeys(new Set());
-    if (!options.preserveCancellationSelection) {
-      setSelectedCancellationKeys(new Set());
-    }
-    setSelectionMessage("");
-    setReviewingBooking(false);
-    setReviewingCancellation(false);
-    setScan({
-      status: "scanning",
-      availability: {},
-      completed: 0,
-      total: scanSlots.length,
-    });
-
-    async function scanSlot(slot: HourSlot) {
-      const query = {
-        branchId: selectedArea.branchId,
-        areaId: selectedArea.id,
-        startTime: slot.startTime,
-        durationMinutes: slot.minutes,
-      };
-      const payload = await searchWithTransientRetry(query, controller.signal);
-
-      const maps = extractAreaMapUrls(payload, selectedArea.id);
-      if (maps.length > 0) {
-        const mapKey = `${selectedArea.branchId}:${selectedArea.id}`;
-        setDiscoveredMaps((current) => ({
-          ...current,
-          [mapKey]: [...new Set([...(current[mapKey] ?? []), ...maps])],
-        }));
-      }
-
-      const availableSeats = extractAvailableSeatIdentities(payload);
-      if (availableSeats.length > 0) {
-        const areaKey = `${selectedArea.branchId}:${selectedArea.id}`;
-        setDiscoveredSeatCodes((current) => {
-          const codes = { ...(current[areaKey] ?? {}) };
-
-          for (const availableSeat of availableSeats) {
-            if (availableSeat.id) {
-              codes[seatIdentityKey(availableSeat.id)] = availableSeat.code;
-            }
-            if (availableSeat.name) {
-              codes[seatIdentityKey(availableSeat.name)] = availableSeat.code;
-            }
-          }
-
-          return {
-            ...current,
-            [areaKey]: codes,
-          };
-        });
-      }
-
-      const availableKeys = extractAvailableSeatKeys(payload);
-      completed += 1;
-
-      setScan((current) => {
-        const availability = { ...current.availability };
-
-        for (const seat of seats) {
-          availability[seat.id] = {
-            ...availability[seat.id],
-            [slot.key]: seatMatchesKeys(seat, availableKeys),
-          };
-        }
-
-        return {
-          status: "scanning",
-          availability,
-          completed,
-          total: scanSlots.length,
-        };
-      });
-    }
-
-    function recordFailure(error: unknown) {
-      failed += 1;
-      completed += 1;
-      firstError ??= error;
-
-      setScan((current) => ({
-        status: "scanning",
-        availability: current.availability,
-        completed,
-        total: scanSlots.length,
-      }));
-    }
-
-    async function worker() {
-      while (!controller.signal.aborted) {
-        const slotIndex = nextIndex;
-        nextIndex += 1;
-
-        if (slotIndex >= scanSlots.length) {
-          return;
-        }
-
-        try {
-          await scanSlot(scanSlots[slotIndex]);
-        } catch (error) {
-          if (!controller.signal.aborted) {
-            recordFailure(error);
-          }
-        }
-      }
-    }
-
-    await worker();
-
-    if (!controller.signal.aborted) {
-      setScan((current) =>
-        failed > 0
-          ? {
-              status: "error",
-              availability: current.availability,
-              message: `${failed} of ${scanSlots.length} time slots could not be checked${
-                firstError instanceof Error ? `: ${firstError.message}` : "."
-              }`,
-            }
-          : {
-              status: "complete",
-              availability: current.availability,
-            },
-      );
-    }
+    await runExactAvailabilityScan(
+      area,
+      favouriteSeats,
+      slots,
+      controller,
+      options,
+    );
   }
 
   function toggleSelectedSlot(seat: Seat, slot: HourSlot) {
@@ -1314,7 +1300,20 @@ export function SeatAssistant({
           refreshedArea?.seats.find((candidate) => candidate.id === seat.id),
         )
         .filter((seat): seat is Seat => Boolean(seat));
-      const refreshedMatrix = referenceAvailability(
+      const selectedSeatIds = new Set(
+        bookingPlan.map((booking) => booking.seatId),
+      );
+      const selectedSeatsPresent = [...selectedSeatIds].every((seatId) =>
+        refreshedArea?.seats.some((seat) => seat.id === seatId),
+      );
+      if (!refreshedArea || !selectedSeatsPresent) {
+        setReviewingBooking(false);
+        setSelectionMessage(
+          "NLB did not return the selected area and seat catalog. Refresh and try again.",
+        );
+        return;
+      }
+      const refreshedEvidence = currentDayReferenceEvidence(
         refreshedArea,
         refreshedSeats,
         slots,
@@ -1322,7 +1321,7 @@ export function SeatAssistant({
         now,
       );
 
-      if (!refreshedMatrix) {
+      if (refreshedEvidence.status === "inapplicable") {
         setReviewingBooking(false);
         setSelectionMessage(
           "NLB did not return current reference availability. Refresh and try again.",
@@ -1330,26 +1329,29 @@ export function SeatAssistant({
         return;
       }
 
-      const unavailableBooking = bookingPlan.find((booking) => {
-        const bookingStart = new Date(booking.startTime).getTime();
-        const bookingEnd = bookingStart + booking.durationMinutes * 60_000;
-        return slots.some((slot) => {
-          const slotStart = new Date(slot.startTime).getTime();
-          return (
-            slotStart >= bookingStart &&
-            slotStart < bookingEnd &&
-            refreshedMatrix[booking.seatId]?.[slot.key] !== true
-          );
+      if (refreshedEvidence.status === "usable") {
+        const unavailableBooking = bookingPlan.find((booking) => {
+          const bookingStart = new Date(booking.startTime).getTime();
+          const bookingEnd = bookingStart + booking.durationMinutes * 60_000;
+          return slots.some((slot) => {
+            const slotStart = new Date(slot.startTime).getTime();
+            return (
+              slotStart >= bookingStart &&
+              slotStart < bookingEnd &&
+              refreshedEvidence.availability[booking.seatId]?.[slot.key] !==
+                true
+            );
+          });
         });
-      });
 
-      if (unavailableBooking) {
-        markBookingUnavailable(unavailableBooking);
-        setReviewingBooking(false);
-        setSelectionMessage(
-          `${unavailableBooking.seatName} is no longer available for the selected time. The selection was removed.`,
-        );
-        return;
+        if (unavailableBooking) {
+          markBookingUnavailable(unavailableBooking);
+          setReviewingBooking(false);
+          setSelectionMessage(
+            `${unavailableBooking.seatName} is no longer available for the selected time. The selection was removed.`,
+          );
+          return;
+        }
       }
     }
 
@@ -1379,7 +1381,10 @@ export function SeatAssistant({
           }));
         }
 
-        const availableSeat = extractAvailableSeatIdentities(payload).find(
+        const availableSeat = extractAvailableSeatIdentities(
+          payload,
+          area.id,
+        ).find(
           (candidate) =>
             candidate.id === booking.seatId ||
             candidate.name?.toLowerCase() === booking.seatName.toLowerCase() ||
@@ -1740,8 +1745,61 @@ export function SeatAssistant({
       .slice(0, 50);
   }, [area, favouriteIds, seatSearch]);
 
+  function renderSeatManagerContents(
+    autoFocus = false,
+    onSeatSelected?: (seat: Seat) => void,
+  ) {
+    return (
+      <>
+        <input
+          type="search"
+          aria-label="Search seats by number"
+          placeholder={`Search seat number, e.g. ${
+            area?.seats[0]?.name ?? "S1"
+          }`}
+          value={seatSearch}
+          onChange={(event) => setSeatSearch(event.target.value)}
+          autoFocus={autoFocus}
+        />
+        {!seatSearch.trim() && <p>{seatHint}</p>}
+        <div className="nlb-seat-helper__seat-results">
+          {searchedSeats.map((seat) => {
+            const selected = favouriteIds.has(seat.id);
+            return (
+              <button
+                type="button"
+                key={seat.id}
+                className={selected ? "is-favourite" : ""}
+                onClick={() => {
+                  onSeatSelected?.(seat);
+                  void toggleFavourite(seat);
+                }}
+                aria-pressed={selected}
+              >
+                <span aria-hidden="true">{selected ? "★" : "☆"}</span>
+                <strong>{seat.name}</strong>
+                {seat.disabled && <small>Unavailable</small>}
+              </button>
+            );
+          })}
+        </div>
+        {seatSearch.trim() && searchedSeats.length === 0 && (
+          <p>No matching seats found.</p>
+        )}
+      </>
+    );
+  }
+
   return (
     <section className="nlb-seat-helper__assistant">
+      {__SEAT_PLAN_MAINTENANCE__ && (
+        <SeatPlanMaintenancePanel
+          branchId={branchId}
+          catalog={catalog}
+          session={session}
+          onAccountRefresh={onAccountRefresh}
+        />
+      )}
       <div className="nlb-seat-helper__fields">
         <label>
           <span>Library</span>
@@ -1864,15 +1922,16 @@ export function SeatAssistant({
               <figure className="nlb-seat-helper__area-map">
                 <button
                   type="button"
-                  onClick={() => setMapExpanded(true)}
-                  aria-label={`Open full seat plan for ${area.name}`}
+                  ref={mapTriggerRef}
+                  onClick={openMapPicker}
+                  aria-label={`Open seat picker for ${area.name}`}
                 >
                   <img
                     src={areaMapImage}
                     alt={`${area.name} seat plan`}
                     loading="lazy"
                   />
-                  <span>Click to enlarge</span>
+                  <span>Open seat picker</span>
                 </button>
               </figure>
             ) : (
@@ -1945,36 +2004,7 @@ export function SeatAssistant({
 
           {managing ? (
             <div className="nlb-seat-helper__seat-manager">
-              <input
-                type="search"
-                placeholder={`Search seat number, e.g. ${
-                  area.seats[0]?.name ?? "S1"
-                }`}
-                value={seatSearch}
-                onChange={(event) => setSeatSearch(event.target.value)}
-                autoFocus
-              />
-              {!seatSearch.trim() && <p>{seatHint}</p>}
-              <div className="nlb-seat-helper__seat-results">
-                {searchedSeats.map((seat) => {
-                  const selected = favouriteIds.has(seat.id);
-                  return (
-                    <button
-                      type="button"
-                      key={seat.id}
-                      className={selected ? "is-favourite" : ""}
-                      onClick={() => void toggleFavourite(seat)}
-                    >
-                      <span aria-hidden="true">{selected ? "★" : "☆"}</span>
-                      <strong>{seat.name}</strong>
-                      {seat.disabled && <small>Unavailable</small>}
-                    </button>
-                  );
-                })}
-              </div>
-              {seatSearch.trim() && searchedSeats.length === 0 && (
-                <p>No matching seats found.</p>
-              )}
+              {renderSeatManagerContents(true)}
             </div>
           ) : areaFavourites.length === 0 ? (
             <div className="nlb-seat-helper__empty nlb-seat-helper__empty--card">
@@ -1994,13 +2024,20 @@ export function SeatAssistant({
               ) : (
                 <>
                   {scan.status === "scanning" && (
-                    <div className="nlb-seat-helper__progress">
-                      <span
-                        style={{
-                          width: `${(scan.completed / scan.total) * 100}%`,
-                        }}
-                      />
-                    </div>
+                    <>
+                      {scan.message && (
+                        <p className="nlb-seat-helper__notice">
+                          {scan.message}
+                        </p>
+                      )}
+                      <div className="nlb-seat-helper__progress">
+                        <span
+                          style={{
+                            width: `${(scan.completed / scan.total) * 100}%`,
+                          }}
+                        />
+                      </div>
+                    </>
                   )}
                   {scan.status === "error" && (
                     <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
@@ -2079,6 +2116,9 @@ export function SeatAssistant({
                                         : scan.status === "error" &&
                                             knownSlots.length < slots.length
                                           ? "Incomplete"
+                                          : scan.status === "complete" &&
+                                              knownSlots.length < slots.length
+                                            ? "Incomplete"
                                           : availableForSeat > 0
                                             ? `${formatQuotaMinutes(
                                                 availableForSeat *
@@ -2232,9 +2272,9 @@ export function SeatAssistant({
                   </div>
                   <details
                     className="nlb-seat-helper__timeline-legend"
-                    aria-label="Timeline color legend"
+                    aria-label="Timeline legend"
                   >
-                    <summary>Colors</summary>
+                    <summary>Legend</summary>
                     <div>
                       <span>
                         <i className="is-free" />
@@ -2575,27 +2615,78 @@ export function SeatAssistant({
 
       {mapExpanded &&
         areaMapImage &&
+        area &&
+        seatPlanPath &&
         createPortal(
           <div
             className="nlb-seat-helper__map-dialog"
             role="dialog"
             aria-modal="true"
-            aria-label={`${area?.name ?? "Area"} seat plan`}
-            onClick={() => setMapExpanded(false)}
+            aria-labelledby="nlb-seat-helper-map-dialog-title"
+            onClick={closeMapPicker}
           >
-            <button
-              type="button"
-              className="nlb-seat-helper__map-dialog-close"
-              onClick={() => setMapExpanded(false)}
-              aria-label="Close full seat plan"
-            >
-              ×
-            </button>
-            <img
-              src={areaMapImage}
-              alt={`${area?.name ?? "Area"} full seat plan`}
+            <div
+              className="nlb-seat-helper__map-dialog-shell"
               onClick={(event) => event.stopPropagation()}
-            />
+            >
+              <header className="nlb-seat-helper__map-dialog-header">
+                <div>
+                  <strong id="nlb-seat-helper-map-dialog-title">
+                    Pick favourite seats
+                  </strong>
+                  <span>
+                    {area.branchName} · {area.name}
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  className="nlb-seat-helper__map-dialog-close"
+                  onClick={closeMapPicker}
+                  aria-label="Close seat picker"
+                >
+                  ×
+                </button>
+              </header>
+              <div className="nlb-seat-helper__map-dialog-content">
+                <div className="nlb-seat-helper__map-dialog-plan">
+                  <ClickableSeatPlan
+                    area={area}
+                    imageUrl={areaMapImage}
+                    mapPath={seatPlanPath}
+                    favouriteIds={favouriteIds}
+                    focusSeatId={mapFocusSeatId}
+                    onToggleFavourite={toggleFavourite}
+                  />
+                </div>
+                <aside
+                  className="nlb-seat-helper__map-dialog-sidebar"
+                  aria-label="Favourite seat selection"
+                >
+                  <div className="nlb-seat-helper__map-dialog-summary">
+                    <div>
+                      <strong>Favourite seats</strong>
+                      <span>
+                        {areaFavourites.length} of {area.seats.length}{" "}
+                        selected
+                      </span>
+                    </div>
+                    <span aria-hidden="true">★</span>
+                  </div>
+                  <div className="nlb-seat-helper__seat-manager">
+                    {renderSeatManagerContents(true, (seat) =>
+                      setMapFocusSeatId(seat.id),
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    className="nlb-seat-helper__map-dialog-done"
+                    onClick={closeMapPicker}
+                  >
+                    Done
+                  </button>
+                </aside>
+              </div>
+            </div>
           </div>,
           document.getElementById("nlb-seat-helper-root")!,
         )}

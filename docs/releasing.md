@@ -6,10 +6,11 @@ without cloning the repository or running npm.
 ## Before packaging
 
 1. Make sure `main` contains the intended release.
-2. Update the version in both:
+2. Update the version in all three:
    - `package.json`
+   - `package-lock.json`
    - `public/manifest.json`
-3. Make sure the two versions are identical.
+3. Make sure the three versions are identical.
 4. Install the locked dependencies with `npm ci`.
 5. Run the regression suite with `npm test`.
 
@@ -46,14 +47,14 @@ content.css
 
 ## Publish
 
-For version `1.1.1`:
+For version `1.3.0`:
 
 ```bash
-git tag v1.1.1
-git push origin v1.1.1
-gh release create v1.1.1 nlb-seat-helper.zip \
+git tag v1.3.0
+git push origin v1.3.0
+gh release create v1.3.0 nlb-seat-helper.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "NLB Seat Helper v1.1.1" \
+  --title "NLB Seat Helper v1.3.0" \
   --notes-file RELEASE_NOTES.md
 ```
 

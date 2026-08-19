@@ -1,0 +1,4 @@
+interface:
+  display_name: "Maintain Seat Plans"
+  short_description: "Run read-only NLB seat-plan drift audits"
+  default_prompt: "Use $maintain-seat-plans to run a complete live read-only NLB seat-plan audit with the routine zero-search catalog export, and return a summary with the generated HTML drift report without changing the reviewed baseline."

@@ -1,0 +1,135 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/teamcmcbot/nlb-seat-booking-extension/docs/schemas/seat-plan-baseline.schema.json",
+  "title": "Sanitized seat-plan maintenance baseline",
+  "type": "object",
+  "required": ["schemaVersion", "observedAt", "catalogSource", "imageSource", "areas"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "observedAt": { "type": "string", "format": "date-time" },
+    "catalogSource": {
+      "enum": ["sanitized-get-account-info", "reviewed-annotation-inventory"]
+    },
+    "imageSource": { "const": "nlb-seat-plan-assets" },
+    "catalogEvidence": { "$ref": "#/$defs/catalogEvidence" },
+    "areas": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/area" }
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "catalogEvidence": {
+      "type": "object",
+      "properties": {
+        "capturedAt": { "type": "string", "format": "date-time" },
+        "exportMetadata": {
+          "type": "object",
+          "required": ["extensionVersion", "mode"],
+          "properties": {
+            "extensionVersion": { "type": "string", "minLength": 1 },
+            "mode": {
+              "enum": ["catalog", "targeted-discovery"]
+            }
+          },
+          "additionalProperties": false
+        },
+        "mapDiscovery": {
+          "type": "object",
+          "required": [
+            "requested",
+            "scope",
+            "branchId",
+            "requestCount",
+            "attempted",
+            "succeeded",
+            "failed"
+          ],
+          "properties": {
+            "requested": { "type": "boolean" },
+            "scope": { "const": "branch" },
+            "branchId": { "type": "string", "minLength": 1 },
+            "requestCount": { "type": "integer", "minimum": 0 },
+            "attempted": { "type": "integer", "minimum": 0 },
+            "succeeded": { "type": "integer", "minimum": 0 },
+            "failed": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["branchId", "areaId", "message"],
+                "properties": {
+                  "branchId": { "type": "string", "minLength": 1 },
+                  "areaId": { "type": "string", "minLength": 1 },
+                  "message": { "type": "string", "minLength": 1 }
+                },
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    "seat": {
+      "type": "object",
+      "required": ["name"],
+      "properties": {
+        "id": { "type": "string" },
+        "code": { "type": "string" },
+        "name": { "type": "string", "minLength": 1 },
+        "disabled": { "type": "boolean" }
+      },
+      "additionalProperties": false
+    },
+    "image": {
+      "type": "object",
+      "required": ["width", "height", "sha256", "byteLength", "contentType"],
+      "properties": {
+        "width": { "type": "integer", "minimum": 1 },
+        "height": { "type": "integer", "minimum": 1 },
+        "sha256": { "type": "string", "pattern": "^[a-f0-9]{64}$" },
+        "byteLength": { "type": "integer", "minimum": 1 },
+        "contentType": { "type": "string", "minLength": 1 },
+        "etag": { "type": "string" },
+        "lastModified": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "area": {
+      "type": "object",
+      "required": [
+        "branchId",
+        "branchName",
+        "areaId",
+        "areaName",
+        "labelType",
+        "observedMapUrls",
+        "seats",
+        "annotationStatus"
+      ],
+      "properties": {
+        "branchId": { "type": "string", "minLength": 1 },
+        "branchCode": { "type": "string" },
+        "branchName": { "type": "string", "minLength": 1 },
+        "areaId": { "type": "string", "minLength": 1 },
+        "areaName": { "type": "string", "minLength": 1 },
+        "floor": { "type": "string" },
+        "labelType": { "enum": ["full", "range", "hybrid", "unknown"] },
+        "mapPath": { "type": "string", "minLength": 1 },
+        "observedMapUrls": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "image": { "$ref": "#/$defs/image" },
+        "seats": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/seat" }
+        },
+        "annotationStatus": { "enum": ["implemented", "missing"] }
+      },
+      "additionalProperties": false
+    }
+  }
+}

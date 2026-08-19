@@ -109,6 +109,24 @@ When availability behavior changes, document all four stages separately:
 3. map discovery; and
 4. booking-time preflight and final submission.
 
+## Seat-plan maintenance
+
+Before adding, removing, renaming, or moving seat-plan annotations, follow
+`docs/seat-plan-maintenance.md` and use the repository `maintain-seat-plans`
+skill. Run `npm run seat-plans:audit` against a freshly sanitized catalog and
+`npm run seat-plans:verify` before handoff. Never commit raw account responses,
+the ignored image cache, generated work packets, or unreviewed OCR/computer-
+vision output. A changed or missing image fingerprint must fail closed until a
+person verifies every affected hotspot.
+
+For a complete live audit, check the prerequisites documented in
+`docs/seat-plan-maintenance.md`. The NLB tab must have the latest unpacked
+build and an active Seat Booking session. Prefer browser control of the visible,
+confirmation-gated **Seat-plan maintenance** export; do not inject JavaScript.
+If browser control cannot reach the tab or dialog, ask the user to click the
+same visible control. Apple Events permission is unnecessary. Auditing never
+authorizes changing the reviewed baseline.
+
 ## Change workflow
 
 ### 1. Orient and protect existing work
