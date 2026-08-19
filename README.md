@@ -11,7 +11,9 @@ session.
 - Book multiple seats and time slots together, such as 10am-12pm and
   2pm-4pm.
 
-![NLB Seat Helper screenshot](screenshots/nlb-seat-booking-extension.png)
+![NLB Seat Helper availability overview](screenshots/store-overview.png)
+
+![NLB Seat Helper interactive seat picker](screenshots/store-seat-picker.png)
 
 ## Install the latest release
 
@@ -120,7 +122,9 @@ installation and preserves the extension's existing Chrome storage.
   prompts in [`docs/seat-plan-agent-audit.md`](docs/seat-plan-agent-audit.md).
 - Keeps seat-plan maintenance controls out of normal release builds. A
   dedicated `npm run build:maintenance` build can export a freshly refreshed,
-  sanitized catalog with zero availability searches.
+  sanitized catalog with zero availability searches. Chrome identifies that
+  build as **NLB Seat Helper (Maintenance)** with a `-maintenance` display
+  version and developer-only description.
 - Supports optional selected-library map discovery with at most two sequential
   branch-level availability probes. Returned records remain exact-area scoped
   and availability omissions are treated as incomplete evidence.
@@ -240,6 +244,7 @@ Available scripts:
 npm run typecheck  # TypeScript validation
 npm test           # Run focused service regression tests
 npm run build      # Typecheck and create a production build
+npm run build:maintenance  # Create a visibly marked maintainer-only audit build
 npm run dev        # Rebuild dist/ whenever source files change
 npm run package    # Build and create nlb-seat-helper.zip
 npm run seat-plans:capture  # Capture a candidate seat-plan baseline
@@ -252,6 +257,10 @@ npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 
 `npm run dev` is optional. A completed `npm run build` produces a working
 extension without a development process running.
+
+`npm run build:maintenance` is only for repository maintainers performing a
+read-only seat-plan audit. Chrome labels this unpacked build **NLB Seat Helper
+(Maintenance)**; normal release builds do not expose the maintenance controls.
 
 ## Load a development build in Chrome
 

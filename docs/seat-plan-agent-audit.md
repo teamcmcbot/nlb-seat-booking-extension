@@ -8,13 +8,22 @@ later gives explicit approval.
 ## Prerequisites
 
 1. Run `npm run build:maintenance` on the branch to be audited. Normal builds
-   intentionally omit the developer-only maintenance panel.
+   intentionally omit the developer-only maintenance panel. After reloading,
+   confirm Chrome shows **NLB Seat Helper (Maintenance)** and a `-maintenance`
+   display version.
 2. Open `chrome://extensions`, enable **Developer mode**, load `dist/` as the
    unpacked NLB Seat Helper extension, and click **Reload** after each build.
-3. Open `https://www.nlb.gov.sg/seatbooking/` in Chrome, sign in, refresh the
+3. In Codex **Settings → Computer use → Google Chrome**, add
+   `https://www.nlb.gov.sg` to the site permissions and allow browsing. Restart
+   Chrome after changing this permission. Full CDP access is not required.
+4. Open `https://www.nlb.gov.sg/seatbooking/` in Chrome, sign in, refresh the
    page, and wait until the extension shows the signed-in account and catalog.
-4. Keep Chrome available for browser control and allow normal file downloads.
-5. Ensure local Node.js/npm and network access to NLB map-image URLs work.
+5. Keep Chrome available for browser control and allow normal file downloads.
+6. Ensure local Node.js/npm and network access to NLB map-image URLs work.
+
+The **Seat-plan maintenance** section may be collapsed when the prompt is
+submitted; browser control can expand it. The important prerequisites are the
+active extension session and Chrome permission to access the NLB origin.
 
 When fresh live URL discovery is required, schedule the run for **12:01 SGT**
 if the current normal-account rules release tomorrow at 12:00. The preferred
@@ -23,13 +32,13 @@ when necessary by today's last valid full interval, typically 19:00. Use the
 release time and area hours returned by `GetAccountInfo`; privileged accounts
 or branches with different hours require corresponding times.
 
-No cookie permission, password access, GPS permission, DevTools console,
-Apple Events permission, or **Allow JavaScript from Apple Events** setting is
-required. The agent uses the visible, confirmation-gated extension control and
-the tab's existing same-origin NLB session. If browser control cannot access
-the tab or accept a prompt, the fallback is for the user to click **Seat-plan
-maintenance → Export audit catalog** and tell the agent where the
-sanitized JSON was downloaded.
+No cookie permission, password access, GPS permission, full CDP access,
+DevTools console, Apple Events permission, or **Allow JavaScript from Apple
+Events** setting is required. The agent uses the visible, confirmation-gated
+extension control and the tab's existing same-origin NLB session. If browser
+control cannot access the tab or accept a prompt, the fallback is for the user
+to click **Seat-plan maintenance → Export audit catalog** and tell the agent
+where the sanitized JSON was downloaded.
 
 ## Prompt: run a full audit
 
@@ -41,8 +50,12 @@ visible Seat-plan maintenance export. Generate the candidate snapshot, JSON
 drift report, and HTML report under seat-plan-work, inspect the complete report,
 and give me a summary with a clickable HTML report. Use the routine catalog
 export; do not run targeted URL discovery unless the report identifies a map
-association that needs it. Treat requested discovery failures as incomplete
-evidence. Do not update the reviewed baseline or annotation definitions.
+association that needs it or a reviewed map path cannot be downloaded. Empty
+routine observed map URLs are unobserved evidence, not drift. Treat requested
+discovery failures as incomplete evidence. Handle the native export confirmation in the same browser operation
+as the single click; do not ask me to watch or interact with Chrome unless
+browser control is unavailable. Do not update the reviewed baseline or
+annotation definitions.
 ```
 
 The agent should click the visible routine export, accept its confirmation,
@@ -51,16 +64,39 @@ the deterministic full-audit command, and report clean, drift, or incomplete.
 This export makes one `GetAccountInfo` request and zero
 `SearchAvailableAreas` calls. Map downloads stay sequential.
 
+The routine catalog derives branch, area, and seat identities from
+`GetAccountInfo`; it does not promote booking `mapUrls` into area associations.
+Candidate capture downloads every reviewed definition path even when
+`observedMapUrls` is empty. An empty routine value therefore does not trigger
+targeted discovery or map-URL drift. Availability-scoped seat codes returned by
+an optional targeted probe are evidence only when first observed; they do not
+create baseline-enrichment drift.
+
 Before clicking, the agent records the existing matching downloads and the
-start time. It clicks **Export audit catalog** exactly once. A browser
-timeout is not permission to retry: the agent checks the visible export status
-and waits for one new file. If the user handles a confirmation, the agent stops
-browser interaction and waits for that run to finish. No audit task may start a
-second export. Observing multiple new JSON files must be reported. Any fresh
-URL investigation is a separate selected-library action with at most two
-sequential branch-level searches and should normally be run at 12:01 SGT for
-tomorrow's release. An omitted area remains incomplete evidence and does not
-authorize an automatic retry.
+start time. Because `window.confirm()` blocks completion of the click handler,
+the agent must arm dialog handling first, start the **Export audit catalog**
+click without awaiting it, and accept the confirmation in that same browser-tool
+operation. It must then end the browser operation without awaiting the click or
+a browser download event. The Blob download may already exist on disk without
+emitting that event, so waiting can add a false two-minute timeout. The agent
+checks Downloads immediately and polls files created after the start time for
+at most 15 seconds, stopping as soon as exactly one file exists. The agent
+clicks exactly once, and the user should leave Chrome untouched unless the
+agent explicitly hands over control. A browser timeout is not permission to
+retry: the agent checks the visible export status and the filesystem.
+If the user is asked to handle a confirmation, the agent stops browser input
+and waits for that run to finish. No audit task may start a second export.
+Observing multiple new JSON files must be reported. Any fresh URL investigation
+is a separate selected-library action with at most two sequential branch-level
+searches and should normally be run at 12:01 SGT for tomorrow's release. An
+omitted area remains incomplete evidence and does not authorize an automatic
+retry.
+
+The HTML report links the candidate snapshot, JSON drift report, reviewed
+baseline, fingerprint configuration, annotation index, and inventory. It shows
+observed versus configured branch, area, and seat counts; explicit branch and
+area additions/removals; the number of reviewed seat-plan images checked; every
+changed or missing image; and annotation coverage.
 
 ## Prompt: prepare drifted annotations
 

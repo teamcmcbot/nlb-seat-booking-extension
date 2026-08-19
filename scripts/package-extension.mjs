@@ -24,11 +24,23 @@ const packageJson = JSON.parse(
 const manifest = JSON.parse(
   readFileSync(join(distDirectory, "manifest.json"), "utf8"),
 );
+const sourceManifest = JSON.parse(
+  readFileSync(join(projectRoot, "public", "manifest.json"), "utf8"),
+);
 
 if (packageJson.version !== manifest.version) {
   throw new Error(
     `Version mismatch: package.json is ${packageJson.version}, ` +
       `but manifest.json is ${manifest.version}.`,
+  );
+}
+if (
+  manifest.name !== sourceManifest.name ||
+  manifest.description !== sourceManifest.description ||
+  manifest.version_name !== sourceManifest.version_name
+) {
+  throw new Error(
+    "Refusing to package a build whose display metadata differs from public/manifest.json. Run npm run build first.",
   );
 }
 

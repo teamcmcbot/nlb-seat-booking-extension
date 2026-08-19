@@ -39,7 +39,8 @@ map and seat-catalog changes.
   inventory/fingerprints, static verification, and visual annotation work
   packets.
 - Keeps developer maintenance controls out of normal release builds and adds a
-  dedicated maintenance build with embedded extension provenance.
+  dedicated maintenance build with embedded extension provenance and clearly
+  marked Chrome name, description, and display version.
 - Makes the routine audit export refresh `GetAccountInfo` once with zero
   `SearchAvailableAreas` calls, using reviewed map paths to refresh every known
   image and fingerprint directly.
@@ -64,6 +65,11 @@ map and seat-catalog changes.
 - Documents the signed-in Chrome, unpacked-build, download, network, reusable
   agent prompts, and optional subagent boundaries for a complete seat-plan
   audit. DevTools and Apple Events permissions are not required.
+- Adds store-style README artwork captured from the current availability panel
+  and interactive seat picker, with signed-in account identifiers removed.
+- Documents the Chrome `https://www.nlb.gov.sg` computer-use permission needed
+  for an agent to claim the existing signed-in tab; full CDP access remains
+  unnecessary.
 
 ## Known limitations
 

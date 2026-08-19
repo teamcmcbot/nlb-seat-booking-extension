@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "npm run typecheck && vite build",
-    "build:maintenance": "npm run typecheck && vite build --mode maintenance",
+    "build:maintenance": "npm run typecheck && vite build --mode maintenance && node scripts/mark-maintenance-build.mjs",
     "dev": "vite build --watch",
     "package": "npm run build && node scripts/package-extension.mjs",
     "seat-plans:audit": "node scripts/seat-plan-audit.mjs",

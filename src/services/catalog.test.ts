@@ -91,4 +91,18 @@ describe("catalog map normalization", () => {
       "expected-sp-full.png",
     ]);
   });
+
+  it("does not promote booking mapUrls into an area association", () => {
+    const payload = payloadWithHoliday("2026-08-09", "2026-08-09");
+    (payload as Record<string, unknown>).bookings = [
+      {
+        areaId: 43,
+        branchId: 2,
+        area: "Study Area Near Escalator",
+        mapUrls: ["jrl-3-studyareaescalator-sp-full.png"],
+      },
+    ];
+
+    expect(extractCatalog(payload).branches[0].areas[0].areaMapUrls).toEqual([]);
+  });
 });

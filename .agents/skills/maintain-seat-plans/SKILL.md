@@ -15,35 +15,58 @@ completely before changing a baseline or definition.
 2. Confirm the prerequisites in the maintenance document. Build with
    `npm run build:maintenance`, reload that unpacked build, and use Chrome
    browser control when a signed-in NLB Seat Booking tab is already open.
+   Before exporting, confirm `chrome://extensions` identifies it as **NLB Seat
+   Helper (Maintenance)** with a `-maintenance` display version. Confirm Codex
+   Chrome computer-use permissions allow browsing `https://www.nlb.gov.sg`;
+   after changing that permission, restart Chrome and reopen the signed-in tab.
+   Full CDP access is unnecessary. The maintenance section may begin collapsed.
 3. Record the matching files already present in Downloads and the start time.
-   Expand **Seat-plan maintenance**, click **Export audit catalog exactly
-   once**, and accept its confirmation. This routine path refreshes
+   Expand **Seat-plan maintenance**. Arm handling for the native confirmation
+   before clicking: start the **Export audit catalog** click without awaiting
+   its completion, then detect and accept `window.confirm()` in the same
+   browser-tool operation. After acceptance, end that browser operation; do not
+   await a browser `download` event or the original click promise. Blob-backed
+   extension downloads may not emit a controllable download event even though
+   the file is already on disk, causing a false two-minute wait. Click exactly
+   once. This routine path refreshes
    `GetAccountInfo` once and makes zero `SearchAvailableAreas` requests. Do not
    inject JavaScript or read cookies. A browser click or dialog timeout is
    ambiguous and is not evidence that the click failed: inspect visible status
-   and Downloads rather than clicking again. If the user handles the dialog,
-   stop browser input and wait for that single run to finish.
-4. Locate exactly one new download created after the recorded start time. If
-   none appears, stop and ask the user for help rather than retrying. If more
+   and Downloads rather than clicking again. Tell the user to leave Chrome
+   untouched during the attempt. Ask for manual help only when browser control
+   cannot accept the dialog; once the user takes over, stop browser input and
+   wait for that single run to finish.
+4. Check Downloads immediately after accepting the confirmation, then poll the
+   filesystem briefly (at most 15 seconds) for files created after the recorded
+   start time. Locate exactly one new download. If none appears, inspect the
+   visible export status and ask the user for help rather than retrying. If more
    than one appears, report the duplicated run and do not choose one silently.
-   Require `exportMetadata.mode` to be `catalog` and record its extension
-   version.
+   Require `exportMetadata.mode` to be `catalog` and record its extension version.
 5. Run `npm run seat-plans:verify`, then run
    `npm run seat-plans:full-audit -- --catalog <downloaded-json>`. This refreshes
    map bytes sequentially and creates an ignored candidate, JSON drift report,
-   and HTML report under `seat-plan-work/`.
+   and HTML report under `seat-plan-work/`. Treat empty routine
+   `observedMapUrls` as unobserved evidence, not a changed association; the
+   reviewed definition path is still downloaded and fingerprinted.
 6. Read the complete report and inspect every reported area. Exit code `2`
    means drift was reported; exit code `3` means evidence is incomplete. These
    are report outcomes, not permission to change the baseline.
-7. Return the HTML report as a clickable local file and summarize evidence,
-   drift, and unresolved areas. The capture downloads the reviewed map path for
-   every known area and compares fresh bytes and metadata; it does not need a
-   live availability response to validate an existing map.
+7. Confirm the HTML report links its candidate, JSON report, reviewed baseline,
+   fingerprint configuration, annotation index, and inventory. Summarize
+   observed versus configured branch, area, and seat counts; branch/area
+   additions or removals; images checked, changed, or missing; annotation
+   coverage; drift; and unresolved evidence. Return the HTML report as a
+   clickable local file. The capture downloads the reviewed map path for every
+   known area and compares fresh bytes and metadata; it does not need a live
+   availability response to validate an existing map.
 
 ## Optional targeted URL discovery
 
-Use this only when the routine report finds a new area, a missing/changed map
+Use this only when the routine audit finds a new area without a reviewed path,
+cannot download a reviewed path, reports a conflicting non-empty authoritative
 association, or the user explicitly requests fresh URL association evidence.
+Do not run discovery merely because a routine `GetAccountInfo` export has empty
+`observedMapUrls`; booking `mapUrls` are not area-association evidence.
 Select one library and click **Discover selected library maps** once. The
 maintenance build refreshes `GetAccountInfo`, then makes at most two sequential
 branch-level `SearchAvailableAreas` requests with no `AreaId`. The response is
@@ -88,6 +111,8 @@ that is unavailable in the session.
 - Preserve sequential NLB requests and the existing page-session model.
 - Never parallelize live NLB discovery or map-image downloads.
 - Routine audit export must make zero `SearchAvailableAreas` requests.
+- Do not classify routine URL omission or first-observed availability-scoped
+  seat codes as baseline drift.
 - Initiate a targeted branch export at most once per deliberate operation. Its
   strict budget is one `GetAccountInfo` refresh plus at most two sequential
   branch-level searches; HTTP retry is not used for these maintenance probes.

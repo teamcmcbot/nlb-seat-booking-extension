@@ -448,6 +448,11 @@ all bookings in a cancellation run.
 Discussion rooms and paid facilities observed as `facilityId: 2` are removed
 while the catalog is normalized. They never appear in the extension selectors.
 
+Booking records may contain `mapUrls`, but those values describe that booking
+record and are not promoted into the branch/area catalog. Seat-plan maintenance
+uses reviewed definition paths for routine image verification and accepts live
+area associations only from exact-area `SearchAvailableAreas` evidence.
+
 #### Seat fields used by the extension
 
 | Field | Use |

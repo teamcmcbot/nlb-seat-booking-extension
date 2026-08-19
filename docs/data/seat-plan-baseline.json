@@ -2886,10 +2886,7 @@
       "floor": "3",
       "labelType": "full",
       "mapPath": "jrl-3-studyareaescalator-sp-full.png?t=20221130",
-      "observedMapUrls": [
-        "jrl-3-studyareaescalator-fp.png",
-        "jrl-3-studyareaescalator-sp-full.png?t=20221130"
-      ],
+      "observedMapUrls": [],
       "image": {
         "width": 1824,
         "height": 1208,

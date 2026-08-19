@@ -10,7 +10,7 @@ Use each source only for the evidence it can provide:
 
 | Source | Reliable maintenance evidence | Limitation |
 | --- | --- | --- |
-| `GetAccountInfo` | Current branch, area, and complete seat identity catalog; some map URLs | No seat coordinates; map URLs may be absent |
+| `GetAccountInfo` | Current branch, area, and complete seat identity catalog | No seat coordinates; booking `mapUrls` are not area-association evidence |
 | `SearchAvailableAreas` | Exact-area map discovery and booking seat codes | Date- and interval-scoped results are not proof that a seat was removed |
 | Map image bytes | Artwork revision, dimensions, MIME type, and byte length | Labels and seat geometry still require visual review |
 | Annotation definitions | Reviewed seat-to-rectangle assignments | Valid only for the fingerprinted map revision and catalog |
@@ -46,8 +46,9 @@ step, not a routine prerequisite:
 
 | Prerequisite | Why it is needed | How to confirm it |
 | --- | --- | --- |
-| Current maintenance build | Normal release builds intentionally omit developer controls. | Run `npm run build:maintenance`, reload the unpacked extension from `dist/`, and refresh the NLB tab. |
+| Current maintenance build | Normal release builds intentionally omit developer controls. | Run `npm run build:maintenance`, reload the unpacked extension from `dist/`, and confirm Chrome displays **NLB Seat Helper (Maintenance)** with a `-maintenance` display version before refreshing the NLB tab. |
 | Chrome Developer mode | Chrome requires it to load or reload this unpacked extension. | `chrome://extensions` shows **Developer mode** enabled and NLB Seat Helper loaded from `dist/`. |
+| Chrome browser-control site permission | The audit agent must be able to claim and operate the existing NLB tab. | In Codex **Settings → Computer use → Google Chrome**, add `https://www.nlb.gov.sg`, allow browsing, then restart Chrome after changing the permission. Full CDP access is not required. |
 | Active NLB Seat Booking session | `GetAccountInfo` and `SearchAvailableAreas` use the tab's same-origin session. | The extension header reports a signed-in account and its refresh action succeeds. |
 | Normal Seat Booking tab | The content script and maintenance event exist only on the configured NLB route. | Open `https://www.nlb.gov.sg/seatbooking/` and wait for the extension catalog to load. |
 | Visible maintenance control | The export exists only in a maintenance build. | Expand **Seat-plan maintenance** and confirm **Export audit catalog** is enabled. |
@@ -70,6 +71,10 @@ verification, and visual packet preparation without further access to
 credentials. Granting permission to update the reviewed baseline is a separate
 decision and is not required for an audit.
 
+The section may be collapsed before the audit prompt is submitted. Access to
+the NLB origin and an active extension session matter; pre-expanding the
+section does not.
+
 ### Single-run rule and dialog recovery
 
 A complete audit initiates exactly one routine catalog export. Before clicking,
@@ -77,6 +82,22 @@ record the matching files already in Downloads and the audit start time. Click
 **Export audit catalog** once only. The dialog confirms the sanitized download
 and states the request budget: one `GetAccountInfo` refresh and zero
 `SearchAvailableAreas` calls.
+
+For browser-controlled audits, handle the blocking native confirmation and the
+click as one operation: arm dialog handling first, start the click without
+awaiting its completion, then accept `window.confirm()`. End the browser
+operation after accepting the confirmation. Do not await a browser download
+event or the original click promise: the extension uses a Blob-backed anchor
+download, which may already be on disk without emitting a download event that
+browser control can observe. Waiting for that event can add a false two-minute
+delay. The person using Chrome should leave the tab untouched unless the agent
+explicitly asks for manual control.
+
+Check Downloads immediately after confirmation acceptance and poll files
+created after the recorded start time for at most 15 seconds. Stop as soon as
+exactly one matching catalog exists. This filesystem evidence is authoritative
+for completion; do not keep waiting for the browser operation after the file is
+present.
 
 A browser-control timeout while clicking or accepting a dialog is ambiguous:
 the page event handler may still be active. It must never trigger another click.
@@ -142,6 +163,11 @@ Last-Modified. A changed image at an unchanged URL is therefore detected.
 `GetAccountInfo` remains authoritative for the complete current branch, area,
 and seat catalog and can expose newly added branches or areas.
 
+Routine `observedMapUrls` are allowed to be empty. The normalizer ignores the
+generic `mapUrls` field found on bookings, and the audit treats URL absence as
+unobserved rather than removed. It compares map associations only for an exact
+area successfully returned by a deliberate targeted branch discovery.
+
 If a new area has no map URL, or fresh association evidence is specifically
 required, select one library and use **Discover selected library maps** as a
 separate operation. It refreshes `GetAccountInfo` and makes at most two
@@ -163,7 +189,10 @@ Outputs are written beneath an ignored timestamped directory in
 `seat-plan-work/`: `candidate.json`, `drift.json`, and `report.html`. Exit code
 `0` means clean, `2` means drift was found, and `3` means requested targeted
 discovery evidence is incomplete. The report is still generated for codes `2`
-and `3`.
+and `3`. The HTML links the generated evidence and reviewed configuration,
+compares observed branch, area, and seat counts with the current baseline, and
+lists branch/area lifecycle changes, changed or missing map images, and missing
+annotation coverage.
 
 The lower-level candidate command remains available:
 
@@ -176,9 +205,10 @@ npm run seat-plans:capture -- \
 The command downloads maps sequentially and refreshes every image by default;
 `--cache-only` is intended only for offline tooling development. If
 `GetAccountInfo` omits a known map URL, the candidate still checks the reviewed
-definition path. Use optional targeted branch discovery before concluding that
-NLB changed the area-to-map association. Do not run parallel live API or map
-discovery requests.
+definition path, and that omission is not drift. Use optional targeted branch
+discovery only if the reviewed path cannot be downloaded, a new area has no
+reviewed path, or non-empty authoritative evidence conflicts with the reviewed
+association. Do not run parallel live API or map discovery requests.
 
 A directly guessed image URL can establish that an asset exists, but cannot by
 itself establish that NLB currently associates that asset with the requested
@@ -203,7 +233,8 @@ evidence as clean or as a removal.
 
 | Change | Required action |
 | --- | --- |
-| First capture of stable IDs, codes, disabled flags, or map URLs | Review as baseline enrichment; the JSON report retains the details |
+| First capture of stable IDs, disabled flags, or authoritative map URLs | Review as baseline enrichment; the JSON report retains the details |
+| Availability-scoped seat code first appears or disappears | Treat as transient discovery evidence, not baseline drift |
 | Existing name/code/disabled metadata changes | Confirm the identity match before updating the baseline |
 | Map URL changes but image SHA-256 is unchanged | Review the new path and update the definition/baseline |
 | SHA-256 changes at the same dimensions | Treat the clickable layer as invalid; compare images and every hotspot |
