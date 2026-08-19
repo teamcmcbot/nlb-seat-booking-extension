@@ -46,8 +46,8 @@ step, not a routine prerequisite:
 
 | Prerequisite | Why it is needed | How to confirm it |
 | --- | --- | --- |
-| Current maintenance build | Normal release builds intentionally omit developer controls. | Run `npm run build:maintenance`, reload the unpacked extension from `dist/`, and confirm Chrome displays **NLB Seat Helper (Maintenance)** with a `-maintenance` display version before refreshing the NLB tab. |
-| Chrome Developer mode | Chrome requires it to load or reload this unpacked extension. | `chrome://extensions` shows **Developer mode** enabled and NLB Seat Helper loaded from `dist/`. |
+| Current maintenance build | Normal release builds intentionally omit developer controls. | Run `npm run build:maintenance`, reload the unpacked extension from `dist/`, and confirm Chrome displays **StudySeat SG - for NLB (Maintenance)** with a `-maintenance` display version before refreshing the NLB tab. |
+| Chrome Developer mode | Chrome requires it to load or reload this unpacked extension. | `chrome://extensions` shows **Developer mode** enabled and StudySeat SG - for NLB loaded from `dist/`. |
 | Chrome browser-control site permission | The audit agent must be able to claim and operate the existing NLB tab. | In Codex **Settings → Computer use → Google Chrome**, add `https://www.nlb.gov.sg`, allow browsing, then restart Chrome after changing the permission. Full CDP access is not required. |
 | Active NLB Seat Booking session | `GetAccountInfo` and `SearchAvailableAreas` use the tab's same-origin session. | The extension header reports a signed-in account and its refresh action succeeds. |
 | Normal Seat Booking tab | The content script and maintenance event exist only on the configured NLB route. | Open `https://www.nlb.gov.sg/seatbooking/` and wait for the extension catalog to load. |

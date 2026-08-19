@@ -1,6 +1,6 @@
 # Extension Architecture and Behavior
 
-This document explains how NLB Seat Helper turns NLB's account/catalog data
+This document explains how StudySeat SG - for NLB turns NLB's account/catalog data
 into the favourite-seat availability and booking interface.
 
 For endpoint-level request, response, field, and lifecycle documentation, see
@@ -8,7 +8,7 @@ For endpoint-level request, response, field, and lifecycle documentation, see
 
 ## Runtime model
 
-NLB Seat Helper is a Manifest V3 content-script extension. Chrome injects its
+StudySeat SG - for NLB is a Manifest V3 content-script extension. Chrome injects its
 JavaScript and CSS only on:
 
 ```text
@@ -100,9 +100,11 @@ Guest copy and records the acknowledged favourite identities. A later Guest
 favourite missing from that account produces another copy prompt. **Keep
 separate** remains a persistent per-profile opt-out.
 
-The header identifies the current account with its stable neutral order label,
-such as **Profile 1 · Signed in**. It does not render the raw NLB user ID or a
-masked fragment of it.
+The header and Settings identify the current account with its stable neutral
+order label and an in-memory masked identifier, such as
+**Profile 1 · A*******Z · Signed in**. Masking retains only the first and last
+character and replaces every middle character with `*`; the complete raw NLB
+user ID is not inserted into rendered markup or persisted.
 
 The saved library and area are restored when both still exist in the current
 catalog. If the saved area is empty or no longer exists, the extension selects
@@ -162,6 +164,7 @@ flowchart TD
 | `src/services/seatPlanMaintenance.ts` | Produces sanitized exports and runs optional bounded branch-level metadata discovery with exact-area response parsing. |
 | `src/data/seatPlans/` | Stores reviewed, non-account-specific seat-plan coordinates. |
 | `src/components/ClickableSeatPlan.tsx` | Renders verified keyboard- and pointer-accessible favourite hotspots over a plan. |
+| `src/components/SettingsDialog.tsx` | Presents disclosure, opaque profile inventory, Guest-copy preferences, recovery, and confirmed local-data deletion. |
 | `docs/data/seat-plan-baseline.json` | Stores the point-in-time normalized catalog, map metadata, and SHA-256 evidence. |
 | `scripts/seat-plan-*.mjs` | Captures, audits, verifies, and prepares annotation maintenance evidence. |
 | `src/services/preferences.ts` | Persists the last selected branch and area. |
@@ -548,9 +551,10 @@ Persisted in `chrome.storage.local`:
 
 - an installation-local 256-bit profile-key secret;
 - opaque HMAC-derived profile IDs and their stable display order;
-- favourite seats for each account; and
-- the last selected branch and area for each account; and
-- the Guest-copy choice for each account.
+- favourite seats for each account;
+- the last selected branch and area for each account;
+- the Guest-copy choice for each account; and
+- the privacy/session disclosure acknowledgement.
 
 Schema 1 replaces the legacy raw-ID key suffixes with opaque profile IDs and
 moves unscoped legacy data into permanent Guest keys. Migration first writes
@@ -568,7 +572,42 @@ service can inventory Guest and opaque account profiles and can delete only
 Guest data, one profile, or every key owned by the extension. Full deletion
 uses an explicit key allowlist and owned prefixes rather than
 `chrome.storage.local.clear()`, so unrelated local-storage entries are
-preserved. The deletion helpers remain service-only until the Settings UI.
+preserved. Settings exposes these helpers through separately confirmed actions.
+
+## Settings and local-data lifecycle
+
+The header Settings control remains available even when the main workspace is
+collapsed. It opens a portalled modal dialog, moves keyboard focus inside,
+traps Tab and Shift+Tab, closes on Escape, restores focus to the trigger, and
+makes the underlying extension panel inert and hidden from assistive
+technology while open. Destructive confirmations use a nested alert dialog
+and temporarily hide the underlying Settings content from assistive
+technology.
+
+On first use, Settings opens with a disclosure explaining that the extension
+uses the NLB session already present in the tab, which information it reads,
+and when booking or cancellation mutations are sent. Acknowledgement is stored
+locally; closing without acknowledging causes the disclosure to return after
+the next extension reload.
+
+Settings reads the typed opaque inventory and exposes four distinct scopes:
+
+1. **Clear Guest** removes only Guest favourites and its saved area.
+2. **Clear current profile** removes that account's favourites and saved area
+   while retaining its Profile N identity and Guest-copy preference.
+3. **Delete inactive profile** removes its favourites, saved area, Guest-copy
+   preference, and opaque inventory entry.
+4. **Clear all local data** removes Guest, every profile, profile secret and
+   order, preferences, disclosure acknowledgement, and the short-lived
+   sign-in marker. It neither signs out of NLB nor cancels bookings. If the NLB
+   session remains signed in, account refresh creates a new empty opaque
+   profile. Seats referenced by active bookings can then be added again by the
+   existing booked-seat favourite reconciliation.
+
+Every destructive action requires confirmation describing its exact scope.
+The current workspace remounts after relevant local changes. The recovery
+action performs no deletion; it discards current interface state and fetches
+fresh account and catalog data from NLB.
 
 Kept only in memory:
 

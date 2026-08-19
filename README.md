@@ -1,4 +1,4 @@
-# NLB Seat Helper
+# StudySeat SG - for NLB
 
 A Chrome extension that makes it easier to book your favourite seats on the [NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/)
 website. It runs inside the existing NLB page and uses the tab's signed-in
@@ -11,16 +11,16 @@ session.
 - Book multiple seats and time slots together, such as 10am-12pm and
   2pm-4pm.
 
-![NLB Seat Helper availability overview](screenshots/store-overview.png)
+![StudySeat SG availability overview](screenshots/store-overview.png)
 
-![NLB Seat Helper interactive seat picker](screenshots/store-seat-picker.png)
+![StudySeat SG interactive seat picker](screenshots/store-seat-picker.png)
 
 ## Install the latest release
 
 No Node.js or development tools are required.
 
 1. Open the
-   [latest NLB Seat Helper release](https://github.com/teamcmcbot/nlb-seat-booking-extension/releases/latest).
+   [latest StudySeat SG release](https://github.com/teamcmcbot/nlb-seat-booking-extension/releases/latest).
 2. Expand **Assets** and download **`nlb-seat-helper.zip`**.
    Do not download GitHub's automatically generated **Source code** archives.
 3. Extract the ZIP to a permanent folder.
@@ -39,7 +39,7 @@ the Chrome Web Store.
 1. Download and extract the newest `nlb-seat-helper.zip`.
 2. Replace the files inside the same permanent extension folder used during
    installation.
-3. Open `chrome://extensions` and click **Reload** on NLB Seat Helper.
+3. Open `chrome://extensions` and click **Reload** on StudySeat SG - for NLB.
 4. Refresh the NLB Seat Booking tab.
 
 Keeping the same installation folder avoids creating a separate unpacked
@@ -57,8 +57,9 @@ installation and preserves the extension's existing Chrome storage.
   Seat Booking page.
 - Keeps catalog and availability features accessible while signed out, using
   a permanent Guest profile that is separate from signed-in accounts.
-- Shows a stable, privacy-safe label such as **Profile 1 · Signed in** without
-  placing the NLB user ID in rendered markup.
+- Shows a stable label such as **Profile 1** together with an in-memory masked
+  account identifier, for example **A*******Z**, so account switchers can
+  verify the active account without exposing the complete NLB user ID.
 - Offers a choice to copy Guest favourites into each signed-in account or keep
   them separate. Accounts that copy are prompted again for newly added Guest
   favourites; **Keep separate** remains a persistent opt-out. Copying never
@@ -68,6 +69,23 @@ installation and preserves the extension's existing Chrome storage.
 - Shows remaining versus total Study Area quota for the selected date.
 - Refreshes account quota and booking information after a booking run.
 - Formats quota in hours and minutes, including `0h` when exhausted.
+
+### Settings and local data
+
+- Keeps Settings available from the header while the workspace is expanded or
+  collapsed and while signed in or signed out.
+- Shows the installed version, independent-project disclaimer, privacy and
+  session explanation, and project support links.
+- Lists Guest, the current account, and inactive opaque profiles with their
+  favourite counts and saved-area status.
+- Lets the current account switch between offering new Guest favourites and
+  always keeping Guest separate.
+- Provides separately confirmed actions to clear Guest, clear the current
+  profile, delete an inactive profile, or clear all extension-local data.
+- Includes a non-destructive action to reset the current interface and refresh
+  account/catalog data from NLB.
+- Shows a first-use disclosure explaining how the existing NLB session is
+  used; dismissing it without acknowledgement causes it to return on reload.
 
 ### Libraries, areas, dates, and times
 
@@ -131,7 +149,7 @@ installation and preserves the extension's existing Chrome storage.
 - Keeps seat-plan maintenance controls out of normal release builds. A
   dedicated `npm run build:maintenance` build can export a freshly refreshed,
   sanitized catalog with zero availability searches. Chrome identifies that
-  build as **NLB Seat Helper (Maintenance)** with a `-maintenance` display
+  build as **StudySeat SG - for NLB (Maintenance)** with a `-maintenance` display
   version and developer-only description.
 - Supports optional selected-library map discovery with at most two sequential
   branch-level availability probes. Returned records remain exact-area scoped
@@ -226,13 +244,15 @@ Chrome storage contains only:
   identifiers;
 - opaque local profile identifiers and their stable display order;
 - favourite seat selections for each account;
-- the last selected library and area for each account; and
-- each account's Guest-favourites copy decision.
+- the last selected library and area for each account;
+- each account's Guest-favourites copy decision; and
+- the local privacy/session disclosure acknowledgement.
 
 The raw NLB user ID is used transiently in memory to associate the current NLB
-session with its opaque local profile. It is not written to Chrome storage or
-rendered in the extension interface. The secret, opaque identifiers, and
-stored preferences never leave the browser through extension code.
+session with its opaque local profile and create the masked on-screen label.
+It is not written to Chrome storage or inserted into rendered markup. The
+secret, opaque identifiers, and stored preferences never leave the browser
+through extension code.
 
 Other account details, quotas, bookings, and availability results remain in
 memory and are not persisted by the extension.
@@ -275,8 +295,9 @@ npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 extension without a development process running.
 
 `npm run build:maintenance` is only for repository maintainers performing a
-read-only seat-plan audit. Chrome labels this unpacked build **NLB Seat Helper
-(Maintenance)**; normal release builds do not expose the maintenance controls.
+read-only seat-plan audit. Chrome labels this unpacked build **StudySeat SG -
+for NLB (Maintenance)**; normal release builds do not expose the maintenance
+controls.
 
 ## Load a development build in Chrome
 
@@ -288,7 +309,7 @@ read-only seat-plan audit. Chrome labels this unpacked build **NLB Seat Helper
 
 After rebuilding:
 
-1. Click **Reload** for NLB Seat Helper on `chrome://extensions`.
+1. Click **Reload** for StudySeat SG - for NLB on `chrome://extensions`.
 2. Refresh the NLB Seat Booking tab.
 
 Maintainers can follow

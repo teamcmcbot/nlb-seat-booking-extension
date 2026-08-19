@@ -40,13 +40,46 @@
 }
 
 .nlb-seat-helper__header {
-  display: flex;
+  display: grid;
+  grid-template-areas:
+    "indicator title action refresh settings collapse"
+    ". account account account account account";
+  grid-template-columns: 10px minmax(0, 1fr) auto auto auto auto;
   align-items: center;
-  gap: 8px;
+  gap: 1px 8px;
+}
+
+.nlb-seat-helper__status {
+  grid-area: indicator;
+}
+
+.nlb-seat-helper__title {
+  grid-area: title;
+}
+
+.nlb-seat-helper__title-status {
+  grid-area: account;
+}
+
+.nlb-seat-helper__account-action {
+  grid-area: action;
+}
+
+.nlb-seat-helper__account-refresh {
+  grid-area: refresh;
+}
+
+.nlb-seat-helper__settings-trigger {
+  grid-area: settings;
+}
+
+.nlb-seat-helper__collapse {
+  grid-area: collapse;
 }
 
 .nlb-seat-helper__collapse,
-.nlb-seat-helper__account-refresh {
+.nlb-seat-helper__account-refresh,
+.nlb-seat-helper__settings-trigger {
   display: grid;
   width: 26px;
   height: 26px;
@@ -65,6 +98,11 @@
 .nlb-seat-helper__account-refresh {
   color: #246046;
   font-size: 16px;
+}
+
+.nlb-seat-helper__settings-trigger {
+  color: #315443;
+  font-size: 14px;
 }
 
 .nlb-seat-helper__account-refresh:disabled {
@@ -143,20 +181,20 @@
 }
 
 .nlb-seat-helper__title {
-  display: flex;
   min-width: 0;
-  flex: 1;
-  align-items: baseline;
-  gap: 4px;
   color: #163b2c;
   font-size: 14px;
   font-weight: 700;
+  line-height: 1.15;
   letter-spacing: -0.01em;
-  white-space: nowrap;
 }
 
 .nlb-seat-helper__title > strong {
-  flex: 0 0 auto;
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nlb-seat-helper__account-name {
@@ -186,6 +224,7 @@
 }
 
 .nlb-seat-helper__title-status {
+  width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1542,6 +1581,293 @@
   font-size: 9px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.nlb-seat-helper__settings-backdrop,
+.nlb-seat-helper__settings-backdrop * {
+  box-sizing: border-box;
+}
+
+.nlb-seat-helper__settings-backdrop {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+  background: rgb(18 35 27 / 55%);
+  color: #18251f;
+  font-family:
+    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  font-size: 14px;
+  line-height: 1.45;
+  backdrop-filter: blur(4px);
+}
+
+.nlb-seat-helper__settings-dialog {
+  position: relative;
+  display: flex;
+  width: min(620px, 100%);
+  max-height: min(760px, calc(100dvh - 36px));
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid #bcd2c7;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: 0 22px 60px rgb(10 28 20 / 32%);
+}
+
+.nlb-seat-helper__settings-header {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 13px 15px;
+  border-bottom: 1px solid #dce7e1;
+  background: #f4f8f6;
+}
+
+.nlb-seat-helper__settings-header > div,
+.nlb-seat-helper__settings-header strong,
+.nlb-seat-helper__settings-header span {
+  display: block;
+}
+
+.nlb-seat-helper__settings-header strong {
+  color: #163b2c;
+  font-size: 16px;
+}
+
+.nlb-seat-helper__settings-header span {
+  margin-top: 1px;
+  color: #68776f;
+  font-size: 11px;
+}
+
+.nlb-seat-helper__settings-header > button {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #cbdcd3;
+  border-radius: 8px;
+  background: #fff;
+  color: #315443;
+  font: inherit;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__settings-content {
+  overflow-y: auto;
+  padding: 14px 15px 18px;
+  scrollbar-gutter: stable;
+}
+
+.nlb-seat-helper__settings-content > section {
+  padding: 12px 0;
+  border-bottom: 1px solid #e3ebe7;
+}
+
+.nlb-seat-helper__settings-content > section:first-child {
+  padding-top: 0;
+}
+
+.nlb-seat-helper__settings-content > section:last-child {
+  border-bottom: 0;
+}
+
+.nlb-seat-helper__settings-content h2 {
+  margin: 0 0 5px;
+  color: #244c39;
+  font-size: 13px;
+}
+
+.nlb-seat-helper__settings-content p {
+  margin: 4px 0;
+  color: #596a62;
+  font-size: 11px;
+}
+
+.nlb-seat-helper__settings-disclosure {
+  margin-bottom: 6px;
+  padding: 12px !important;
+  border: 1px solid #b9d8c8 !important;
+  border-radius: 10px;
+  background: #eef8f2;
+}
+
+.nlb-seat-helper__settings-disclosure button,
+.nlb-seat-helper__settings-content button,
+.nlb-seat-helper__settings-confirmation button {
+  min-height: 30px;
+  padding: 6px 9px;
+  border: 1px solid #b9cec3;
+  border-radius: 7px;
+  background: #fff;
+  color: #28533f;
+  font: inherit;
+  font-size: 10px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__settings-disclosure button {
+  margin-top: 8px;
+  border-color: #4f9572;
+  background: #27714f;
+  color: #fff;
+}
+
+.nlb-seat-helper__settings-content button:disabled,
+.nlb-seat-helper__settings-confirmation button:disabled {
+  cursor: default;
+  opacity: 0.5;
+}
+
+.nlb-seat-helper__settings-content button:focus-visible,
+.nlb-seat-helper__settings-confirmation button:focus-visible,
+.nlb-seat-helper__settings-header button:focus-visible,
+.nlb-seat-helper__settings-links a:focus-visible {
+  outline: 3px solid rgb(38 123 83 / 28%);
+  outline-offset: 2px;
+}
+
+.nlb-seat-helper__settings-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px 12px;
+  margin-top: 8px;
+}
+
+.nlb-seat-helper__settings-links a {
+  color: #176c48;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.nlb-seat-helper__settings-error {
+  padding: 8px 9px;
+  border-radius: 8px;
+  background: #fff1ef;
+  color: #914d44 !important;
+}
+
+.nlb-seat-helper__settings-profiles {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.nlb-seat-helper__settings-profiles article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px;
+  border: 1px solid #dce6e1;
+  border-radius: 8px;
+  background: #fafcfb;
+}
+
+.nlb-seat-helper__settings-profiles article.is-current {
+  border-color: #65a887;
+  background: #eef8f2;
+  box-shadow: inset 3px 0 0 #27805a;
+}
+
+.nlb-seat-helper__settings-profiles article > div,
+.nlb-seat-helper__settings-profiles strong,
+.nlb-seat-helper__settings-profiles span {
+  display: block;
+}
+
+.nlb-seat-helper__settings-profiles strong {
+  color: #314b3e;
+  font-size: 11px;
+}
+
+.nlb-seat-helper__settings-profiles span {
+  margin-top: 2px;
+  color: #75827c;
+  font-size: 9px;
+}
+
+.nlb-seat-helper__settings-choice,
+.nlb-seat-helper__settings-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-top: 9px;
+}
+
+.nlb-seat-helper__settings-choice button.is-selected {
+  border-color: #4f9572;
+  background: #e5f4eb;
+  color: #185f3f;
+}
+
+.nlb-seat-helper__settings-content button.is-danger,
+.nlb-seat-helper__settings-confirmation button.is-danger {
+  border-color: #d6a49d;
+  background: #fff3f1;
+  color: #963f35;
+}
+
+.nlb-seat-helper__settings-confirmation-backdrop {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgb(18 35 27 / 48%);
+  backdrop-filter: blur(2px);
+}
+
+.nlb-seat-helper__settings-confirmation {
+  width: min(420px, 100%);
+  padding: 15px;
+  border: 1px solid #e1b5ae;
+  border-radius: 11px;
+  background: #fff;
+  box-shadow: 0 14px 36px rgb(24 37 31 / 25%);
+}
+
+.nlb-seat-helper__settings-confirmation > strong {
+  color: #71362f;
+  font-size: 13px;
+}
+
+.nlb-seat-helper__settings-confirmation > p {
+  margin: 6px 0 12px;
+  color: #705a56;
+  font-size: 11px;
+}
+
+.nlb-seat-helper__settings-confirmation > div {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 7px;
+}
+
+@media (max-width: 520px) {
+  .nlb-seat-helper__settings-backdrop {
+    padding: 8px;
+  }
+
+  .nlb-seat-helper__settings-dialog {
+    max-height: calc(100dvh - 16px);
+  }
+
+  .nlb-seat-helper__settings-profiles article {
+    align-items: stretch;
+    flex-direction: column;
+  }
 }
 
 .nlb-seat-helper__booking-review button.is-confirm {

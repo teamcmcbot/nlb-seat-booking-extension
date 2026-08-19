@@ -5,6 +5,8 @@ export const STORAGE_SCHEMA_VERSION_KEY = "studySeatStorageSchemaVersion";
 export const PROFILE_SECRET_KEY = "studySeatProfileSecret";
 export const PROFILE_ORDER_KEY = "studySeatProfileOrder";
 export const LAST_ACTIVE_PROFILE_KEY = "studySeatLastActiveProfile";
+export const PRIVACY_ACKNOWLEDGEMENT_KEY =
+  "studySeatPrivacyDisclosureAcknowledged";
 export const SIGNED_OUT_PROFILE_ID = "guest";
 export const GUEST_FAVOURITES_KEY = "studySeatGuestFavourites";
 export const GUEST_SELECTION_KEY = "studySeatGuestSelection";
@@ -430,6 +432,7 @@ function knownStorageKey(key: string) {
       PROFILE_SECRET_KEY,
       PROFILE_ORDER_KEY,
       LAST_ACTIVE_PROFILE_KEY,
+      PRIVACY_ACKNOWLEDGEMENT_KEY,
       GUEST_FAVOURITES_KEY,
       GUEST_SELECTION_KEY,
       LEGACY_LAST_ACTIVE_USER_KEY,
@@ -602,6 +605,21 @@ export async function saveGuestCopyDecision(
   });
 }
 
+export async function resetGuestCopyDecision(profileId: string) {
+  await chrome.storage.local.remove(accountGuestDecisionKey(profileId));
+}
+
+export async function privacyDisclosureAcknowledged() {
+  const stored = await chrome.storage.local.get(PRIVACY_ACKNOWLEDGEMENT_KEY);
+  return stored[PRIVACY_ACKNOWLEDGEMENT_KEY] === true;
+}
+
+export async function acknowledgePrivacyDisclosure() {
+  await chrome.storage.local.set({
+    [PRIVACY_ACKNOWLEDGEMENT_KEY]: true,
+  });
+}
+
 export async function clearGuestProfileData() {
   await ensureProfileStorageSchema();
   await chrome.storage.local.remove([
@@ -634,6 +652,18 @@ export async function clearAccountProfileData(profileId: string) {
       (storedProfileId) => storedProfileId !== profileId,
     ),
   });
+}
+
+export async function clearCurrentProfileData(profileId: string) {
+  if (!isOpaqueProfileId(profileId)) {
+    throw new Error("A valid account profile ID is required");
+  }
+
+  await ensureProfileStorageSchema();
+  await chrome.storage.local.remove([
+    accountFavouritesKey(profileId),
+    accountSelectionKey(profileId),
+  ]);
 }
 
 export async function clearAllProfileData() {

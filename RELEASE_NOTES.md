@@ -1,4 +1,4 @@
-# NLB Seat Helper v1.3.1
+# StudySeat SG - for NLB v1.3.1
 
 This patch improves switching between libraries with saved favourite seats
 and prepares local profile storage for the public-release Settings work.
@@ -19,10 +19,22 @@ in v1.3.0.
 - Gives signed-out favourites a permanent Guest profile and asks each account
   whether to copy those favourites or keep them separate. Profiles that copy
   are prompted again only for newly added Guest favourites.
-- Removes the raw NLB user ID from persistent extension storage, visible
-  header text, tooltips, and accessibility labels.
-- Shows stable neutral account labels such as **Profile 1 · Signed in** for
-  users who switch between multiple accounts.
+- Removes the complete raw NLB user ID from persistent extension storage,
+  visible markup, tooltips, and accessibility labels.
+- Shows stable Profile N labels plus an in-memory first/last-character masked
+  identifier, such as **Profile 1 · A*******Z · Signed in**, for users who
+  switch between accounts.
+- Adds an accessible Settings dialog with first-use session/privacy
+  disclosure, project links, opaque profile summaries, Guest-copy preference
+  controls, and a reset-and-refresh recovery action.
+- Adds separately confirmed controls for clearing Guest, clearing the current
+  profile without changing its identity, deleting an inactive profile, and
+  clearing all extension-local data.
+- Adopts the public product name **StudySeat SG - for NLB** and moves the
+  masked current-account indicator onto a compact second header row while
+  keeping all account and utility buttons together on the first row.
+- Highlights the current signed-in profile in Settings with a labelled,
+  green-accented card.
 - Centralizes local-profile storage validation, inventory, and scoped deletion
   primitives ahead of the Settings UI.
 - Replaces the image-only full-screen viewer with a responsive seat picker.

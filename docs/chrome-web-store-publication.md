@@ -2,7 +2,7 @@
 
 Status: working research and implementation roadmap, 19 August 2026.
 
-Working public product name: **StudySeat SG — for NLB**.
+Public product name: **StudySeat SG - for NLB**.
 
 A basic exact-name web and Chrome Web Store search on 19 August 2026 did not
 surface another product named **StudySeat SG**. It did surface an
@@ -30,8 +30,8 @@ Before a public release, the project should still complete the following:
 
 1. publish an accurate privacy policy and matching Chrome Web Store privacy
    declarations;
-2. replace raw NLB user IDs in the UI and persistent storage with a
-   privacy-minimised profile model;
+2. replace raw NLB user IDs in persistent storage with opaque profiles and use
+   only a first/last-character masked identifier in the UI;
 3. add understandable Settings, disclosure, support, and data-deletion flows;
 4. make a conscious risk decision about NLB seat-plan images and promotional
    screenshots;
@@ -49,9 +49,9 @@ act on a later intellectual-property or impersonation complaint.
 
 ## Branding and independence
 
-### Working name
+### Public name
 
-Use **StudySeat SG — for NLB**, subject to a normal availability and trade-mark
+Use **StudySeat SG - for NLB**, subject to a normal availability and trade-mark
 search for the independent `StudySeat SG` brand.
 
 This structure gives the extension its own identity while retaining `NLB` as a
@@ -221,7 +221,7 @@ seat plan. A 1400×560 marquee image can use the same independent visual system.
 
 ### Title
 
-> StudySeat SG — for NLB
+> StudySeat SG - for NLB
 
 ### Summary
 
@@ -388,7 +388,8 @@ The important consequences are:
 
 The raw NLB ID exists only transiently in account-session memory. HMAC
 derivation uses a random installation-local 256-bit secret that is never sent
-by extension code.
+by extension code. The UI derives a masked indicator that preserves the first
+and last character and replaces every middle character with `*`.
 
 A sanitised illustrative snapshot covering fresh signed-out, one-account,
 multiple-account, malformed, and schema-1 opaque states is stored in
@@ -555,8 +556,8 @@ they become release-bound.
 
 ### Phase 0 — decisions and baselines
 
-- [x] Complete a basic name search and retain **StudySeat SG — for NLB** as the
-  provisional working name; formal similar-mark clearance remains separate.
+- [x] Complete a basic name search and adopt **StudySeat SG - for NLB** as the
+  public name; formal similar-mark clearance remains separate.
 - [x] Choose runtime-only seat-plan use and exclude NLB material from store
   assets as the reversible working risk position.
 - [x] Capture sanitised fixtures for every current storage state without real
@@ -618,26 +619,37 @@ schema version last, and reuses the same secret and targets when resuming.
 Signed-out operation now always uses Guest. Copy decisions remember which
 Guest favourite identities were acknowledged, so later additions can be
 offered without repeatedly prompting for the same seats; Keep separate is a
-persistent opt-out. The header uses stable neutral Profile N labels. Raw NLB
-IDs remain only in transient account-session memory for same-session safety
-checks.
+persistent opt-out. The header and Settings use stable Profile N labels plus a
+masked first/last-character account indicator. Complete raw NLB IDs remain
+only in transient account-session memory for derivation and same-session
+safety checks.
 
 ### Phase 3 — Settings and disclosure UI
 
-- [ ] Add the header Settings button and accessible dialog focus management.
-- [ ] Add About, disclaimer, version, privacy, source, support, and security
+- [x] Add the header Settings button and accessible dialog focus management.
+- [x] Add About, disclaimer, version, privacy, source, support, and security
   links.
-- [ ] Show Guest and opaque saved-profile summaries.
-- [ ] Implement Clear Guest, Clear current profile, Delete Profile N, and Clear
+- [x] Show Guest and opaque saved-profile summaries.
+- [x] Implement Clear Guest, Clear current profile, Delete Profile N, and Clear
   all actions with precise confirmation text.
-- [ ] Add Reset current view and refresh from NLB if testing shows it is useful.
-- [ ] Add a first-use privacy/session disclosure and acknowledgement.
-- [ ] Add an explicit Guest-to-current-account copy flow.
+- [x] Add Reset current view and refresh from NLB if testing shows it is useful.
+- [x] Add a first-use privacy/session disclosure and acknowledgement.
+- [x] Add an explicit Guest-to-current-account copy flow.
 - [ ] Test keyboard navigation, screen readers, 200% zoom, reduced motion, and
   narrow windows.
 
 Acceptance: users can understand and remove every persistent record without
 knowing Chrome storage internals.
+
+Implementation status (2026-08-20): Settings is available in every header
+state and inventories Guest plus opaque Profile N records. Current-profile
+clearing retains its identity, inactive deletion removes the complete profile,
+and clear-all also removes the disclosure acknowledgement and pending sign-in
+marker without signing out or mutating bookings. The dialog implements focus
+entry, focus trapping, Escape handling, trigger restoration, background
+inertness, narrow-window layout, and no motion-dependent interaction. Manual
+Chrome verification at keyboard, screen-reader, and 200% zoom settings remains
+the final Phase 3 gate.
 
 ### Phase 4 — public documentation and policy files
 
@@ -659,7 +671,9 @@ behavior agree exactly.
 
 ### Phase 5 — store listing assets and submission
 
-- [ ] Update manifest name and 132-character description.
+- [x] Update the manifest and installed interface name to **StudySeat SG - for
+  NLB**.
+- [ ] Finalise the 132-character manifest description.
 - [ ] Generate one 440×280 small promo tile.
 - [ ] Generate up to five sanitised 1280×800 screenshots.
 - [ ] Optionally generate a 1400×560 marquee image.
@@ -704,7 +718,7 @@ order:
 
 Suggested opening:
 
-> # StudySeat SG — for NLB
+> # StudySeat SG - for NLB
 >
 > A free Chrome extension that makes it easier to find and manage study seats
 > on the NLB Seat Booking website.

@@ -76,6 +76,7 @@
   },
   "schema1OpaqueProfiles": {
     "studySeatStorageSchemaVersion": 1,
+    "studySeatPrivacyDisclosureAcknowledged": true,
     "studySeatProfileSecret": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
     "studySeatProfileOrder": [
       "profile_14r7aTW56C10D9Flv3J-SY2kZ8F8PFLHbjUGBIXaBq0",

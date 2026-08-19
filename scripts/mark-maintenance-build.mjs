@@ -20,7 +20,7 @@ if (manifest.version !== packageMetadata.version) {
   );
 }
 
-manifest.name = "NLB Seat Helper (Maintenance)";
+manifest.name = "StudySeat SG - for NLB (Maintenance)";
 manifest.description =
   "Developer-only maintenance build for seat-plan audits. Not for normal use.";
 manifest.version_name = `${manifest.version}-maintenance`;

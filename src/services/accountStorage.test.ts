@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import storageFixtures from "../../docs/examples/chrome-storage-profiles.sanitized.json";
 import {
+  maskedAccountIdentifier,
   profileUserId,
   SIGNED_OUT_PROFILE_ID,
 } from "./accountProfiles";
@@ -19,6 +20,7 @@ import {
   accountSelectionKey,
   clearAccountProfileData,
   clearAllProfileData,
+  clearCurrentProfileData,
   clearGuestProfileData,
   CURRENT_STORAGE_SCHEMA_VERSION,
   deriveOpaqueProfileId,
@@ -27,10 +29,13 @@ import {
   isOpaqueProfileId,
   LAST_ACTIVE_PROFILE_KEY,
   loadGuestCopyDecision,
+  privacyDisclosureAcknowledged,
   PROFILE_ORDER_KEY,
   PROFILE_SECRET_KEY,
   profileDisplayLabel,
   readProfileStorageInventory,
+  resetGuestCopyDecision,
+  acknowledgePrivacyDisclosure,
   saveGuestCopyDecision,
   STORAGE_SCHEMA_VERSION_KEY,
 } from "./profileStorage";
@@ -85,6 +90,12 @@ function expectNoRawUserId(values: StorageRecord, ...rawUserIds: string[]) {
 describe("opaque account profiles", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  it("masks account identifiers without exposing the complete value", () => {
+    expect(maskedAccountIdentifier("A1234567Z")).toBe("A*******Z");
+    expect(maskedAccountIdentifier("AB")).toBe("A*");
+    expect(maskedAccountIdentifier("A")).toBe("*");
   });
 
   it("initializes schema 1 and keeps signed-out data in permanent Guest keys", async () => {
@@ -379,6 +390,53 @@ describe("schema-1 inventory and deletion", () => {
     expect(values).toHaveProperty(accountFavouritesKey(profile2));
     expect(values).toHaveProperty(GUEST_FAVOURITES_KEY);
     expect(values[PROFILE_ORDER_KEY]).toEqual([profile2]);
+  });
+
+  it("clears current profile preferences but retains its identity and copy choice", async () => {
+    const { values } = installChromeStorage();
+    const profileId = await profileUserId("user-1");
+    await saveFavouriteSeats(
+      profileId,
+      storageFixtures.freshSignedOut.favouriteSeats,
+    );
+    await saveLastSeatSelection(
+      profileId,
+      storageFixtures.freshSignedOut.lastSeatSelection,
+    );
+    await saveGuestCopyDecision(profileId, "kept-separate");
+
+    await clearCurrentProfileData(profileId);
+
+    expect(values).not.toHaveProperty(accountFavouritesKey(profileId));
+    expect(values).not.toHaveProperty(accountSelectionKey(profileId));
+    expect(values).toHaveProperty(accountGuestDecisionKey(profileId));
+    expect(values[PROFILE_ORDER_KEY]).toEqual([profileId]);
+    expect(values[LAST_ACTIVE_PROFILE_KEY]).toBe(profileId);
+  });
+
+  it("can reset a persistent Guest-copy preference", async () => {
+    const { values } = installChromeStorage();
+    const profileId = await profileUserId("user-1");
+    await saveGuestCopyDecision(profileId, "kept-separate");
+
+    await resetGuestCopyDecision(profileId);
+
+    expect(await loadGuestCopyDecision(profileId)).toBeUndefined();
+    expect(values).not.toHaveProperty(accountGuestDecisionKey(profileId));
+  });
+
+  it("stores the privacy acknowledgement and removes it with all local data", async () => {
+    const { values } = installChromeStorage({
+      unrelatedExtensionKey: "preserve me",
+    });
+    await profileUserId();
+
+    expect(await privacyDisclosureAcknowledged()).toBe(false);
+    await acknowledgePrivacyDisclosure();
+    expect(await privacyDisclosureAcknowledged()).toBe(true);
+
+    await clearAllProfileData();
+    expect(values).toEqual({ unrelatedExtensionKey: "preserve me" });
   });
 
   it("clears all known data while preserving unrelated storage", async () => {

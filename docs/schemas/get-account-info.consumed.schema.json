@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/teamcmcbot/nlb-seat-booking-extension/docs/schemas/get-account-info.consumed.schema.json",
-  "title": "GetAccountInfo fields consumed by NLB Seat Helper",
+  "title": "GetAccountInfo fields consumed by StudySeat SG - for NLB",
   "description": "A compatibility schema for the subset of the observed NLB response used by the extension. It is not an official NLB schema and intentionally permits additional properties.",
   "type": "object",
   "required": [

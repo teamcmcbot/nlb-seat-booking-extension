@@ -1,11 +1,11 @@
 # Contributor and Agent Guide
 
 This file applies to the entire repository. It describes how contributors and
-coding agents should understand, change, test, and release NLB Seat Helper.
+coding agents should understand, change, test, and release StudySeat SG - for NLB.
 
 ## Project overview
 
-NLB Seat Helper is a Manifest V3 Chrome extension injected into:
+StudySeat SG - for NLB is a Manifest V3 Chrome extension injected into:
 
 ```text
 https://www.nlb.gov.sg/seatbooking/*

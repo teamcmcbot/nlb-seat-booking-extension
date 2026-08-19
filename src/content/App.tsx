@@ -1,11 +1,21 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getAccountInfo, NlbApiError } from "../api/account";
 import { SeatAssistant } from "../components/SeatAssistant";
+import {
+  SettingsDialog,
+  type LocalDataChange,
+} from "../components/SettingsDialog";
 import type { AccountSession } from "../models/account";
 import type { Catalog } from "../models/catalog";
 import { extractAccountSession } from "../services/accountSession";
-import { profileUserId } from "../services/accountProfiles";
-import { profileDisplayLabel } from "../services/profileStorage";
+import {
+  maskedAccountIdentifier,
+  profileUserId,
+} from "../services/accountProfiles";
+import {
+  privacyDisclosureAcknowledged,
+  profileDisplayLabel,
+} from "../services/profileStorage";
 import {
   beginSignIn,
   beginSignOut,
@@ -27,6 +37,7 @@ type AccountState =
       catalog: Catalog;
       profileUserId: string;
       profileLabel: string;
+      maskedAccountId: string;
     }
   | { status: "error"; message: string };
 
@@ -70,6 +81,7 @@ async function accountStateFrom(accountInfo: unknown): Promise<AccountState> {
         catalog: extractCatalog(accountInfo),
         profileUserId: activeProfileUserId,
         profileLabel: activeProfileLabel ?? "Signed-in profile",
+        maskedAccountId: maskedAccountIdentifier(session.userId),
       }
     : {
         status: "signedOut",
@@ -165,11 +177,34 @@ export function App() {
   const [refreshingAccount, setRefreshingAccount] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
   const [accountActionError, setAccountActionError] = useState("");
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [disclosureRequired, setDisclosureRequired] = useState(false);
+  const [workspaceRevision, setWorkspaceRevision] = useState(0);
   const refreshInFlight = useRef<Promise<RefreshedAccount> | null>(null);
+  const settingsTriggerRef = useRef<HTMLButtonElement>(null);
 
   const retry = useCallback(() => {
     setRequestId((current) => current + 1);
   }, []);
+
+  const closeSettings = useCallback(() => {
+    setSettingsOpen(false);
+    window.requestAnimationFrame(() => settingsTriggerRef.current?.focus());
+  }, []);
+
+  const handleLocalDataChanged = useCallback(
+    async (change: LocalDataChange) => {
+      if (change === "all") {
+        setDisclosureRequired(true);
+      }
+      if (change === "all" || change === "refresh") {
+        retry();
+        return;
+      }
+      setWorkspaceRevision((current) => current + 1);
+    },
+    [retry],
+  );
   const refreshAccountSilently = useCallback(() => {
     if (refreshInFlight.current) {
       return refreshInFlight.current;
@@ -207,6 +242,21 @@ export function App() {
       setRefreshingAccount(false);
     }
   }, [refreshAccountSilently]);
+
+  useEffect(() => {
+    let active = true;
+    privacyDisclosureAcknowledged()
+      .then((acknowledged) => {
+        if (active && !acknowledged) {
+          setDisclosureRequired(true);
+          setSettingsOpen(true);
+        }
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -332,9 +382,10 @@ export function App() {
   const workspaceOpen = expanded && Boolean(assistant);
 
   return (
-    <aside
+    <>
+      <aside
       className={`nlb-seat-helper__panel${workspaceOpen ? " is-workspace" : ""}`}
-      aria-label="NLB Seat Helper status"
+      aria-label="StudySeat SG - for NLB status"
       aria-live="polite"
     >
       <header className="nlb-seat-helper__header">
@@ -343,30 +394,28 @@ export function App() {
           aria-hidden="true"
         />
         <div className="nlb-seat-helper__title">
-          <strong>NLB Seat Helper</strong>
-          {accountState.status === "signedIn" && (
-            <span className="nlb-seat-helper__title-status">
-              ({accountState.profileLabel} · Signed in)
-            </span>
-          )}
-          {accountState.status === "signedOut" && (
-            <span className="nlb-seat-helper__title-status">
-              (Not signed in)
-            </span>
-          )}
-          {accountState.status === "loading" && (
-            <span className="nlb-seat-helper__title-status">
-              {finishingAuthentication
-                ? "(Finishing sign in…)"
-                : "(Connecting…)"}
-            </span>
-          )}
-          {accountState.status === "error" && (
-            <span className="nlb-seat-helper__title-status">
-              (Connection failed)
-            </span>
-          )}
+          <strong>StudySeat SG - for NLB</strong>
         </div>
+        {accountState.status === "signedIn" && (
+          <span className="nlb-seat-helper__title-status">
+            ({accountState.profileLabel} · {accountState.maskedAccountId} · Signed in)
+          </span>
+        )}
+        {accountState.status === "signedOut" && (
+          <span className="nlb-seat-helper__title-status">(Not signed in)</span>
+        )}
+        {accountState.status === "loading" && (
+          <span className="nlb-seat-helper__title-status">
+            {finishingAuthentication
+              ? "(Finishing sign in…)"
+              : "(Connecting…)"}
+          </span>
+        )}
+        {accountState.status === "error" && (
+          <span className="nlb-seat-helper__title-status">
+            (Connection failed)
+          </span>
+        )}
         {accountState.status === "signedOut" && (
           <button
             type="button"
@@ -402,10 +451,20 @@ export function App() {
           </button>
         )}
         <button
+          ref={settingsTriggerRef}
+          type="button"
+          className="nlb-seat-helper__settings-trigger"
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Open StudySeat SG Settings"
+          title="Settings"
+        >
+          ⚙
+        </button>
+        <button
           type="button"
           className="nlb-seat-helper__collapse"
           onClick={() => setExpanded((current) => !current)}
-          aria-label={expanded ? "Collapse NLB Seat Helper" : "Expand NLB Seat Helper"}
+          aria-label={expanded ? "Collapse StudySeat SG" : "Expand StudySeat SG"}
         >
           {expanded ? "−" : "+"}
         </button>
@@ -427,7 +486,7 @@ export function App() {
 
       {expanded && assistant && (
         <SeatAssistant
-          key={`${assistant.profileUserId}:${assistant.session ? "signed-in" : "signed-out"}`}
+          key={`${assistant.profileUserId}:${assistant.session ? "signed-in" : "signed-out"}:${workspaceRevision}`}
           catalog={assistant.catalog}
           profileUserId={assistant.profileUserId}
           session={assistant.session}
@@ -443,6 +502,26 @@ export function App() {
           </button>
         </div>
       )}
-    </aside>
+      </aside>
+
+      {settingsOpen && (
+        <SettingsDialog
+          currentProfileId={
+            accountState.status === "signedIn"
+              ? accountState.profileUserId
+              : undefined
+          }
+          maskedAccountId={
+            accountState.status === "signedIn"
+              ? accountState.maskedAccountId
+              : undefined
+          }
+          disclosureRequired={disclosureRequired}
+          onClose={closeSettings}
+          onDisclosureAcknowledged={() => setDisclosureRequired(false)}
+          onLocalDataChanged={handleLocalDataChanged}
+        />
+      )}
+    </>
   );
 }
