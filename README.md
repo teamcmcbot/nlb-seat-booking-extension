@@ -56,8 +56,13 @@ installation and preserves the extension's existing Chrome storage.
 - Detects the completed sign-in automatically after NLB redirects back to the
   Seat Booking page.
 - Keeps catalog and availability features accessible while signed out, using
-  the last active account's local preferences.
-- Shows the signed-in NLB user ID in the compact panel header.
+  a permanent Guest profile that is separate from signed-in accounts.
+- Shows a stable, privacy-safe label such as **Profile 1 · Signed in** without
+  placing the NLB user ID in rendered markup.
+- Offers a choice to copy Guest favourites into each signed-in account or keep
+  them separate. Accounts that copy are prompted again for newly added Guest
+  favourites; **Keep separate** remains a persistent opt-out. Copying never
+  deletes Guest data.
 - Refreshes the signed-in account from the header after login without
   reloading the NLB page.
 - Shows remaining versus total Study Area quota for the selected date.
@@ -71,6 +76,9 @@ installation and preserves the extension's existing Chrome storage.
 - Excludes `facilityId: 2` discussion rooms and breakout rooms.
 - Remembers the last selected library and area separately for each NLB
   account in Chrome storage.
+- When switching libraries, automatically selects the first area in that
+  library containing a saved favourite seat; libraries without favourites
+  keep the explicit area choice.
 - Respects NLB's configured advance-booking days and release time.
 - Treats each validated `settings.holidays` range as inclusive full local
   calendar days, except for branches listed in `excludedBranches`.
@@ -214,9 +222,17 @@ Requests use the NLB page's existing signed-in session with
 
 Chrome storage contains only:
 
-- NLB user IDs used to separate local account profiles;
-- favourite seat selections for each account; and
-- the last selected library and area for each account.
+- an installation-local random secret used to derive opaque account profile
+  identifiers;
+- opaque local profile identifiers and their stable display order;
+- favourite seat selections for each account;
+- the last selected library and area for each account; and
+- each account's Guest-favourites copy decision.
+
+The raw NLB user ID is used transiently in memory to associate the current NLB
+session with its opaque local profile. It is not written to Chrome storage or
+rendered in the extension interface. The secret, opaque identifiers, and
+stored preferences never leave the browser through extension code.
 
 Other account details, quotas, bookings, and availability results remain in
 memory and are not persisted by the extension.
@@ -303,6 +319,10 @@ versioned download.
 - [Seat-plan Inventory](docs/seat-plan-inventory.md) is the generated
   point-in-time summary of reviewed areas, maps, fingerprints, and annotation
   status.
+- [Chrome Web Store Publication Plan](docs/chrome-web-store-publication.md)
+  records the public-release research, branding and privacy decisions, current
+  account-storage behavior, Settings design, store copy, and staged
+  implementation roadmap.
 
 ## Usage
 

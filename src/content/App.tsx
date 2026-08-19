@@ -5,6 +5,7 @@ import type { AccountSession } from "../models/account";
 import type { Catalog } from "../models/catalog";
 import { extractAccountSession } from "../services/accountSession";
 import { profileUserId } from "../services/accountProfiles";
+import { profileDisplayLabel } from "../services/profileStorage";
 import {
   beginSignIn,
   beginSignOut,
@@ -25,6 +26,7 @@ type AccountState =
       session: AccountSession;
       catalog: Catalog;
       profileUserId: string;
+      profileLabel: string;
     }
   | { status: "error"; message: string };
 
@@ -58,12 +60,16 @@ function requestsExtensionReload(url: string) {
 async function accountStateFrom(accountInfo: unknown): Promise<AccountState> {
   const session = extractAccountSession(accountInfo);
   const activeProfileUserId = await profileUserId(session?.userId);
+  const activeProfileLabel = session
+    ? await profileDisplayLabel(activeProfileUserId)
+    : undefined;
   return session
     ? {
         status: "signedIn",
         session,
         catalog: extractCatalog(accountInfo),
         profileUserId: activeProfileUserId,
+        profileLabel: activeProfileLabel ?? "Signed-in profile",
       }
     : {
         status: "signedOut",
@@ -339,29 +345,8 @@ export function App() {
         <div className="nlb-seat-helper__title">
           <strong>NLB Seat Helper</strong>
           {accountState.status === "signedIn" && (
-            <span
-              className="nlb-seat-helper__account-name"
-              title={accountState.session.userId}
-              aria-label={`Signed in as ${accountState.session.userId}`}
-            >
-              <span
-                className="nlb-seat-helper__account-parenthesis"
-                aria-hidden="true"
-              >
-                (
-              </span>
-              <span
-                className="nlb-seat-helper__account-name-value"
-                aria-hidden="true"
-              >
-                {accountState.session.userId}
-              </span>
-              <span
-                className="nlb-seat-helper__account-parenthesis"
-                aria-hidden="true"
-              >
-                )
-              </span>
+            <span className="nlb-seat-helper__title-status">
+              ({accountState.profileLabel} · Signed in)
             </span>
           )}
           {accountState.status === "signedOut" && (
@@ -442,9 +427,7 @@ export function App() {
 
       {expanded && assistant && (
         <SeatAssistant
-          key={`${assistant.profileUserId}:${
-            assistant.session?.userId ?? "signed-out"
-          }`}
+          key={`${assistant.profileUserId}:${assistant.session ? "signed-in" : "signed-out"}`}
           catalog={assistant.catalog}
           profileUserId={assistant.profileUserId}
           session={assistant.session}

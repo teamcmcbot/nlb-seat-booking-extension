@@ -1073,6 +1073,42 @@
   color: #914d44;
 }
 
+.nlb-seat-helper__guest-copy {
+  margin-top: 10px;
+  padding: 9px;
+  border: 1px solid #c9ded2;
+  border-radius: 8px;
+  background: #f2faf6;
+  color: #345c48;
+  font-size: 10px;
+}
+
+.nlb-seat-helper__guest-copy p {
+  margin: 3px 0 7px;
+}
+
+.nlb-seat-helper__guest-copy div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.nlb-seat-helper__guest-copy button {
+  padding: 5px 7px;
+  border: 1px solid #86aa97;
+  border-radius: 6px;
+  background: #fff;
+  color: #345c48;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__guest-copy button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .nlb-seat-helper__favourite-list {
   display: grid;
   align-content: start;

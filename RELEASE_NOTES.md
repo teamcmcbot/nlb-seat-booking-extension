@@ -1,13 +1,30 @@
-# NLB Seat Helper v1.3.0
+# NLB Seat Helper v1.3.1
 
-This release makes it easier to choose favourite seats while referring to the
-NLB seat plan.
+This patch improves switching between libraries with saved favourite seats
+and prepares local profile storage for the public-release Settings work.
 
-It also introduces proactive maintenance and runtime fingerprinting for NLB
-map and seat-catalog changes.
+It includes all seat-picker and seat-plan maintenance improvements introduced
+in v1.3.0.
 
 ## Highlights
 
+- Automatically selects the first area containing a valid saved favourite
+  when switching to a library, while retaining the explicit area choice for a
+  library without favourites.
+- Recovers an empty or obsolete saved area using the same favourite-area
+  fallback when the extension starts.
+- Migrates raw account-key suffixes to installation-local HMAC-derived opaque
+  profiles, verifies targets before deleting legacy keys, and resumes safely
+  after an interrupted migration.
+- Gives signed-out favourites a permanent Guest profile and asks each account
+  whether to copy those favourites or keep them separate. Profiles that copy
+  are prompted again only for newly added Guest favourites.
+- Removes the raw NLB user ID from persistent extension storage, visible
+  header text, tooltips, and accessibility labels.
+- Shows stable neutral account labels such as **Profile 1 · Signed in** for
+  users who switch between multiple accounts.
+- Centralizes local-profile storage validation, inventory, and scoped deletion
+  primitives ahead of the Settings UI.
 - Replaces the image-only full-screen viewer with a responsive seat picker.
 - Keeps the enlarged seat plan visible beside seat-number search and favourite
   controls.

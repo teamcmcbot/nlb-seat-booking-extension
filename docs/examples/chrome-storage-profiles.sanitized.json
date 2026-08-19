@@ -1,0 +1,100 @@
+{
+  "description": "Sanitized illustrative snapshots of the legacy schema-0 migration inputs and current schema-1 opaque Chrome local storage. These are not raw browser exports and contain no real NLB user IDs, secrets, or account data.",
+  "freshSignedOut": {
+    "favouriteSeats": [
+      {
+        "branchId": "10",
+        "areaId": "20",
+        "seatId": "seat-101",
+        "seatCode": "SANITIZED.SEAT.101",
+        "seatName": "S101"
+      }
+    ],
+    "lastSeatSelection": {
+      "branchId": "10",
+      "areaId": "20"
+    }
+  },
+  "oneAccount": {
+    "lastActiveNlbUserId": "sanitized-user-1",
+    "favouriteSeatsByAccount:sanitized-user-1": [
+      {
+        "branchId": "10",
+        "areaId": "20",
+        "seatId": "seat-101",
+        "seatCode": "SANITIZED.SEAT.101",
+        "seatName": "S101"
+      }
+    ],
+    "lastSeatSelectionByAccount:sanitized-user-1": {
+      "branchId": "10",
+      "areaId": "20"
+    }
+  },
+  "multipleAccounts": {
+    "lastActiveNlbUserId": "sanitized-user-2",
+    "favouriteSeatsByAccount:sanitized-user-1": [
+      {
+        "branchId": "10",
+        "areaId": "20",
+        "seatId": "seat-101",
+        "seatCode": "SANITIZED.SEAT.101",
+        "seatName": "S101"
+      }
+    ],
+    "lastSeatSelectionByAccount:sanitized-user-1": {
+      "branchId": "10",
+      "areaId": "20"
+    },
+    "favouriteSeatsByAccount:sanitized-user-2": [
+      {
+        "branchId": "11",
+        "areaId": "21",
+        "seatId": "seat-202",
+        "seatCode": "SANITIZED.SEAT.202",
+        "seatName": "S202"
+      }
+    ],
+    "lastSeatSelectionByAccount:sanitized-user-2": {
+      "branchId": "11",
+      "areaId": "21"
+    }
+  },
+  "malformedValues": {
+    "lastActiveNlbUserId": 12345,
+    "favouriteSeats": [
+      {
+        "branchId": "10",
+        "areaId": "20",
+        "seatName": "missing required fields"
+      }
+    ],
+    "lastSeatSelection": {
+      "branchId": "10",
+      "areaId": null
+    }
+  },
+  "schema1OpaqueProfiles": {
+    "studySeatStorageSchemaVersion": 1,
+    "studySeatProfileSecret": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+    "studySeatProfileOrder": [
+      "profile_14r7aTW56C10D9Flv3J-SY2kZ8F8PFLHbjUGBIXaBq0",
+      "profile_lvplpuYgSxRCAbDIcFZeWvixKN6A8UERQFXXftdIDUQ"
+    ],
+    "studySeatLastActiveProfile": "profile_lvplpuYgSxRCAbDIcFZeWvixKN6A8UERQFXXftdIDUQ",
+    "studySeatGuestFavourites": [],
+    "studySeatProfile:profile_14r7aTW56C10D9Flv3J-SY2kZ8F8PFLHbjUGBIXaBq0:favourites": [
+      {
+        "branchId": "10",
+        "areaId": "20",
+        "seatId": "seat-101",
+        "seatCode": "SANITIZED.SEAT.101",
+        "seatName": "S101"
+      }
+    ],
+    "studySeatProfile:profile_lvplpuYgSxRCAbDIcFZeWvixKN6A8UERQFXXftdIDUQ:selection": {
+      "branchId": "11",
+      "areaId": "21"
+    }
+  }
+}

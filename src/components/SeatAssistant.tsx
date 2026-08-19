@@ -34,7 +34,10 @@ import {
   holidayClosureForDate,
 } from "../services/bookingRules";
 import {
+  copyGuestFavouritesToProfile,
   favouriteIdentity,
+  firstAreaWithFavouriteSeat,
+  guestFavouritesNeedingCopy,
   loadFavouriteSeats,
   saveFavouriteSeats,
 } from "../services/favourites";
@@ -51,6 +54,11 @@ import {
   loadLastSeatSelection,
   saveLastSeatSelection,
 } from "../services/preferences";
+import { SIGNED_OUT_PROFILE_ID } from "../services/accountProfiles";
+import {
+  loadGuestCopyState,
+  saveGuestCopyDecision,
+} from "../services/profileStorage";
 import { selectSeatPlanPath } from "../services/seatPlanAnnotations";
 
 interface SeatAssistantProps {
@@ -395,6 +403,9 @@ export function SeatAssistant({
   const [selectionMessage, setSelectionMessage] = useState("");
   const [automaticFavouriteMessage, setAutomaticFavouriteMessage] =
     useState("");
+  const [guestCopyOffer, setGuestCopyOffer] = useState(false);
+  const [guestCopyBusy, setGuestCopyBusy] = useState(false);
+  const [guestCopyError, setGuestCopyError] = useState("");
   const [bookSeparately, setBookSeparately] = useState(true);
   const [reviewingBooking, setReviewingBooking] = useState(false);
   const [reviewingCancellation, setReviewingCancellation] = useState(false);
@@ -682,8 +693,18 @@ export function SeatAssistant({
         );
 
         if (storedBranch) {
+          const nextAreaId =
+            storedArea?.id ??
+            firstAreaWithFavouriteSeat(storedBranch, storedFavourites);
           setBranchId(storedBranch.id);
-          setAreaId(storedArea?.id ?? "");
+          setAreaId(nextAreaId);
+
+          if (nextAreaId !== lastSelection.areaId) {
+            void saveLastSeatSelection(profileUserId, {
+              branchId: storedBranch.id,
+              areaId: nextAreaId,
+            });
+          }
         }
       })
       .finally(() => setStorageReady(true));
@@ -717,6 +738,98 @@ export function SeatAssistant({
     session,
     storageReady,
   ]);
+
+  useEffect(() => {
+    if (!storageReady || !session) {
+      setGuestCopyOffer(false);
+      return undefined;
+    }
+
+    let active = true;
+    Promise.all([
+      loadFavouriteSeats(SIGNED_OUT_PROFILE_ID),
+      loadGuestCopyState(profileUserId),
+    ])
+      .then(([guestFavourites, copyState]) => {
+        if (!active) {
+          return;
+        }
+
+        if (copyState?.decision === "kept-separate") {
+          setGuestCopyOffer(false);
+          return;
+        }
+
+        const guestKeys = guestFavourites.map(favouriteIdentity);
+        const hasNewGuestFavourite =
+          guestFavouritesNeedingCopy(
+            guestFavourites,
+            favourites,
+            copyState,
+          ).length > 0;
+        setGuestCopyOffer(
+          guestFavourites.length > 0 &&
+            (!copyState || hasNewGuestFavourite),
+        );
+
+        if (
+          copyState?.decision === "copied" &&
+          !hasNewGuestFavourite &&
+          (copyState.acknowledgedFavouriteKeys?.length !== guestKeys.length ||
+            guestKeys.some(
+              (key) =>
+                !copyState.acknowledgedFavouriteKeys?.includes(key),
+            ))
+        ) {
+          void saveGuestCopyDecision(profileUserId, "copied", guestKeys);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setGuestCopyError("Guest favourites could not be checked.");
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [favourites, profileUserId, session, storageReady]);
+
+  async function copyGuestFavourites() {
+    setGuestCopyBusy(true);
+    setGuestCopyError("");
+    try {
+      const guestFavourites = await loadFavouriteSeats(SIGNED_OUT_PROFILE_ID);
+      const next = await copyGuestFavouritesToProfile(profileUserId);
+      await saveGuestCopyDecision(
+        profileUserId,
+        "copied",
+        guestFavourites.map(favouriteIdentity),
+      );
+      setFavourites(next);
+      setGuestCopyOffer(false);
+      setAutomaticFavouriteMessage(
+        "Guest favourites were copied to this account. Guest data remains separate.",
+      );
+    } catch {
+      setGuestCopyError("Guest favourites could not be copied.");
+    } finally {
+      setGuestCopyBusy(false);
+    }
+  }
+
+  async function keepGuestFavouritesSeparate() {
+    setGuestCopyBusy(true);
+    setGuestCopyError("");
+    try {
+      await saveGuestCopyDecision(profileUserId, "kept-separate");
+      setGuestCopyOffer(false);
+    } catch {
+      setGuestCopyError("The Guest preference could not be saved.");
+    } finally {
+      setGuestCopyBusy(false);
+    }
+  }
 
   useEffect(() => {
     const reasons = session?.cancellationReasons ?? [];
@@ -1807,12 +1920,19 @@ export function SeatAssistant({
             value={branchId}
             onChange={(event) => {
               const nextBranchId = event.target.value;
+              const nextBranch = catalog.branches.find(
+                (item) => item.id === nextBranchId,
+              );
+              const nextAreaId = firstAreaWithFavouriteSeat(
+                nextBranch,
+                favourites,
+              );
               setBranchId(nextBranchId);
-              setAreaId("");
+              setAreaId(nextAreaId);
               setManaging(false);
               void saveLastSeatSelection(profileUserId, {
                 branchId: nextBranchId,
-                areaId: "",
+                areaId: nextAreaId,
               });
             }}
           >
@@ -1867,6 +1987,40 @@ export function SeatAssistant({
           />
         </label>
       </div>
+
+      {guestCopyOffer && (
+        <section
+          className="nlb-seat-helper__guest-copy"
+          aria-label="Guest favourites"
+        >
+          <strong>Copy Guest favourites?</strong>
+          <p>
+            Signed-out favourites are separate. After copying, you will be
+            asked again only when Guest has new seats.
+          </p>
+          {guestCopyError && (
+            <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
+              {guestCopyError}
+            </p>
+          )}
+          <div>
+            <button
+              type="button"
+              onClick={() => void copyGuestFavourites()}
+              disabled={guestCopyBusy}
+            >
+              Copy to this account
+            </button>
+            <button
+              type="button"
+              onClick={() => void keepGuestFavouritesSeparate()}
+              disabled={guestCopyBusy}
+            >
+              Always keep separate
+            </button>
+          </div>
+        </section>
+      )}
 
       {!area && (
         <p className="nlb-seat-helper__empty">

@@ -1,65 +1,103 @@
 import type { FavouriteSeat } from "../models/catalog";
-import { SIGNED_OUT_PROFILE_ID } from "./accountProfiles";
-
-const LEGACY_STORAGE_KEY = "favouriteSeats";
-const STORAGE_KEY_PREFIX = "favouriteSeatsByAccount";
-
-function storageKey(userId: string) {
-  return `${STORAGE_KEY_PREFIX}:${encodeURIComponent(userId)}`;
-}
-
-function isFavouriteSeat(value: unknown): value is FavouriteSeat {
-  if (!value || typeof value !== "object") {
-    return false;
-  }
-
-  const record = value as Record<string, unknown>;
-  return ["branchId", "areaId", "seatId", "seatCode", "seatName"].every(
-    (key) => typeof record[key] === "string",
-  );
-}
+import type { GuestCopyState } from "./profileStorage";
+import {
+  accountFavouritesKey,
+  GUEST_FAVOURITES_KEY,
+  isFavouriteSeat,
+  SIGNED_OUT_PROFILE_ID,
+} from "./profileStorage";
 
 export async function loadFavouriteSeats(
-  userId: string,
+  profileId: string,
 ): Promise<FavouriteSeat[]> {
-  const signedOutProfile = userId === SIGNED_OUT_PROFILE_ID;
-  const accountKey = storageKey(userId);
-  const result = await chrome.storage.local.get([
-    accountKey,
-    LEGACY_STORAGE_KEY,
-  ]);
-  const stored = result[accountKey];
-
-  if (Array.isArray(stored)) {
-    return stored.filter(isFavouriteSeat);
-  }
-
-  const legacy = result[LEGACY_STORAGE_KEY];
-  if (Array.isArray(legacy)) {
-    const migrated = legacy.filter(isFavouriteSeat);
-    if (signedOutProfile) {
-      return migrated;
-    }
-
-    await chrome.storage.local.set({ [accountKey]: migrated });
-    await chrome.storage.local.remove(LEGACY_STORAGE_KEY);
-    return migrated;
-  }
-
-  return [];
+  const storageKey =
+    profileId === SIGNED_OUT_PROFILE_ID
+      ? GUEST_FAVOURITES_KEY
+      : accountFavouritesKey(profileId);
+  const result = await chrome.storage.local.get(storageKey);
+  const stored = result[storageKey];
+  return Array.isArray(stored) ? stored.filter(isFavouriteSeat) : [];
 }
 
 export async function saveFavouriteSeats(
-  userId: string,
+  profileId: string,
   favourites: FavouriteSeat[],
 ) {
   await chrome.storage.local.set({
-    [userId === SIGNED_OUT_PROFILE_ID
-      ? LEGACY_STORAGE_KEY
-      : storageKey(userId)]: favourites,
+    [profileId === SIGNED_OUT_PROFILE_ID
+      ? GUEST_FAVOURITES_KEY
+      : accountFavouritesKey(profileId)]: favourites,
   });
+}
+
+export async function copyGuestFavouritesToProfile(profileId: string) {
+  if (profileId === SIGNED_OUT_PROFILE_ID) {
+    return loadFavouriteSeats(profileId);
+  }
+
+  const [guestFavourites, profileFavourites] = await Promise.all([
+    loadFavouriteSeats(SIGNED_OUT_PROFILE_ID),
+    loadFavouriteSeats(profileId),
+  ]);
+  const merged = new Map<string, FavouriteSeat>();
+  [...profileFavourites, ...guestFavourites].forEach((favourite) => {
+    merged.set(favouriteIdentity(favourite), favourite);
+  });
+  const favourites = [...merged.values()];
+  await saveFavouriteSeats(profileId, favourites);
+  return favourites;
 }
 
 export function favouriteIdentity(favourite: FavouriteSeat) {
   return `${favourite.branchId}:${favourite.areaId}:${favourite.seatId}`;
+}
+
+export function guestFavouritesNeedingCopy(
+  guestFavourites: FavouriteSeat[],
+  profileFavourites: FavouriteSeat[],
+  copyState?: GuestCopyState,
+) {
+  if (copyState?.decision === "kept-separate") {
+    return [];
+  }
+  if (!copyState) {
+    return guestFavourites;
+  }
+
+  const profileKeys = new Set(profileFavourites.map(favouriteIdentity));
+  const acknowledgedKeys = new Set(
+    copyState.acknowledgedFavouriteKeys ?? profileKeys,
+  );
+  return guestFavourites.filter((favourite) => {
+    const key = favouriteIdentity(favourite);
+    return !acknowledgedKeys.has(key) && !profileKeys.has(key);
+  });
+}
+
+export function firstAreaWithFavouriteSeat(
+  branch:
+    | {
+        id: string;
+        areas: Array<{ id: string; seats: Array<{ id: string }> }>;
+      }
+    | undefined,
+  favourites: FavouriteSeat[],
+) {
+  if (!branch) {
+    return "";
+  }
+
+  const favouriteSeatKeys = new Set(
+    favourites
+      .filter((favourite) => favourite.branchId === branch.id)
+      .map((favourite) => `${favourite.areaId}:${favourite.seatId}`),
+  );
+
+  return (
+    branch.areas.find((area) =>
+      area.seats.some((seat) =>
+        favouriteSeatKeys.has(`${area.id}:${seat.id}`),
+      ),
+    )?.id ?? ""
+  );
 }

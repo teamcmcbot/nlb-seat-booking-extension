@@ -175,7 +175,7 @@ interface AdvancedBookingQuota {
 
 | Field | Use |
 | --- | --- |
-| `userId` | Displays `Connected to {userId}` and establishes that account data exists. |
+| `userId` | Establishes that account data exists, derives an opaque local profile ID in memory, and verifies refreshed booking/cancellation state still belongs to the same session. The raw value is not rendered or persisted. |
 | `allowAdvanceBooking` | Chooses the privileged release time when true and configured. |
 | `dailyBookingQuotas` | Supplies today's remaining and total quota. |
 | `advancedBookingQuotas[].bookingDateTime` | Associates advanced quota with a calendar date using the first ten characters (`YYYY-MM-DD`). |

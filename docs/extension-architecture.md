@@ -85,13 +85,31 @@ returning to the booking page.
 
 Only one NLB account can be authenticated in a Chrome profile at a time.
 Favourite seats and the last library/area selection are therefore stored
-separately by `userId`, allowing users to sign out, sign in with another
-account, and recover that account's preferences. Passwords, cookies,
-authorization codes, quotas, and bookings are never persisted.
+under an opaque profile ID derived by HMAC-SHA-256 from the in-memory `userId`
+and an installation-local random secret. This allows users to switch accounts
+and recover each account's preferences without persisting the raw NLB user
+ID. Passwords, cookies, authorization codes, quotas, and bookings are never
+persisted.
 
 When signed out, catalog and availability features remain available. The
-workspace uses the last active account's local favourites and area preference
-until another account signs in.
+workspace always uses the permanent Guest profile rather than borrowing the
+last signed-in account's favourites or area preference. When an account first
+encounters Guest favourites, the workspace asks whether to copy them into the
+account or keep them separate. Copying merges favourites without deleting the
+Guest copy and records the acknowledged favourite identities. A later Guest
+favourite missing from that account produces another copy prompt. **Keep
+separate** remains a persistent per-profile opt-out.
+
+The header identifies the current account with its stable neutral order label,
+such as **Profile 1 · Signed in**. It does not render the raw NLB user ID or a
+masked fragment of it.
+
+The saved library and area are restored when both still exist in the current
+catalog. If the saved area is empty or no longer exists, the extension selects
+the first area, in NLB catalog order, within that library that contains a
+saved favourite seat still present in the catalog. The same fallback runs
+when the user changes libraries. A library with no valid favourite seat keeps
+the explicit **Choose a specific area** state.
 
 ## End-to-end flow
 
@@ -138,6 +156,7 @@ flowchart TD
 | `src/services/bookingRules.ts` | Calculates selectable dates and removes elapsed same-day intervals. |
 | `src/services/bookingConflicts.ts` | Detects overlap, resolves bookings to catalog seats, and evaluates cancellation eligibility. |
 | `src/services/bookingPlanner.ts` | Produces separate requests or merges adjacent intervals for the same seat. |
+| `src/services/profileStorage.ts` | Owns the versioned local-storage schema, validation, read-only profile inventory, and narrowly scoped deletion helpers. |
 | `src/services/favourites.ts` | Persists favourite seat identities in Chrome local storage. |
 | `src/services/seatPlanAnnotations.ts` | Selects a reviewed area's expected map path, matches exact revisions, and validates annotated hotspots against current catalog seats. |
 | `src/services/seatPlanMaintenance.ts` | Produces sanitized exports and runs optional bounded branch-level metadata discovery with exact-area response parsing. |
@@ -527,9 +546,29 @@ twelve seconds.
 
 Persisted in `chrome.storage.local`:
 
-- the NLB user ID embedded in each account-specific storage key;
+- an installation-local 256-bit profile-key secret;
+- opaque HMAC-derived profile IDs and their stable display order;
 - favourite seats for each account; and
-- the last selected branch and area for each account.
+- the last selected branch and area for each account; and
+- the Guest-copy choice for each account.
+
+Schema 1 replaces the legacy raw-ID key suffixes with opaque profile IDs and
+moves unscoped legacy data into permanent Guest keys. Migration first writes
+or reuses the installation secret, derives and writes every validated target
+record, reads the targets back for exact verification, removes legacy keys,
+then writes the schema version last. If writing or verification fails, legacy
+source records are not removed. If execution stops after some targets or
+legacy keys were written or removed, the retained secret and opaque target
+records make the next run deterministic and resumable. A malformed stored
+secret or unsupported future schema fails closed instead of generating a new
+identity and orphaning profiles.
+
+Storage keys and value validators are centralised in `profileStorage.ts`. The
+service can inventory Guest and opaque account profiles and can delete only
+Guest data, one profile, or every key owned by the extension. Full deletion
+uses an explicit key allowlist and owned prefixes rather than
+`chrome.storage.local.clear()`, so unrelated local-storage entries are
+preserved. The deletion helpers remain service-only until the Settings UI.
 
 Kept only in memory:
 
