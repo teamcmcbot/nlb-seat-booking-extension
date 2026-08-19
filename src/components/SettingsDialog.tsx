@@ -17,7 +17,9 @@ import { clearAuthenticationPending } from "../services/authentication";
 
 const SOURCE_URL =
   "https://github.com/teamcmcbot/nlb-seat-booking-extension";
-const PRIVACY_URL = `${SOURCE_URL}#privacy-and-permissions`;
+const PRIVACY_URL = `${SOURCE_URL}/blob/main/PRIVACY.md`;
+const TERMS_URL = `${SOURCE_URL}/blob/main/TERMS.md`;
+const LICENSE_URL = `${SOURCE_URL}/blob/main/LICENSE`;
 const SUPPORT_URL = `${SOURCE_URL}/issues`;
 const SECURITY_URL = `${SOURCE_URL}/security/advisories/new`;
 
@@ -328,6 +330,12 @@ export function SettingsDialog({
             <nav className="nlb-seat-helper__settings-links" aria-label="Project links">
               <a href={PRIVACY_URL} target="_blank" rel="noreferrer">
                 Privacy
+              </a>
+              <a href={TERMS_URL} target="_blank" rel="noreferrer">
+                Terms
+              </a>
+              <a href={LICENSE_URL} target="_blank" rel="noreferrer">
+                License
               </a>
               <a href={SOURCE_URL} target="_blank" rel="noreferrer">
                 Source

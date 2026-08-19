@@ -35,6 +35,23 @@ in v1.3.0.
   keeping all account and utility buttons together on the first row.
 - Highlights the current signed-in profile in Settings with a labelled,
   green-accented card.
+- Adds a standalone privacy policy and Chrome Web Store declaration worksheet
+  covering transient NLB data, local preferences, retention, deletion, and
+  Limited Use commitments.
+- Rewrites the README introduction for frequent seat-booking users, puts the
+  planned Chrome Web Store installation first, and explains that unpacked
+  installation data will not migrate automatically.
+- Moves the exhaustive capability inventory into `docs/features.md` so the
+  README remains useful to prospective users while technical behavior stays
+  documented.
+- Points the in-extension Privacy link at the default-branch privacy policy.
+- Adds end-user Terms of Use, an MIT code licence, a notice excluding NLB and
+  third-party marks and materials, and a security policy with explicit safe
+  research boundaries.
+- Adds privacy-safe GitHub bug and feature templates and direct Terms and
+  License links in Settings.
+- Includes the project licence, NLB-material notice, and runtime dependency
+  notices in every unpacked build and packaged release.
 - Centralizes local-profile storage validation, inventory, and scoped deletion
   primitives ahead of the Settings UI.
 - Replaces the image-only full-screen viewer with a responsive seat picker.

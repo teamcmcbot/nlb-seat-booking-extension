@@ -1,0 +1,36 @@
+StudySeat SG - for NLB
+Copyright (c) 2026 StudySeat SG contributors
+
+StudySeat SG is an independent project. It is not affiliated with, endorsed
+by, sponsored by, authorised by, or supported by the National Library Board
+Singapore (NLB).
+
+The name "NLB" is used only to identify the service with which the extension
+works. NLB names, trade marks, logos, website content, seat plans, images,
+data, APIs, accounts, and services belong to NLB or their respective rights
+holders. They are not licensed under this repository's MIT License, and no
+right to reproduce, modify, redistribute, or create derivative works from
+them is granted by this project.
+
+Normal release packages do not bundle NLB seat-plan images. The extension may
+request and display seat-plan images supplied by NLB at runtime for the user
+who is accessing the NLB Seat Booking website. This technical behavior is not
+a representation that NLB has authorised the extension or licensed those
+materials for redistribution or marketing.
+
+Repository screenshots or documentation may depict third-party website
+content for identification, review, testing, or explanatory purposes. Unless
+expressly stated otherwise, third-party material remains excluded from the
+MIT License and should not be reused without determining and obtaining the
+necessary rights.
+
+The extension includes or is built with open-source dependencies whose
+copyrights and licences remain with their respective authors. Distribution of
+the compiled extension must continue to comply with those applicable
+licences. Release packages include `THIRD_PARTY_NOTICES.txt` with the relevant
+runtime notices.
+
+The StudySeat SG name, icon, and other project branding identify this project.
+The MIT License grants copyright permission for the Software; it does not
+grant trade-mark rights or permission to imply endorsement by the project,
+its maintainers, or NLB.

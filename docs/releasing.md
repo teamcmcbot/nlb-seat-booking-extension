@@ -26,9 +26,12 @@ This command:
 
 1. runs the TypeScript checks;
 2. creates the production extension in `dist/`;
-3. verifies that `manifest.json`, `content.js`, and `content.css` exist;
-4. verifies that the package and extension versions match; and
-5. creates `nlb-seat-helper.zip` with `manifest.json` at the archive root.
+3. copies the project licence, NLB-material notice, and third-party runtime
+   notices into `dist/`;
+4. verifies that `manifest.json`, `content.js`, `content.css`, `LICENSE.txt`,
+   `NOTICE.txt`, and `THIRD_PARTY_NOTICES.txt` exist;
+5. verifies that the package and extension versions match; and
+6. creates `nlb-seat-helper.zip` with `manifest.json` at the archive root.
 
 Validate the archive before uploading:
 
@@ -43,6 +46,9 @@ The archive root must contain:
 manifest.json
 content.js
 content.css
+LICENSE.txt
+NOTICE.txt
+THIRD_PARTY_NOTICES.txt
 ```
 
 ## Publish

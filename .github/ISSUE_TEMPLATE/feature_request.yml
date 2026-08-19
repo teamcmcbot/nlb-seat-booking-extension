@@ -1,0 +1,41 @@
+name: Feature request
+description: Suggest an improvement that fits StudySeat SG's seat-booking purpose.
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        StudySeat SG has a narrow purpose: helping users view and manage their own NLB study-seat bookings. GitHub issues are public. Do not include account IDs, booking references, credentials, cookies, raw responses, or personal screenshots.
+  - type: checkboxes
+    id: privacy
+    attributes:
+      label: Privacy check
+      options:
+        - label: This request contains no personal, account, booking, authentication, or raw API information.
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem to solve
+      description: Describe the user problem without personal account details.
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Suggested behavior
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This does not request bypassing NLB authentication, quotas, rate limits, geofencing, access controls, or confirmation steps.
+          required: true

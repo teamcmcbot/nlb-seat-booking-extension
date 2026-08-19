@@ -10,7 +10,14 @@ import { fileURLToPath } from "node:url";
 const projectRoot = dirname(dirname(fileURLToPath(import.meta.url)));
 const distDirectory = join(projectRoot, "dist");
 const outputPath = join(projectRoot, "nlb-seat-helper.zip");
-const requiredFiles = ["manifest.json", "content.js", "content.css"];
+const requiredFiles = [
+  "manifest.json",
+  "content.js",
+  "content.css",
+  "LICENSE.txt",
+  "NOTICE.txt",
+  "THIRD_PARTY_NOTICES.txt",
+];
 
 for (const file of requiredFiles) {
   if (!existsSync(join(distDirectory, file))) {

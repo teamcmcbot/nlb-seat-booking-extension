@@ -166,7 +166,7 @@ and [publisher ownership](https://developer.chrome.com/docs/webstore/share-owner
 | Item | Requirement or recommendation | Current state |
 | --- | --- | --- |
 | Upload ZIP | `manifest.json` at the archive root | Packaging script supports this |
-| Manifest | MV3, accurate name, description, version, icons | Present; public name and copy need updating |
+| Manifest | MV3, accurate name, description, version, icons | Public name present; 132-character description still pending |
 | Store icon | 128×128 PNG in the package | Present and correctly padded |
 | Screenshots | 1–5 at 1280×800 or 640×400 | Two correct-size images; NLB IP review needed |
 | Small promo tile | 440×280 | Missing |
@@ -176,7 +176,7 @@ and [publisher ownership](https://developer.chrome.com/docs/webstore/share-owner
 | Category | Productivity | Recommended |
 | Initial distribution | Private trusted testers | Recommended |
 | Public regions | Singapore | Recommended initially |
-| Privacy policy URL | Public, direct, and continuously accessible | Missing |
+| Privacy policy URL | Public, direct, and continuously accessible | `PRIVACY.md` prepared; URL becomes live after merge |
 | Homepage URL | Public product or repository page | Repository can be used |
 | Support URL | Stable support page | GitHub Issues/template recommended |
 | Reviewer instructions | Explain signed-out and account-gated features | Missing |
@@ -324,7 +324,8 @@ that the developer does not receive the data.
 
 ### Privacy policy content
 
-The public privacy policy should identify the publisher and contact address,
+The public privacy policy should identify the publisher and a public
+support/privacy contact method,
 carry an effective date, and describe:
 
 - every category of information processed;
@@ -653,21 +654,44 @@ the final Phase 3 gate.
 
 ### Phase 4 — public documentation and policy files
 
-- [ ] Add `PRIVACY.md` with the final verified data inventory.
-- [ ] Add end-user terms and the independence/warranty disclaimer.
-- [ ] Add a code `LICENSE` and a `NOTICE` excluding NLB materials and marks.
-- [ ] Add `SECURITY.md` with a private vulnerability contact.
-- [ ] Add a support issue template warning users not to post IDs, booking
+- [x] Add `PRIVACY.md` with the verified data inventory, retention, deletion,
+  contact, and Limited Use disclosures.
+- [x] Add a Chrome Web Store privacy-declaration worksheet matching the
+  current implementation.
+- [x] Add end-user terms and the independence/warranty disclaimer.
+- [x] Add a code `LICENSE` and a `NOTICE` excluding NLB materials and marks.
+- [x] Add `SECURITY.md` with a private vulnerability contact.
+- [x] Add support issue templates warning users not to post IDs, booking
   references, raw account responses, cookies, or personal screenshots.
-- [ ] Rewrite the README opening for end users and move the long technical
-  feature inventory into documentation.
-- [ ] Document Chrome Web Store installation first and manual installation as
+- [x] Rewrite the README opening for end users.
+- [x] Move the long technical feature inventory into documentation.
+- [x] Document Chrome Web Store installation first and manual installation as
   a developer/advanced fallback.
-- [ ] Explain that favourites from an unpacked installation do not
+- [x] Explain that favourites from an unpacked installation do not
   automatically migrate to the separately installed Web Store item.
 
 Acceptance: Store declarations, privacy policy, README, and observed build
 behavior agree exactly.
+
+Phase 4A implementation status (2026-08-20): the standalone privacy policy
+documents transient NLB account and website data, local preferences, the
+timestamp-only sign-in marker, NLB-only HTTPS transfers, retention, deletion,
+and the absence of a developer backend, analytics, or advertising. Settings
+links directly to the default-branch policy. The README now leads with the
+target audience and planned Store installation, while the declaration
+worksheet records conservative dashboard answers that must be rechecked
+against the exact upload at submission time.
+
+Phase 4B implementation status (2026-08-20): end-user terms now state the
+independent and unofficial integration, user responsibilities, NLB's final
+authority, compatibility limits, and warranty/liability boundaries subject to
+applicable law. Original project code uses the MIT License; `NOTICE` expressly
+excludes NLB and other third-party marks and materials. The security policy
+provides private reporting without authorising NLB testing, and GitHub issue
+forms require reporters to remove account, booking, authentication, and raw
+response data. The exhaustive capability inventory now lives in
+`docs/features.md`, leaving the README focused on prospective users,
+installation, normal usage, privacy, and contributor entry points.
 
 ### Phase 5 — store listing assets and submission
 

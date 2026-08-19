@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Private security report
+    url: https://github.com/teamcmcbot/nlb-seat-booking-extension/security/advisories/new
+    about: Report vulnerabilities or sensitive security concerns privately.
+  - name: Privacy questions
+    url: https://github.com/teamcmcbot/nlb-seat-booking-extension/blob/main/PRIVACY.md#contact
+    about: Find the privacy contact without posting personal information publicly.
