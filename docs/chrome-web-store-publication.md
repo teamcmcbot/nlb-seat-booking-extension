@@ -130,17 +130,20 @@ There are three practical release choices:
 
 1. **Permission obtained:** retain runtime maps and use only the promotional
    reproductions covered by the permission.
-2. **Runtime use accepted, marketing use uncertain:** retain runtime maps but
-   exclude NLB maps, logos, and interface artwork from store assets.
+2. **Runtime use accepted, limited documentary screenshots accepted:** retain
+   runtime maps and show them only inside authentic screenshots needed to
+   explain the extension's core experience; exclude extracted maps and NLB
+   material from icons, promo tiles, and other standalone artwork.
 3. **Risk-minimised release:** disable NLB map images in the public build and
    retain seat-number search, favourite lists, and independently created
    non-derivative visuals.
 
-Phase 0 working decision: use option 2. Keep runtime maps because they are a
-core part of the current experience, do not bundle or rehost them, and exclude
-NLB maps, logos, and underlying interface artwork from public store assets
-unless the project later obtains permission. This is a reversible risk choice,
-not a legal conclusion.
+Current working decision: use option 2. Keep runtime maps because they are a
+core part of the experience, do not bundle or rehost them, and permit limited
+authentic screenshots showing the map inside the extension UI. Keep NLB maps
+and logos out of the icon, promo tile, optional marquee, and standalone
+artwork. This is a conscious, reversible risk choice, not a legal conclusion
+or a claim of permission.
 
 A disclaimer does not itself grant copyright or trade-mark permission. The
 project should record its chosen risk position before public submission.
@@ -165,20 +168,20 @@ and [publisher ownership](https://developer.chrome.com/docs/webstore/share-owner
 | Item | Requirement or recommendation | Current state |
 | --- | --- | --- |
 | Upload ZIP | `manifest.json` at the archive root | Packaging script supports this |
-| Manifest | MV3, accurate name, description, version, icons | Public name present; 132-character description still pending |
+| Manifest | MV3, accurate name, description, version, icons | Complete; summary is 123 characters |
 | Store icon | 128×128 PNG in the package | Present and correctly padded |
-| Screenshots | 1–5 at 1280×800 or 640×400 | Two correct-size images; NLB IP review needed |
-| Small promo tile | 440×280 | Missing |
+| Screenshots | 1–5 at 1280×800 or 640×400 | Three current candidates prepared under `assets/chrome-web-store/`; signed-out Guest favourite-seat details require publisher approval |
+| Small promo tile | 440×280 | Prepared under `assets/chrome-web-store/` |
 | Marquee image | 1400×560 | Optional and missing |
 | Summary | Plain text, no more than 132 characters | Draft below |
 | Detailed description | Accurate user-facing overview | Draft below |
 | Category | Productivity | Recommended |
 | Initial distribution | Private trusted testers | Recommended |
 | Public regions | Singapore | Recommended initially |
-| Privacy policy URL | Public, direct, and continuously accessible | `PRIVACY.md` prepared; URL becomes live after merge |
-| Homepage URL | Public product or repository page | Repository can be used |
-| Support URL | Stable support page | GitHub Issues/template recommended |
-| Reviewer instructions | Explain signed-out and account-gated features | Missing |
+| Privacy policy URL | Public, direct, and continuously accessible | Default-branch `PRIVACY.md`; verify after merge |
+| Homepage URL | Public product or repository page | Repository root prepared |
+| Support URL | Stable support page | GitHub Issues prepared |
+| Reviewer instructions | Explain signed-out and account-gated features | Prepared in `chrome-web-store-submission.md` |
 | In-app purchases | None | Declare none |
 
 Chrome's image guidance requires a 128×128 PNG icon, at least one screenshot,
@@ -203,14 +206,16 @@ references, account responses, or dates connected to real bookings.
 
 Suggested screenshot sequence:
 
-1. favourite-seat availability timeline;
-2. selecting non-overlapping time slots;
+1. the current extension overview showing the seat plan and favourite-seat
+   availability together;
+2. the interactive seat picker and seat-number search;
 3. booking confirmation before submission;
 4. cancellation confirmation and reason selection; and
 5. privacy, Settings, and local-data controls.
 
-If NLB promotional-image rights remain uncertain, omit NLB maps and the
-underlying NLB interface. Show seat-number search and original timeline UI.
+Limit NLB maps to authentic screenshots where they are necessary to show the
+actual feature. Do not use an extracted map as a background, decorative motif,
+promo tile, icon, or standalone illustration.
 
 The 440×280 promo tile should use the original Library Seats SG icon and an
 abstract timeline or seat motif. It should contain little or no text and no NLB
@@ -225,7 +230,7 @@ system.
 
 ### Summary
 
-> Compare favourite-seat availability, choose time slots, and manage your own NLB seat bookings in one clear view.
+> Save favourite seats, compare availability across the day, and review NLB bookings or cancellations before submitting them.
 
 ### Description
 
@@ -565,8 +570,9 @@ they become release-bound.
 
 - [x] Complete a basic name search and adopt **Library Seats SG - for NLB** as the
   public name; formal similar-mark clearance remains separate.
-- [x] Choose runtime-only seat-plan use and exclude NLB material from store
-  assets as the reversible working risk position.
+- [x] Choose runtime-only seat-plan fetching and limited authentic screenshots
+  that demonstrate the integrated map feature, while excluding NLB material
+  from standalone promotional artwork.
 - [x] Capture sanitised fixtures for every current storage state without real
   user IDs.
 - [x] Write tests that lock down the current Guest, first-sign-in migration,
@@ -703,16 +709,22 @@ installation, normal usage, privacy, and contributor entry points.
 
 - [x] Update the manifest and installed interface name to **Library Seats SG - for
   NLB**.
-- [ ] Finalise the 132-character manifest description.
-- [ ] Generate one 440×280 small promo tile.
-- [ ] Generate up to five sanitised 1280×800 screenshots.
+- [x] Finalise the 132-character manifest description.
+- [x] Generate one 440×280 small promo tile without text or third-party
+  material.
+- [x] Prepare three current screenshots: authentic signed-out 1280×800
+  overview and 200%-zoom seat-picker captures showing the integrated runtime
+  map, plus a 640×400 Settings capture without account profile data.
 - [ ] Optionally generate a 1400×560 marquee image.
-- [ ] Create stable homepage, privacy, and support URLs.
-- [ ] Complete single-purpose, permission, data-use, Limited Use, remote-code,
+- [x] Prepare stable homepage, privacy, and support URLs; verify them from the
+  public default branch after merge.
+- [x] Complete single-purpose, permission, data-use, Limited Use, remote-code,
   and no-purchase declarations.
-- [ ] Write reviewer instructions for signed-out behavior and account-gated
+- [x] Write reviewer instructions for signed-out behavior and account-gated
   features without sharing a personal account.
-- [ ] Package and verify the ZIP from an up-to-date branch.
+- [x] Package and verify the version 1.3.1 ZIP from the current branch; the
+  archive root contains `manifest.json`, `content.js`, and `content.css`, and
+  `unzip -t` reports no errors.
 - [ ] Submit first to private trusted testers with deferred publishing.
 
 Acceptance: a Web Store-installed build passes the relevant Chrome smoke-test

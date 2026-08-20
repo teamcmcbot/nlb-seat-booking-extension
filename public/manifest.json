@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Library Seats SG - for NLB",
-  "description": "A clearer interface for NLB seat availability and booking.",
+  "description": "Save favourite seats, compare availability across the day, and review NLB bookings or cancellations before submitting them.",
   "version": "1.3.1",
   "permissions": ["storage"],
   "icons": {

@@ -33,6 +33,12 @@ in v1.3.0.
 - Adopts the public product name **Library Seats SG - for NLB** and moves the
   masked current-account indicator onto a compact second header row while
   keeping all account and utility buttons together on the first row.
+- Replaces the generic manifest description with the final 123-character
+  Chrome Web Store summary covering favourites, availability, bookings, and
+  cancellations.
+- Adds a third-party-material-free 440×280 promotional tile, authentic current
+  signed-out 1280×800 overview and 200%-zoom interactive seat-picker captures,
+  and a privacy-safe 640×400 Settings capture for the Chrome Web Store listing.
 - Highlights the current signed-in profile in Settings with a labelled,
   green-accented card.
 - Adds a standalone privacy policy and Chrome Web Store declaration worksheet

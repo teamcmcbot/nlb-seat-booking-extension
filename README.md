@@ -27,9 +27,9 @@ Library Seats SG is designed for students, working adults, senior citizens, and
 other frequent library users who regularly book library seats and want a simpler
 way to check their preferred places.
 
-![Library Seats SG availability overview](screenshots/store-overview.png)
+![Library Seats SG availability overview](assets/chrome-web-store/store-overview.png)
 
-![Library Seats SG interactive seat picker](screenshots/store-seat-picker.png)
+![Library Seats SG interactive seat picker](assets/chrome-web-store/store-seat-picker.png)
 
 ## Install
 
@@ -214,6 +214,9 @@ versioned download.
 - [Chrome Web Store Privacy Declarations](docs/chrome-web-store-privacy-declarations.md)
   maps the current build to the Store's single-purpose, permission,
   user-data, Limited Use, and privacy-policy fields.
+- [Chrome Web Store Submission Sheet](docs/chrome-web-store-submission.md)
+  provides the ready-to-paste listing copy, public URLs, reviewer instructions,
+  dashboard answers, and submission-time checklist.
 
 ## Usage
 
