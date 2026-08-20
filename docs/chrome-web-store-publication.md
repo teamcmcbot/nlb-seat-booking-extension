@@ -667,8 +667,10 @@ verified in Chrome on 20 August 2026. The reduced-motion stylesheet now removes
 all extension animation, animated scrolling, and transitions. A subsequent
 actual 200% Chrome zoom test found that the fixed workspace collapsed its
 favourite list; short viewports now use a vertically scrolling workspace and
-non-sticky booking controls. Re-test the corrected 150% and 200% layouts and
-complete an actual screen-reader pass before closing the final Phase 3 gate.
+non-sticky booking controls. The corrected workspace was then verified at both
+150% and 200% Chrome zoom on 20 August 2026: favourite-seat timelines and the
+booking controls remained reachable by scrolling. Complete an actual screen-
+reader pass before closing the final Phase 3 gate.
 
 ### Phase 4 — public documentation and policy files
 
