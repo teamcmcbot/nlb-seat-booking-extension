@@ -18,17 +18,20 @@ packaged, rehosted, or reused in the promo tile.
 | `small-promo-tile.png` | 440×280 | Required small promotional tile |
 | `store-overview.png` | 1280×800 | Authentic current extension overview with the integrated seat plan and availability timeline |
 | `store-seat-picker.png` | 1280×800 | Authentic current interactive seat picker with seat-number search |
-| `settings-and-privacy.png` | 640×400 | Authentic Settings capture cropped before any account profile data |
+| `settings-and-privacy.png` | 640×400 | Authentic Settings capture showing the booking default and its explanatory tooltip, cropped before any account profile data |
 
 The older files under the repository-level `screenshots/` directory are
 historical documentation references. Do not upload them because they use the
 previous product name.
 
-The current authentic captures were taken while signed out. They show Guest
-favourite seat numbers, but no account label, profile number, raw account ID,
-booking reference, credentials, cookie, or API response. The publisher must
-still approve those preference-level details before upload or recapture the
-same views from a clean Guest state.
+The overview and seat-picker captures were taken while signed out. They show
+Guest favourite seat numbers, but no account label, profile number, raw account
+ID, booking reference, credentials, cookie, or API response. The Settings
+capture was taken from an active session but is cropped above Local data, so it
+does not expose the account label, masked username, profile number, favourites,
+or saved-area status. The publisher must still approve the Guest preference-
+level details in the two feature captures before upload or recapture those
+views from a clean Guest state.
 
 ## Small promo tile provenance
 
