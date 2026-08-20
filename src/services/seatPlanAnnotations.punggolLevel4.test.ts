@@ -50,7 +50,7 @@ const launchSeatNames = [
   "S168", "S169", "S170", "S171", "S172",
 ] as const;
 
-const longStudySeatNames = [
+const longSeatNames = [
   "S188", "S189", "S190", "S191", "S192", "S193", "S194", "S195",
   "S196", "S197", "S198", "S199", "S200", "S201", "S202", "S203",
   "S204", "S205", "S206", "S207", "S208", "S209", "S210", "S211",
@@ -76,7 +76,7 @@ const cases: readonly {
   {
     definition: PUNGGOL_LEVEL_4_LONG_STUDY_SPACE_SEAT_PLAN,
     areaName: "Long Study Space, Level 4",
-    expectedSeatNames: longStudySeatNames,
+    expectedSeatNames: longSeatNames,
   },
 ];
 

@@ -1,12 +1,12 @@
-# Privacy Policy for StudySeat SG - for NLB
+# Privacy Policy for Library Seats SG - for NLB
 
 Effective date: 20 August 2026
 
-StudySeat SG - for NLB ("StudySeat SG", "the extension") is a free,
-independent Chrome extension maintained by the StudySeat SG project. It works
-only on the National Library Board Singapore (NLB) Seat Booking website.
+Library Seats SG - for NLB ("Library Seats SG", "the extension") is a free,
+independent Chrome extension maintained by the Library Seats SG project. It
+works only on the National Library Board Singapore (NLB) Seat Booking website.
 
-StudySeat SG is not affiliated with, endorsed by, sponsored by, or supported
+Library Seats SG is not affiliated with, endorsed by, sponsored by, or supported
 by NLB. "NLB" is used only to identify the service with which the extension
 works.
 
@@ -17,7 +17,7 @@ developer receives that information.
 
 ## Summary
 
-- StudySeat SG has no developer-operated server, advertising, analytics, or
+- Library Seats SG has no developer-operated server, advertising, analytics, or
   tracking.
 - The developer does not receive users' NLB account information, bookings,
   favourites, browsing activity, or extension usage data.
@@ -72,7 +72,7 @@ out an action the user confirmed.
 
 ### Authentication and session handling
 
-StudySeat SG does not collect an NLB password or authentication token and does
+Library Seats SG does not collect an NLB password or authentication token and does
 not read cookies directly. Requests to NLB use `credentials: "include"`, which
 allows Chrome to attach the existing same-origin NLB session automatically.
 
@@ -84,7 +84,7 @@ the page session ends.
 
 ## Information stored on the device
 
-StudySeat SG uses the Chrome `storage` permission only for
+Library Seats SG uses the Chrome `storage` permission only for
 `chrome.storage.local`. It may store:
 
 - a random 256-bit installation-local secret used to derive pseudonymous
@@ -111,10 +111,10 @@ own settings and policies.
 ## How information is used
 
 Information is handled only when necessary to provide the extension's single
-purpose: helping a user view NLB study-seat availability and manage their own
-NLB study-seat bookings.
+purpose: helping a user view NLB seat availability and manage their own NLB
+seat bookings.
 
-StudySeat SG uses information to:
+Library Seats SG uses information to:
 
 - display libraries, areas, seats, rules, availability, quota, and bookings;
 - keep Guest and signed-in account preferences separate;
@@ -159,11 +159,11 @@ The extension's Settings screen provides separately confirmed controls to:
 - clear favourites and the saved area for the current profile while retaining
   its stable Profile N identity;
 - delete an inactive profile and its Guest-copy choice; or
-- clear all data owned by StudySeat SG.
+- clear all data owned by Library Seats SG.
 
 Clearing extension data does not sign the user out of NLB, cancel a booking,
 or delete information held by NLB. Users can also remove all extension-local
-data by uninstalling StudySeat SG through Chrome.
+data by uninstalling Library Seats SG through Chrome.
 
 An unpacked/manual installation and a Chrome Web Store installation are
 separate Chrome extension installations. Their local favourites and settings
@@ -171,7 +171,7 @@ do not automatically transfer between them.
 
 ## Security
 
-StudySeat SG limits its content script to
+Library Seats SG limits its content script to
 `https://www.nlb.gov.sg/seatbooking/*`, requests only Chrome's `storage`
 permission, and packages all executable code with the extension. It does not
 load remote executable code.
@@ -186,7 +186,7 @@ screenshots in a public support report.
 
 ## Chrome Web Store Limited Use
 
-StudySeat SG's use and transfer of user information complies with the Chrome
+Library Seats SG's use and transfer of user information complies with the Chrome
 Web Store User Data Policy, including its Limited Use requirements. The
 extension handles user information only as necessary to provide or improve
 its disclosed, user-facing seat-booking purpose. It does not use or transfer
@@ -199,7 +199,7 @@ NLB controls its accounts, authentication, availability, bookings,
 cancellations, website, APIs, and records. Information held by NLB is governed
 by NLB's own terms and privacy practices. Chrome and the Chrome Web Store may
 process installation or browser information independently under Google's
-policies. This policy covers only information handled by StudySeat SG code.
+policies. This policy covers only information handled by Library Seats SG code.
 
 ## Changes to this policy
 

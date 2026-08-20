@@ -2,10 +2,10 @@
 
 ## Supported versions
 
-Security fixes are provided for the latest published StudySeat SG release when
-the project is actively maintained. Older versions and development snapshots
-may not receive fixes. Users should update to the latest release before
-reporting a problem that may already be resolved.
+Security fixes are provided for the latest published Library Seats SG release
+when the project is actively maintained. Older versions and development
+snapshots may not receive fixes. Users should update to the latest release
+before reporting a problem that may already be resolved.
 
 ## Report a vulnerability privately
 
@@ -57,11 +57,11 @@ personal data has been removed.
 
 ## Research boundaries
 
-This policy covers the StudySeat SG source code and release packages. It does
+This policy covers the Library Seats SG source code and release packages. It does
 not grant permission to test NLB, Google, GitHub, a library network, another
 person's account, or any third-party system.
 
-When investigating StudySeat SG:
+When investigating Library Seats SG:
 
 - use only accounts, sessions, devices, bookings, and data you are authorised
   to use;
@@ -74,9 +74,9 @@ When investigating StudySeat SG:
   holder's explicit approval; and
 - stop if testing may affect NLB, another user, or production data.
 
-If an issue appears to be in NLB rather than StudySeat SG, stop testing and use
-NLB's official security or support process. The StudySeat SG maintainers cannot
-authorise testing of NLB systems.
+If an issue appears to be in NLB rather than Library Seats SG, stop testing and
+use NLB's official security or support process. The Library Seats SG
+maintainers cannot authorise testing of NLB systems.
 
 ## Disclosure
 

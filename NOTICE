@@ -1,7 +1,7 @@
-StudySeat SG - for NLB
-Copyright (c) 2026 StudySeat SG contributors
+Library Seats SG - for NLB
+Copyright (c) 2026 Library Seats SG contributors
 
-StudySeat SG is an independent project. It is not affiliated with, endorsed
+Library Seats SG is an independent project. It is not affiliated with, endorsed
 by, sponsored by, authorised by, or supported by the National Library Board
 Singapore (NLB).
 
@@ -30,7 +30,8 @@ the compiled extension must continue to comply with those applicable
 licences. Release packages include `THIRD_PARTY_NOTICES.txt` with the relevant
 runtime notices.
 
-The StudySeat SG name, icon, and other project branding identify this project.
+The Library Seats SG name, icon, and other project branding identify this
+project.
 The MIT License grants copyright permission for the Software; it does not
 grant trade-mark rights or permission to imply endorsement by the project,
 its maintainers, or NLB.

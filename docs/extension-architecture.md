@@ -1,6 +1,6 @@
 # Extension Architecture and Behavior
 
-This document explains how StudySeat SG - for NLB turns NLB's account/catalog data
+This document explains how Library Seats SG - for NLB turns NLB's account/catalog data
 into the favourite-seat availability and booking interface.
 
 For endpoint-level request, response, field, and lifecycle documentation, see
@@ -8,7 +8,7 @@ For endpoint-level request, response, field, and lifecycle documentation, see
 
 ## Runtime model
 
-StudySeat SG - for NLB is a Manifest V3 content-script extension. Chrome injects its
+Library Seats SG - for NLB is a Manifest V3 content-script extension. Chrome injects its
 JavaScript and CSS only on:
 
 ```text
@@ -100,11 +100,11 @@ Guest copy and records the acknowledged favourite identities. A later Guest
 favourite missing from that account produces another copy prompt. **Keep
 separate** remains a persistent per-profile opt-out.
 
-The header and Settings identify the current account with its stable neutral
-order label and an in-memory masked identifier, such as
-**Profile 1 · A*******Z · Signed in**. Masking retains only the first and last
-character and replaces every middle character with `*`; the complete raw NLB
-user ID is not inserted into rendered markup or persisted.
+The header and Settings identify the current account with an in-memory masked
+identifier, such as **Signed in as A*******Z**, and present its stable neutral
+**Profile 1** order label as a separate badge. Masking retains only the first
+and last character and replaces every middle character with `*`; the complete
+raw NLB user ID is not inserted into rendered markup or persisted.
 
 The saved library and area are restored when both still exist in the current
 catalog. If the saved area is empty or no longer exists, the extension selects

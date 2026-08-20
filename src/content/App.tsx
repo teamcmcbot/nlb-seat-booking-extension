@@ -385,7 +385,7 @@ export function App() {
     <>
       <aside
       className={`nlb-seat-helper__panel${workspaceOpen ? " is-workspace" : ""}`}
-      aria-label="StudySeat SG - for NLB status"
+      aria-label="Library Seats SG - for NLB status"
       aria-live="polite"
     >
       <header className="nlb-seat-helper__header">
@@ -394,11 +394,17 @@ export function App() {
           aria-hidden="true"
         />
         <div className="nlb-seat-helper__title">
-          <strong>StudySeat SG - for NLB</strong>
+          <strong>Library Seats SG - for NLB</strong>
         </div>
         {accountState.status === "signedIn" && (
-          <span className="nlb-seat-helper__title-status">
-            ({accountState.profileLabel} · {accountState.maskedAccountId} · Signed in)
+          <span className="nlb-seat-helper__title-status is-signed-in">
+            <span>Signed in as</span>
+            <span className="nlb-seat-helper__masked-account">
+              {accountState.maskedAccountId}
+            </span>
+            <span className="nlb-seat-helper__profile-badge">
+              {accountState.profileLabel}
+            </span>
           </span>
         )}
         {accountState.status === "signedOut" && (
@@ -455,7 +461,7 @@ export function App() {
           type="button"
           className="nlb-seat-helper__settings-trigger"
           onClick={() => setSettingsOpen(true)}
-          aria-label="Open StudySeat SG Settings"
+          aria-label="Open Library Seats SG Settings"
           title="Settings"
         >
           ⚙
@@ -464,7 +470,9 @@ export function App() {
           type="button"
           className="nlb-seat-helper__collapse"
           onClick={() => setExpanded((current) => !current)}
-          aria-label={expanded ? "Collapse StudySeat SG" : "Expand StudySeat SG"}
+          aria-label={
+            expanded ? "Collapse Library Seats SG" : "Expand Library Seats SG"
+          }
         >
           {expanded ? "−" : "+"}
         </button>

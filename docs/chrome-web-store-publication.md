@@ -1,16 +1,15 @@
 # Chrome Web Store publication plan
 
-Status: working research and implementation roadmap, 19 August 2026.
+Status: working research and implementation roadmap, 20 August 2026.
 
-Public product name: **StudySeat SG - for NLB**.
+Public product name: **Library Seats SG - for NLB**.
 
-A basic exact-name web and Chrome Web Store search on 19 August 2026 did not
-surface another product named **StudySeat SG**. It did surface an
-[iOS study-log app named StudySeat](https://appshunter.io/ios/app/6756201429)
-and unrelated uses of the compound word. The working name is distinctive
-enough to continue design and testing, but this basic search is not a formal
-trade-mark clearance. IPOS recommends a Similar Mark Search in its Digital Hub
-before applying to register a mark. See
+A basic exact-name web and Chrome Web Store-index search on 20 August 2026 did
+not surface an obvious exact match for **Library Seats SG**. The individual
+words are descriptive, so this is a clear product name rather than a strongly
+distinctive trade mark. The search is not formal trade-mark clearance. IPOS
+recommends a Similar Mark Search in its Digital Hub before applying to register
+a mark. See
 [IPOS search guidance](https://ask.gov.sg/ipos/questions/clnnxj575001n4i0xnr68nc6d).
 
 This document records the publication research, current repository audit,
@@ -51,12 +50,12 @@ act on a later intellectual-property or impersonation complaint.
 
 ### Public name
 
-Use **StudySeat SG - for NLB**, subject to a normal availability and trade-mark
-search for the independent `StudySeat SG` brand.
+Use **Library Seats SG - for NLB**, subject to normal availability and
+trade-mark checks for the independent `Library Seats SG` brand.
 
-This structure gives the extension its own identity while retaining `NLB` as a
-compatibility and discovery term. It is preferable to **NLB Seat Helper**,
-which begins with NLB and can more easily look like an official NLB product.
+This name describes the task directly, includes a Singapore cue, and retains
+`NLB` as a compatibility and discovery term. Placing “for NLB” after the
+independent name helps distinguish the product from NLB itself.
 
 Singapore's Trade Marks Act includes an exception for honest use of a mark to
 indicate the intended purpose of goods or services. That supports careful
@@ -71,7 +70,7 @@ produced by another organisation when that is not true. See Chrome's
 Use this short disclosure in the listing, README, Settings/About screen, and
 first-use information:
 
-> StudySeat SG is an independent extension and is not affiliated with,
+> Library Seats SG is an independent extension and is not affiliated with,
 > endorsed by, sponsored by, or supported by the National Library Board
 > Singapore. “NLB” is used only to identify the service with which the
 > extension works.
@@ -213,25 +212,26 @@ Suggested screenshot sequence:
 If NLB promotional-image rights remain uncertain, omit NLB maps and the
 underlying NLB interface. Show seat-number search and original timeline UI.
 
-The 440×280 promo tile should use the original StudySeat icon and an abstract
-timeline or seat motif. It should contain little or no text and no NLB logo or
-seat plan. A 1400×560 marquee image can use the same independent visual system.
+The 440×280 promo tile should use the original Library Seats SG icon and an
+abstract timeline or seat motif. It should contain little or no text and no NLB
+logo or seat plan. A 1400×560 marquee image can use the same independent visual
+system.
 
 ## Proposed Chrome Web Store copy
 
 ### Title
 
-> StudySeat SG - for NLB
+> Library Seats SG - for NLB
 
 ### Summary
 
-> Compare favourite-seat availability, choose time slots, and manage your own NLB study-seat bookings in one clear view.
+> Compare favourite-seat availability, choose time slots, and manage your own NLB seat bookings in one clear view.
 
 ### Description
 
 > Spend less time checking seats and more time studying.
 >
-> StudySeat SG adds a clearer seat-booking workspace to the NLB Seat Booking
+> Library Seats SG adds a clearer seat-booking workspace to the NLB Seat Booking
 > page. Save the seats you prefer, compare their availability across the day,
 > and review bookings or cancellations before anything is submitted.
 >
@@ -262,7 +262,7 @@ seat plan. A 1400×560 marquee image can use the same independent visual system.
 > - Access to the NLB Seat Booking website.
 > - An NLB account for booking and account-specific features.
 >
-> StudySeat SG is an independent extension and is not affiliated with,
+> Library Seats SG is an independent extension and is not affiliated with,
 > endorsed by, sponsored by, or supported by the National Library Board
 > Singapore. NLB remains the final authority for availability, quotas,
 > bookings, cancellations, and account access. Because the extension relies on
@@ -279,7 +279,7 @@ keyword spam. See the
 Single purpose:
 
 > This extension provides a clearer interface for users to view seat
-> availability and manage their own study-seat bookings on the NLB Seat
+> availability and manage their own seat bookings on the NLB Seat
 > Booking website.
 
 `storage` permission:
@@ -360,6 +360,11 @@ Suggested in-product disclosure:
 
 The current schema-1 implementation has a permanent Guest profile and opaque
 local profiles for signed-in accounts.
+
+The `studySeat...` strings below are stable legacy storage keys retained across
+the public rename. They are not user-facing product names and must not be
+renamed without a tested storage migration, because doing so would orphan
+existing favourites, preferences, and profile metadata.
 
 | Situation | Profile identifier used | Favourite key | Preference key |
 | --- | --- | --- | --- |
@@ -491,7 +496,7 @@ the main workspace is collapsed.
 
 ### About
 
-- StudySeat SG name, icon, and installed version;
+- Library Seats SG name, icon, and installed version;
 - short feature explanation;
 - independent-project disclaimer;
 - links to privacy policy, source code, support, licence, and security contact;
@@ -517,8 +522,9 @@ Provide the following separate actions:
    favourites and last area.
 3. **Delete saved Profile N** — removes one inactive opaque profile after a
    confirmation showing its favourite count.
-4. **Clear all StudySeat data** — removes Guest, all account profiles, profile
-   metadata, acknowledgement/settings data, and the short-lived sign-in marker.
+4. **Clear all Library Seats SG data** — removes Guest, all account profiles,
+   profile metadata, acknowledgement/settings data, and the short-lived
+   sign-in marker.
 
 Every destructive action should state exactly what it affects, require a
 confirmation, update the visible UI immediately, and remain recoverable only
@@ -557,7 +563,7 @@ they become release-bound.
 
 ### Phase 0 — decisions and baselines
 
-- [x] Complete a basic name search and adopt **StudySeat SG - for NLB** as the
+- [x] Complete a basic name search and adopt **Library Seats SG - for NLB** as the
   public name; formal similar-mark clearance remains separate.
 - [x] Choose runtime-only seat-plan use and exclude NLB material from store
   assets as the reversible working risk position.
@@ -695,7 +701,7 @@ installation, normal usage, privacy, and contributor entry points.
 
 ### Phase 5 — store listing assets and submission
 
-- [x] Update the manifest and installed interface name to **StudySeat SG - for
+- [x] Update the manifest and installed interface name to **Library Seats SG - for
   NLB**.
 - [ ] Finalise the 132-character manifest description.
 - [ ] Generate one 440×280 small promo tile.
@@ -742,16 +748,16 @@ order:
 
 Suggested opening:
 
-> # StudySeat SG - for NLB
+> # Library Seats SG - for NLB
 >
-> A free Chrome extension that makes it easier to find and manage study seats
+> A free Chrome extension that makes it easier to find and manage library seats
 > on the NLB Seat Booking website.
 >
 > Save the seats you like, compare availability across the day, and review
 > bookings or cancellations in one clear view. You still sign in through NLB,
 > and NLB remains in control of every booking.
 >
-> StudySeat SG is an independent project and is not affiliated with or
+> Library Seats SG is an independent project and is not affiliated with or
 > endorsed by the National Library Board Singapore.
 
 Suggested privacy block:

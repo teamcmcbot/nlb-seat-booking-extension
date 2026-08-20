@@ -1,6 +1,9 @@
 import type { FavouriteSeat } from "../models/catalog";
 
 export const CURRENT_STORAGE_SCHEMA_VERSION = 1;
+
+// Stable legacy storage namespace retained across the public product rename.
+// Do not rename these persisted values without a versioned, verified migration.
 export const STORAGE_SCHEMA_VERSION_KEY = "studySeatStorageSchemaVersion";
 export const PROFILE_SECRET_KEY = "studySeatProfileSecret";
 export const PROFILE_ORDER_KEY = "studySeatProfileOrder";
@@ -237,7 +240,7 @@ async function migrateToCurrentSchema() {
     typeof storedVersion === "number" &&
     storedVersion > CURRENT_STORAGE_SCHEMA_VERSION
   ) {
-    throw new Error("Unsupported StudySeat storage schema");
+    throw new Error("Unsupported Library Seats SG storage schema");
   }
 
   const sources = legacyKeys(stored);
@@ -250,7 +253,7 @@ async function migrateToCurrentSchema() {
     return;
   }
   if (Object.hasOwn(stored, PROFILE_SECRET_KEY) && !existingSecret) {
-    throw new Error("StudySeat profile secret is malformed");
+    throw new Error("Library Seats SG profile secret is malformed");
   }
 
   const secret = existingSecret ?? newProfileSecret();
@@ -368,14 +371,14 @@ async function migrateToCurrentSchema() {
       ([key, value]) => !valuesMatch(written[key], value),
     )
   ) {
-    throw new Error("Could not verify migrated StudySeat profile data");
+    throw new Error("Could not verify migrated Library Seats SG profile data");
   }
 
   if (sources.length > 0) {
     await chrome.storage.local.remove(sources);
     const remaining = await chrome.storage.local.get(sources);
     if (sources.some((key) => Object.hasOwn(remaining, key))) {
-      throw new Error("Could not remove legacy StudySeat profile data");
+      throw new Error("Could not remove legacy Library Seats SG profile data");
     }
   }
 
@@ -403,7 +406,7 @@ export async function opaqueProfileIdForUser(rawUserId: string) {
   ]);
   const secret = validSecret(stored[PROFILE_SECRET_KEY]);
   if (!secret) {
-    throw new Error("StudySeat profile secret is unavailable");
+    throw new Error("Library Seats SG profile secret is unavailable");
   }
 
   const profileId = await deriveOpaqueProfileId(rawUserId, secret);

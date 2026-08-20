@@ -1,6 +1,6 @@
 # Chrome Web Store privacy declarations
 
-Status: submission worksheet based on StudySeat SG - for NLB v1.3.1 behavior,
+Status: submission worksheet based on Library Seats SG - for NLB v1.3.1 behavior,
 reviewed 20 August 2026.
 
 This worksheet maps the extension's actual behavior to the Chrome Web Store
@@ -20,8 +20,8 @@ Official references:
 
 Suggested answer:
 
-> StudySeat SG provides a clearer interface on the NLB Seat Booking website
-> for viewing study-seat availability, saving favourite seats, and reviewing
+> Library Seats SG provides a clearer interface on the NLB Seat Booking website
+> for viewing seat availability, saving favourite seats, and reviewing
 > and managing the user's own NLB seat bookings.
 
 Do not broaden this to general browsing, automation, analytics, or unrelated
@@ -43,7 +43,7 @@ Suggested answer:
 Suggested answer:
 
 > The content script runs only on `https://www.nlb.gov.sg/seatbooking/*` so it
-> can add the StudySeat interface, retrieve the user's NLB account, catalog,
+> can add the Library Seats SG interface, retrieve the user's NLB account, catalog,
 > booking, quota, and availability information using the existing same-origin
 > NLB session, and submit only booking or cancellation actions the user has
 > reviewed and confirmed.

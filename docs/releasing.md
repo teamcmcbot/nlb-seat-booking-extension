@@ -60,7 +60,7 @@ git tag v1.3.1
 git push origin v1.3.1
 gh release create v1.3.1 nlb-seat-helper.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "StudySeat SG - for NLB v1.3.1" \
+  --title "Library Seats SG - for NLB v1.3.1" \
   --notes-file RELEASE_NOTES.md
 ```
 

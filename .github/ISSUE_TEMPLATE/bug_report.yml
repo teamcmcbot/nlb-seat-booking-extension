@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible StudySeat SG problem without personal data.
+description: Report a reproducible Library Seats SG problem without personal data.
 title: "[Bug]: "
 labels:
   - bug
@@ -7,7 +7,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Thanks for helping improve StudySeat SG. GitHub issues are public.
+        Thanks for helping improve Library Seats SG. GitHub issues are public.
 
         **Do not include NLB account IDs, masked account labels, booking references, cookies, credentials, raw account/API responses, or personal screenshots.** Use the private security-report link for a vulnerability.
   - type: checkboxes
@@ -22,7 +22,7 @@ body:
   - type: input
     id: extension-version
     attributes:
-      label: StudySeat SG version
+      label: Library Seats SG version
       description: Find this in Settings or chrome://extensions.
       placeholder: 1.3.1
     validations:

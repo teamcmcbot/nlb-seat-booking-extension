@@ -9,10 +9,10 @@ later gives explicit approval.
 
 1. Run `npm run build:maintenance` on the branch to be audited. Normal builds
    intentionally omit the developer-only maintenance panel. After reloading,
-   confirm Chrome shows **StudySeat SG - for NLB (Maintenance)** and a `-maintenance`
+   confirm Chrome shows **Library Seats SG - for NLB (Maintenance)** and a `-maintenance`
    display version.
 2. Open `chrome://extensions`, enable **Developer mode**, load `dist/` as the
-   unpacked StudySeat SG - for NLB extension, and click **Reload** after each build.
+   unpacked Library Seats SG - for NLB extension, and click **Reload** after each build.
 3. In Codex **Settings → Computer use → Google Chrome**, add
    `https://www.nlb.gov.sg` to the site permissions and allow browsing. Restart
    Chrome after changing this permission. Full CDP access is not required.

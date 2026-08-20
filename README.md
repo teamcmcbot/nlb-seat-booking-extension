@@ -1,13 +1,13 @@
-# StudySeat SG - for NLB
+# Library Seats SG - for NLB
 
-A free Chrome extension that makes it easier to find and manage study seats on
+A free Chrome extension that makes it easier to find and manage library seats on
 the [NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/) website.
 
 Save the seats you like, compare availability across the day, and review
 bookings or cancellations in one clear workspace. You still sign in through
 NLB, and NLB remains in control of every booking.
 
-StudySeat SG is an independent project and is not affiliated with, endorsed
+Library Seats SG is an independent project and is not affiliated with, endorsed
 by, sponsored by, or supported by the National Library Board Singapore. "NLB"
 is used only to identify the service with which the extension works.
 
@@ -23,13 +23,13 @@ By installing or using the extension, you agree to the [Terms of Use](TERMS.md).
 - Plan multiple non-overlapping seats and time blocks in one view.
 - Review every booking or cancellation before anything is sent to NLB.
 
-StudySeat SG is designed for students, working adults, senior citizens, and
-other frequent library users who regularly book study seats and want a simpler
+Library Seats SG is designed for students, working adults, senior citizens, and
+other frequent library users who regularly book library seats and want a simpler
 way to check their preferred places.
 
-![StudySeat SG availability overview](screenshots/store-overview.png)
+![Library Seats SG availability overview](screenshots/store-overview.png)
 
-![StudySeat SG interactive seat picker](screenshots/store-seat-picker.png)
+![Library Seats SG interactive seat picker](screenshots/store-seat-picker.png)
 
 ## Install
 
@@ -49,7 +49,7 @@ This advanced installation method requires Chrome Developer mode but does not
 require Node.js or development tools.
 
 1. Open the
-   [latest StudySeat SG release](https://github.com/teamcmcbot/nlb-seat-booking-extension/releases/latest).
+   [latest Library Seats SG release](https://github.com/teamcmcbot/nlb-seat-booking-extension/releases/latest).
 2. Expand **Assets** and download **`nlb-seat-helper.zip`**.
    Do not download GitHub's automatically generated **Source code** archives.
 3. Extract the ZIP to a permanent folder.
@@ -68,7 +68,7 @@ Chrome Web Store.
 1. Download and extract the newest `nlb-seat-helper.zip`.
 2. Replace the files inside the same permanent extension folder used during
    installation.
-3. Open `chrome://extensions` and click **Reload** on StudySeat SG - for NLB.
+3. Open `chrome://extensions` and click **Reload** on Library Seats SG - for NLB.
 4. Refresh the NLB Seat Booking tab.
 
 Keeping the same installation folder avoids creating a separate unpacked
@@ -150,7 +150,7 @@ npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 extension without a development process running.
 
 `npm run build:maintenance` is only for repository maintainers performing a
-read-only seat-plan audit. Chrome labels this unpacked build **StudySeat SG -
+read-only seat-plan audit. Chrome labels this unpacked build **Library Seats SG -
 for NLB (Maintenance)**; normal release builds do not expose the maintenance
 controls.
 
@@ -164,7 +164,7 @@ controls.
 
 After rebuilding:
 
-1. Click **Reload** for StudySeat SG - for NLB on `chrome://extensions`.
+1. Click **Reload** for Library Seats SG - for NLB on `chrome://extensions`.
 2. Refresh the NLB Seat Booking tab.
 
 Maintainers can follow

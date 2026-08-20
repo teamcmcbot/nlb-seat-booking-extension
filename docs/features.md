@@ -1,7 +1,7 @@
 # Feature reference
 
 This document records the detailed user-visible capabilities and safeguards in
-StudySeat SG - for NLB v1.3.1. The shorter project overview and normal usage
+Library Seats SG - for NLB v1.3.1. The shorter project overview and normal usage
 steps remain in the repository [`README`](../README.md).
 
 ## Account and quota
@@ -14,9 +14,10 @@ steps remain in the repository [`README`](../README.md).
   Seat Booking page.
 - Keeps catalog and availability features accessible while signed out, using
   a permanent Guest profile that is separate from signed-in accounts.
-- Shows a stable label such as **Profile 1** together with an in-memory masked
-  account identifier, for example **A*******Z**, so account switchers can
-  verify the active account without exposing the complete NLB user ID.
+- Shows the in-memory masked account identifier in a distinct monospace style,
+  for example **Signed in as A*******Z**, with the stable **Profile 1** label
+  presented as a separate badge so account switchers can verify the active
+  account without exposing the complete NLB user ID.
 - Offers a choice to copy Guest favourites into each signed-in account or keep
   them separate. Accounts that copy are prompted again for newly added Guest
   favourites; **Keep separate** remains a persistent opt-out. Copying never
@@ -104,7 +105,7 @@ steps remain in the repository [`README`](../README.md).
 - Keeps seat-plan maintenance controls out of normal release builds. A
   dedicated `npm run build:maintenance` build can export a freshly refreshed,
   sanitized catalog with zero availability searches. Chrome identifies that
-  build as **StudySeat SG - for NLB (Maintenance)** with a `-maintenance`
+  build as **Library Seats SG - for NLB (Maintenance)** with a `-maintenance`
   display version and developer-only description.
 - Supports optional selected-library map discovery with at most two sequential
   branch-level availability probes. Returned records remain exact-area scoped

@@ -272,7 +272,7 @@ export function SettingsDialog({
         >
           <div>
             <strong id="nlb-seat-helper-settings-title">Settings</strong>
-            <span>StudySeat SG - for NLB v{version}</span>
+            <span>Library Seats SG - for NLB v{version}</span>
           </div>
           <button
             ref={closeRef}
@@ -397,13 +397,24 @@ export function SettingsDialog({
                       className={current ? "is-current" : undefined}
                     >
                       <div>
-                        <strong>
-                          {profile.label}
-                          {current ? " · Current account" : ""}
-                        </strong>
+                        <div className="nlb-seat-helper__settings-profile-heading">
+                          <strong>
+                            {current ? "Current account" : profile.label}
+                          </strong>
+                          {current && (
+                            <span className="nlb-seat-helper__profile-badge">
+                              {profile.label}
+                            </span>
+                          )}
+                        </div>
                         <span>{profileDetails(profile)}</span>
                         {current && maskedAccountId && (
-                          <span>Signed in as {maskedAccountId}</span>
+                          <span className="nlb-seat-helper__settings-signed-in">
+                            Signed in as{" "}
+                            <span className="nlb-seat-helper__masked-account">
+                              {maskedAccountId}
+                            </span>
+                          </span>
                         )}
                       </div>
                       <button
@@ -495,7 +506,7 @@ export function SettingsDialog({
                 onClick={() =>
                   setConfirmation({
                     kind: "all",
-                    title: "Clear all StudySeat SG data?",
+                    title: "Clear all Library Seats SG data?",
                     description:
                       "This removes Guest data, every saved profile, favourite seats, saved areas, profile metadata, Guest-copy choices, the privacy acknowledgement, and the pending sign-in marker. It does not sign out of NLB or cancel bookings. If currently signed in, a fresh profile will be created for that session and seats required by active bookings may be added again.",
                     confirmLabel: "Clear all local data",

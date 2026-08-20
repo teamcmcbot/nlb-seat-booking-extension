@@ -1,8 +1,8 @@
-# Terms of Use for StudySeat SG - for NLB
+# Terms of Use for Library Seats SG - for NLB
 
 Effective date: 20 August 2026
 
-These Terms of Use ("Terms") apply to StudySeat SG - for NLB ("StudySeat SG",
+These Terms of Use ("Terms") apply to Library Seats SG - for NLB ("Library Seats SG",
 "the extension"). By installing or using the extension, you agree to these
 Terms. If you do not agree, do not install or use it.
 
@@ -13,19 +13,19 @@ Chrome, or another service you use.
 
 ## 1. Independent project
 
-StudySeat SG is not affiliated with, endorsed by, sponsored by, authorised by,
+Library Seats SG is not affiliated with, endorsed by, sponsored by, authorised by,
 or supported by NLB. "NLB" is used only to identify the service with which the
 extension is designed to work.
 
-The StudySeat SG name, icon, interface, and original code are separate from
+The Library Seats SG name, icon, interface, and original code are separate from
 NLB. NLB names, marks, websites, seat plans, images, data, APIs, accounts, and
 services remain under the control of NLB and their respective rights holders.
 
 ## 2. What the extension does
 
-StudySeat SG adds an interface to the NLB Seat Booking website so users can
+Library Seats SG adds an interface to the NLB Seat Booking website so users can
 save favourite seats, view availability, and review and manage their own NLB
-study-seat bookings.
+seat bookings.
 
 The extension uses the NLB session already active in the Seat Booking tab. A
 booking or cancellation is submitted only after the user reviews and confirms
@@ -33,7 +33,7 @@ it. NLB remains the final authority for authentication, availability, quota,
 booking acceptance, cancellation, check-in, facility rules, and account
 records.
 
-StudySeat SG is provided free of charge. There are no in-extension purchases,
+Library Seats SG is provided free of charge. There are no in-extension purchases,
 subscriptions, or paid booking services.
 
 ## 3. Your responsibilities
@@ -50,7 +50,7 @@ You must:
 - use the extension lawfully and reasonably; and
 - stop using the extension if its displayed information conflicts with NLB.
 
-You must not use StudySeat SG to:
+You must not use Library Seats SG to:
 
 - bypass authentication, CAPTCHA, quotas, rate limits, geofencing, access
   controls, or other protective measures;
@@ -62,7 +62,7 @@ You must not use StudySeat SG to:
 
 ## 4. Unofficial integration and service changes
 
-StudySeat SG relies on an unofficial, reverse-engineered integration with the
+Library Seats SG relies on an unofficial, reverse-engineered integration with the
 NLB Seat Booking website. NLB may change or discontinue its pages, endpoints,
 data, authentication, rules, images, or services at any time. Such changes may
 cause the extension to become inaccurate, incomplete, or unavailable without
@@ -102,13 +102,13 @@ website content, data, APIs, or other third-party material. See
 [`NOTICE`](NOTICE) for attribution and exclusions.
 
 The licence to copy or modify source code does not grant permission to publish
-an extension using the StudySeat SG name, icon, listing copy, or other branding
+an extension using the Library Seats SG name, icon, listing copy, or other branding
 in a way that suggests it is the same project or is endorsed by its
 maintainers.
 
 ## 8. No warranties
 
-To the maximum extent permitted by applicable law, StudySeat SG is provided
+To the maximum extent permitted by applicable law, Library Seats SG is provided
 "as is" and "as available", without warranties or conditions of any kind,
 whether express, implied, or statutory. This includes warranties of accuracy,
 availability, fitness for a particular purpose, satisfactory quality,
