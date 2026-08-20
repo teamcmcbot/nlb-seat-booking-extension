@@ -5,7 +5,12 @@
   right: 12px;
   color: #18251f;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   font-size: 14px;
   line-height: 1.4;
@@ -238,8 +243,8 @@
 
 .nlb-seat-helper__masked-account {
   color: #176846;
-  font-family: ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono",
-    monospace;
+  font-family:
+    ui-monospace, "SFMono-Regular", Consolas, "Liberation Mono", monospace;
   font-weight: 750;
   letter-spacing: 0.02em;
 }
@@ -1627,7 +1632,12 @@
   background: rgb(18 35 27 / 55%);
   color: #18251f;
   font-family:
-    Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
     sans-serif;
   font-size: 14px;
   line-height: 1.45;
@@ -1805,7 +1815,6 @@
 .nlb-seat-helper__settings-profiles article.is-current {
   border-color: #65a887;
   background: #eef8f2;
-  box-shadow: inset 3px 0 0 #27805a;
 }
 
 .nlb-seat-helper__settings-profiles article > div,
@@ -1843,8 +1852,7 @@
   font-size: 9px;
 }
 
-.nlb-seat-helper__settings-profiles
-  .nlb-seat-helper__settings-signed-in {
+.nlb-seat-helper__settings-profiles .nlb-seat-helper__settings-signed-in {
   margin-top: 4px;
   color: #52665c;
   font-size: 10px;

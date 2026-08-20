@@ -14,8 +14,7 @@ import {
 } from "../services/profileStorage";
 import { clearAuthenticationPending } from "../services/authentication";
 
-const SOURCE_URL =
-  "https://github.com/teamcmcbot/nlb-seat-booking-extension";
+const SOURCE_URL = "https://github.com/teamcmcbot/nlb-seat-booking-extension";
 const PRIVACY_URL = `${SOURCE_URL}/blob/main/PRIVACY.md`;
 const TERMS_URL = `${SOURCE_URL}/blob/main/TERMS.md`;
 const LICENSE_URL = `${SOURCE_URL}/blob/main/LICENSE`;
@@ -64,9 +63,11 @@ export function visibleAccountProfiles(
 }
 
 function focusableElements(container: HTMLElement) {
-  return [...container.querySelectorAll<HTMLElement>(
-    'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
-  )].filter((element) => element.getClientRects().length > 0);
+  return [
+    ...container.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), a[href], input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])',
+    ),
+  ].filter((element) => element.getClientRects().length > 0);
 }
 
 export function SettingsDialog({
@@ -203,9 +204,7 @@ export function SettingsDialog({
     }
   }
 
-  async function setCopyPreference(
-    preference: "prompt" | "kept-separate",
-  ) {
+  async function setCopyPreference(preference: "prompt" | "kept-separate") {
     if (!currentProfileId) {
       return;
     }
@@ -238,10 +237,7 @@ export function SettingsDialog({
         await clearGuestProfileData();
         await refreshInventory();
         await onLocalDataChanged("guest");
-      } else if (
-        confirmation.kind === "current-profile" &&
-        currentProfileId
-      ) {
+      } else if (confirmation.kind === "current-profile" && currentProfileId) {
         await clearCurrentProfileData(currentProfileId);
         await refreshInventory();
         await onLocalDataChanged("current-profile");
@@ -300,8 +296,8 @@ export function SettingsDialog({
                 requests only after you confirm them.
               </p>
               <p>
-                It does not collect credentials, directly read cookies, or
-                send your local profile data to the extension developer.
+                It does not collect credentials, directly read cookies, or send
+                your local profile data to the extension developer.
               </p>
               <button
                 ref={acknowledgementRef}
@@ -323,13 +319,15 @@ export function SettingsDialog({
           <section>
             <h2>About</h2>
             <p>
-              A free, independent interface for finding and booking seats on
-              NLB’s Seat Booking service. It is not affiliated with, endorsed
-              by, sponsored by, or supported by the National Library Board.
-              NLB remains the final authority for availability, bookings, and
-              cancellations.
+              Library Seats SG is an independent extension and is not affiliated
+              with, endorsed by, sponsored by, or supported by the National
+              Library Board Singapore. “NLB” is used only to identify the
+              service with which the extension works.
             </p>
-            <nav className="nlb-seat-helper__settings-links" aria-label="Project links">
+            <nav
+              className="nlb-seat-helper__settings-links"
+              aria-label="Project links"
+            >
               <a href={PRIVACY_URL} target="_blank" rel="noreferrer">
                 Privacy
               </a>
@@ -457,7 +455,9 @@ export function SettingsDialog({
               <div className="nlb-seat-helper__settings-choice">
                 <button
                   type="button"
-                  className={guestDecision !== "kept-separate" ? "is-selected" : ""}
+                  className={
+                    guestDecision !== "kept-separate" ? "is-selected" : ""
+                  }
                   disabled={busy || guestDecision !== "kept-separate"}
                   onClick={() => void setCopyPreference("prompt")}
                 >
@@ -465,7 +465,9 @@ export function SettingsDialog({
                 </button>
                 <button
                   type="button"
-                  className={guestDecision === "kept-separate" ? "is-selected" : ""}
+                  className={
+                    guestDecision === "kept-separate" ? "is-selected" : ""
+                  }
                   disabled={busy || guestDecision === "kept-separate"}
                   onClick={() => void setCopyPreference("kept-separate")}
                 >
