@@ -27,6 +27,11 @@ in v1.3.0.
 - Adds an accessible Settings dialog with first-use session/privacy
   disclosure, project links, opaque profile summaries, favourite-sync preference
   controls, and a reset-and-refresh recovery action.
+- Honours the system reduced-motion preference across the extension by
+  disabling decorative animation, animated scrolling, and UI transitions.
+- Keeps the main workspace vertically scrollable at high browser zoom and on
+  short viewports, so favourite-seat timelines and booking controls remain
+  reachable instead of collapsing behind the fixed panel height.
 - Adds separately confirmed controls for clearing Guest, clearing the current
   profile without changing its identity, and clearing all extension-local
   data.

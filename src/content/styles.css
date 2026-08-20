@@ -2280,9 +2280,38 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .nlb-seat-helper__loading span,
-  .nlb-seat-helper__account-refresh {
-    animation: none;
+  #nlb-seat-helper-root *,
+  #nlb-seat-helper-root *::before,
+  #nlb-seat-helper-root *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
+
+@media (max-height: 700px) {
+  .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__assistant {
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-gutter: stable;
+  }
+
+  .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__seat-manager,
+  .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__favourite-list {
+    flex: 0 0 auto;
+  }
+
+  .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__seat-results {
+    max-height: 220px;
+    flex: 0 0 auto;
+  }
+
+  .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__favourite-list {
+    max-height: 260px;
+  }
+
+  .nlb-seat-helper__booking-selection {
+    position: static;
   }
 }
 

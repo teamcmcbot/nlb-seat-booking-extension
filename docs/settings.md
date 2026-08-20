@@ -4,6 +4,12 @@ Library Seats SG keeps favourite seats and a small set of preferences in the
 current Chrome profile. Open **Settings** from the gear button in the extension
 header to review or remove that information.
 
+The dialog supports keyboard focus trapping and Escape-to-close behavior. When
+the operating system or browser requests reduced motion, the extension disables
+its animations, animated scrolling, and visual transitions. At high browser
+zoom or on a short window, the main workspace becomes vertically scrollable so
+the favourite-seat and booking sections remain reachable.
+
 ## What appears in Settings
 
 - When signed out, Settings shows only **Guest**. Account-specific profiles are

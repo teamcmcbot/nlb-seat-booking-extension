@@ -661,9 +661,14 @@ Current-profile clearing retains its identity, and clear-all removes every
 profile plus the disclosure acknowledgement and pending sign-in marker without
 signing out or mutating bookings. The dialog implements focus entry, focus
 trapping, Escape handling, trigger restoration, background inertness,
-narrow-window layout, and no motion-dependent interaction. Manual Chrome
-verification at keyboard, screen-reader, and 200% zoom settings remains the
-final Phase 3 gate.
+narrow-window layout, and no motion-dependent interaction. Keyboard focus,
+Escape restoration, semantic control names, and a 480-pixel viewport were
+verified in Chrome on 20 August 2026. The reduced-motion stylesheet now removes
+all extension animation, animated scrolling, and transitions. A subsequent
+actual 200% Chrome zoom test found that the fixed workspace collapsed its
+favourite list; short viewports now use a vertically scrolling workspace and
+non-sticky booking controls. Re-test the corrected 150% and 200% layouts and
+complete an actual screen-reader pass before closing the final Phase 3 gate.
 
 ### Phase 4 — public documentation and policy files
 
