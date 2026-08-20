@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   acknowledgePrivacyDisclosure,
-  clearAccountProfileData,
   clearAllProfileData,
   clearCurrentProfileData,
   clearGuestProfileData,
@@ -26,7 +25,6 @@ const SECURITY_URL = `${SOURCE_URL}/security/advisories/new`;
 export type LocalDataChange =
   | "guest"
   | "current-profile"
-  | "inactive-profile"
   | "all"
   | "preference"
   | "refresh";
@@ -41,17 +39,28 @@ interface SettingsDialogProps {
 }
 
 interface Confirmation {
-  kind: "guest" | "current-profile" | "inactive-profile" | "all";
+  kind: "guest" | "current-profile" | "all";
   title: string;
   description: string;
   confirmLabel: string;
-  profile?: StoredProfileSummary;
 }
 
 function profileDetails(profile: StoredProfileSummary) {
   return `${profile.favouriteCount} favourite seat${
     profile.favouriteCount === 1 ? "" : "s"
   } · ${profile.hasLastSelection ? "saved area" : "no saved area"}`;
+}
+
+export function visibleAccountProfiles(
+  inventory: ProfileStorageInventory,
+  currentProfileId?: string,
+) {
+  if (!currentProfileId) {
+    return [];
+  }
+  return inventory.accounts.filter(
+    (profile) => profile.profileId === currentProfileId,
+  );
 }
 
 function focusableElements(container: HTMLElement) {
@@ -236,13 +245,6 @@ export function SettingsDialog({
         await clearCurrentProfileData(currentProfileId);
         await refreshInventory();
         await onLocalDataChanged("current-profile");
-      } else if (
-        confirmation.kind === "inactive-profile" &&
-        confirmation.profile
-      ) {
-        await clearAccountProfileData(confirmation.profile.profileId);
-        await refreshInventory();
-        await onLocalDataChanged("inactive-profile");
       } else if (confirmation.kind === "all") {
         await clearAllProfileData();
         clearAuthenticationPending();
@@ -389,26 +391,21 @@ export function SettingsDialog({
                   </button>
                 </article>
 
-                {inventory.accounts.map((profile) => {
-                  const current = profile.profileId === currentProfileId;
-                  return (
+                {visibleAccountProfiles(inventory, currentProfileId).map(
+                  (profile) => (
                     <article
                       key={profile.profileId}
-                      className={current ? "is-current" : undefined}
+                      className="is-current"
                     >
                       <div>
                         <div className="nlb-seat-helper__settings-profile-heading">
-                          <strong>
-                            {current ? "Current account" : profile.label}
-                          </strong>
-                          {current && (
-                            <span className="nlb-seat-helper__profile-badge">
-                              {profile.label}
-                            </span>
-                          )}
+                          <strong>Current account</strong>
+                          <span className="nlb-seat-helper__profile-badge">
+                            {profile.label}
+                          </span>
                         </div>
                         <span>{profileDetails(profile)}</span>
-                        {current && maskedAccountId && (
+                        {maskedAccountId && (
                           <span className="nlb-seat-helper__settings-signed-in">
                             Signed in as{" "}
                             <span className="nlb-seat-helper__masked-account">
@@ -421,38 +418,30 @@ export function SettingsDialog({
                         type="button"
                         disabled={
                           busy ||
-                          (current &&
-                            profile.favouriteCount === 0 &&
+                          (profile.favouriteCount === 0 &&
                             !profile.hasLastSelection)
                         }
                         onClick={() =>
-                          setConfirmation(
-                            current
-                              ? {
-                                  kind: "current-profile",
-                                  title: `Clear ${profile.label}?`,
-                                  description: `This removes ${profileDetails(
-                                    profile,
-                                  )}. It does not sign out, cancel bookings, or delete the stable profile label. Seats required by active bookings may be added again after refresh.`,
-                                  confirmLabel: "Clear current profile",
-                                }
-                              : {
-                                  kind: "inactive-profile",
-                                  title: `Delete ${profile.label}?`,
-                                  description: `This removes ${profileDetails(
-                                    profile,
-                                  )}, its Guest-copy choice, and its saved profile entry. Other profiles are not changed.`,
-                                  confirmLabel: `Delete ${profile.label}`,
-                                  profile,
-                                },
-                          )
+                          setConfirmation({
+                            kind: "current-profile",
+                            title: `Clear ${profile.label}?`,
+                            description: `This removes ${profileDetails(
+                              profile,
+                            )}. It does not sign out, cancel bookings, or delete the stable profile label. Seats required by active bookings may be added again after refresh.`,
+                            confirmLabel: "Clear current profile",
+                          })
                         }
                       >
-                        {current ? "Clear profile" : "Delete profile"}
+                        Clear profile
                       </button>
                     </article>
-                  );
-                })}
+                  ),
+                )}
+                <p className="nlb-seat-helper__settings-profile-privacy">
+                  {currentProfileId
+                    ? "Only Guest and the account signed in now are shown. Other saved account profiles stay hidden."
+                    : "Account-specific profiles are hidden while signed out."}
+                </p>
               </div>
             )}
           </section>

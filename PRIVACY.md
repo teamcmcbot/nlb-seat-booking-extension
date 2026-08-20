@@ -158,12 +158,21 @@ The extension's Settings screen provides separately confirmed controls to:
 - clear Guest favourites and its saved area;
 - clear favourites and the saved area for the current profile while retaining
   its stable Profile N identity;
-- delete an inactive profile and its Guest-copy choice; or
 - clear all data owned by Library Seats SG.
+
+Settings shows only Guest while signed out. While signed in, it shows Guest and
+the current account; other saved account profiles and their preference counts
+remain hidden. People sharing one Chrome profile still share its extension
+storage, so separate Chrome profiles or Chrome Guest mode should be used on a
+shared computer.
 
 Clearing extension data does not sign the user out of NLB, cancel a booking,
 or delete information held by NLB. Users can also remove all extension-local
 data by uninstalling Library Seats SG through Chrome.
+
+On a shared or public computer, sign out of NLB first and then use **Clear all
+local data**. Clearing while an NLB account remains signed in can cause a new
+empty local profile to be created when the extension refreshes that session.
 
 An unpacked/manual installation and a Chrome Web Store installation are
 separate Chrome extension installations. Their local favourites and settings

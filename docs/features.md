@@ -34,12 +34,12 @@ steps remain in the repository [`README`](../README.md).
   collapsed and while signed in or signed out.
 - Shows the installed version, independent-project disclaimer, privacy and
   session explanation, and project support links.
-- Lists Guest, the current account, and inactive opaque profiles with their
-  favourite counts and saved-area status.
+- Shows only Guest while signed out, and only Guest plus the current account
+  while signed in. Other saved account profiles and their counts stay hidden.
 - Lets the current account switch between offering new Guest favourites and
   always keeping Guest separate.
 - Provides separately confirmed actions to clear Guest, clear the current
-  profile, delete an inactive profile, or clear all extension-local data.
+  profile, or clear all extension-local data.
 - Includes a non-destructive action to reset the current interface and refresh
   account/catalog data from NLB.
 - Shows a first-use disclosure explaining how the existing NLB session is

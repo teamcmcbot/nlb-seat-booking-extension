@@ -341,7 +341,7 @@ carry an effective date, and describe:
 - that data is sent only to NLB over HTTPS for disclosed features;
 - that the developer operates no collection server and uses no advertising or
   behavioural analytics;
-- retention, individual-profile deletion, and full deletion;
+- retention, current-profile clearing, and full deletion;
 - support and privacy contacts;
 - material-policy change notification; and
 - compliance with the Chrome Web Store User Data Policy, including Limited
@@ -513,9 +513,13 @@ the main workspace is collapsed.
 Display:
 
 - Guest, including favourite count and whether it has a saved area;
-- Current account/Profile N when signed in;
-- other opaque saved profiles, using neutral labels and counts; and
+- Current account/Profile N only when signed in;
+- no inactive account profiles, labels, counts, or saved-area status; and
 - a plain-language list of what is and is not stored.
+
+Signed-out Settings shows only Guest. Signed-in Settings shows Guest and only
+the current account. This avoids casual profile disclosure on a shared browser;
+separate Chrome profiles remain the actual user boundary.
 
 Do not reveal the raw NLB user ID in the Settings UI, tooltips, accessible
 labels, DOM attributes, or storage-key names.
@@ -525,9 +529,7 @@ Provide the following separate actions:
 1. **Clear Guest data** — removes Guest favourites and its last area.
 2. **Clear this profile** — when signed in, removes only the current account's
    favourites and last area.
-3. **Delete saved Profile N** — removes one inactive opaque profile after a
-   confirmation showing its favourite count.
-4. **Clear all Library Seats SG data** — removes Guest, all account profiles,
+3. **Clear all Library Seats SG data** — removes Guest, all account profiles,
    profile metadata, acknowledgement/settings data, and the short-lived
    sign-in marker.
 
@@ -642,9 +644,10 @@ safety checks.
 - [x] Add the header Settings button and accessible dialog focus management.
 - [x] Add About, disclaimer, version, privacy, source, support, and security
   links.
-- [x] Show Guest and opaque saved-profile summaries.
-- [x] Implement Clear Guest, Clear current profile, Delete Profile N, and Clear
-  all actions with precise confirmation text.
+- [x] Show only Guest while signed out and only Guest plus the current opaque
+  profile while signed in.
+- [x] Implement Clear Guest, Clear current profile, and Clear all actions with
+  precise confirmation text.
 - [x] Add Reset current view and refresh from NLB if testing shows it is useful.
 - [x] Add a first-use privacy/session disclosure and acknowledgement.
 - [x] Add an explicit Guest-to-current-account copy flow.
@@ -655,14 +658,15 @@ Acceptance: users can understand and remove every persistent record without
 knowing Chrome storage internals.
 
 Implementation status (2026-08-20): Settings is available in every header
-state and inventories Guest plus opaque Profile N records. Current-profile
-clearing retains its identity, inactive deletion removes the complete profile,
-and clear-all also removes the disclosure acknowledgement and pending sign-in
-marker without signing out or mutating bookings. The dialog implements focus
-entry, focus trapping, Escape handling, trigger restoration, background
-inertness, narrow-window layout, and no motion-dependent interaction. Manual
-Chrome verification at keyboard, screen-reader, and 200% zoom settings remains
-the final Phase 3 gate.
+state. It shows only Guest while signed out and Guest plus the current profile
+while signed in; inactive account labels and preference counts remain hidden.
+Current-profile clearing retains its identity, and clear-all removes every
+profile plus the disclosure acknowledgement and pending sign-in marker without
+signing out or mutating bookings. The dialog implements focus entry, focus
+trapping, Escape handling, trigger restoration, background inertness,
+narrow-window layout, and no motion-dependent interaction. Manual Chrome
+verification at keyboard, screen-reader, and 200% zoom settings remains the
+final Phase 3 gate.
 
 ### Phase 4 — public documentation and policy files
 
@@ -787,8 +791,8 @@ The extension is ready for public submission when:
 
 - branding is independent and the NLB/map risk decision is recorded;
 - no raw NLB user ID is persisted or unnecessarily displayed;
-- Guest and every account profile are isolated, explainable, and individually
-  deletable;
+- Guest and every account profile are isolated, with only Guest and the current
+  account exposed in Settings and full local deletion available;
 - privacy, terms, licence, notice, security, and support documents are live;
 - Chrome dashboard declarations match the verified implementation;
 - required artwork is sanitised and correctly sized;

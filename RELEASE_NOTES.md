@@ -28,8 +28,13 @@ in v1.3.0.
   disclosure, project links, opaque profile summaries, Guest-copy preference
   controls, and a reset-and-refresh recovery action.
 - Adds separately confirmed controls for clearing Guest, clearing the current
-  profile without changing its identity, deleting an inactive profile, and
-  clearing all extension-local data.
+  profile without changing its identity, and clearing all extension-local
+  data.
+- Hides account-specific profiles while signed out and hides every inactive
+  account while signed in, preventing their labels, favourite counts, and
+  saved-area status from being exposed through Settings on a shared browser.
+- Adds a user-facing Settings guide covering every reset and deletion action
+  and the safe sign-out-then-clear sequence for public computers.
 - Adopts the public product name **Library Seats SG - for NLB** and moves the
   masked current-account indicator onto a compact second header row while
   keeping all account and utility buttons together on the first row.

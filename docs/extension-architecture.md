@@ -590,14 +590,18 @@ and when booking or cancellation mutations are sent. Acknowledgement is stored
 locally; closing without acknowledging causes the disclosure to return after
 the next extension reload.
 
-Settings reads the typed opaque inventory and exposes four distinct scopes:
+Settings reads the typed opaque inventory but applies account-aware visibility:
+signed-out users see only Guest, while signed-in users see Guest and only the
+current account. Inactive account labels, favourite counts, and saved-area
+status are not rendered. This reduces casual disclosure on a shared browser;
+the Chrome profile remains the actual local-storage boundary.
+
+Settings exposes three distinct deletion scopes:
 
 1. **Clear Guest** removes only Guest favourites and its saved area.
 2. **Clear current profile** removes that account's favourites and saved area
    while retaining its Profile N identity and Guest-copy preference.
-3. **Delete inactive profile** removes its favourites, saved area, Guest-copy
-   preference, and opaque inventory entry.
-4. **Clear all local data** removes Guest, every profile, profile secret and
+3. **Clear all local data** removes Guest, every profile, profile secret and
    order, preferences, disclosure acknowledgement, and the short-lived
    sign-in marker. It neither signs out of NLB nor cancels bookings. If the NLB
    session remains signed in, account refresh creates a new empty opaque
@@ -607,7 +611,8 @@ Settings reads the typed opaque inventory and exposes four distinct scopes:
 Every destructive action requires confirmation describing its exact scope.
 The current workspace remounts after relevant local changes. The recovery
 action performs no deletion; it discards current interface state and fetches
-fresh account and catalog data from NLB.
+fresh account and catalog data from NLB. The user-facing action reference and
+shared-computer cleanup sequence are documented in [`settings.md`](settings.md).
 
 Kept only in memory:
 

@@ -80,6 +80,10 @@ See the [complete feature reference](docs/features.md) for account profiles,
 Settings, favourite seats, seat plans, availability, booking safeguards, and
 cancellation behavior.
 
+See [Settings and local data](docs/settings.md) for a plain-language
+explanation of every reset and deletion action, profile visibility, and safe
+cleanup on a shared or public computer.
+
 ## Privacy and permissions
 
 Read the complete [Privacy Policy](PRIVACY.md) for the information handled in
@@ -185,6 +189,8 @@ versioned download.
   research boundaries that do not authorise testing NLB.
 - [Feature Reference](docs/features.md) records the complete user-visible
   capability and safeguard inventory.
+- [Settings and Local Data](docs/settings.md) explains profile visibility,
+  reset and deletion controls, and shared-computer cleanup for users.
 - [NLB Seat Booking API Notes](docs/nlb-api.md) documents every endpoint used
   by the extension, request parameters and bodies, consumed response schemas,
   sanitized JSON, field-level usage, and observed booking lifecycle behavior.
