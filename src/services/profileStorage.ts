@@ -1,4 +1,5 @@
 import type { FavouriteSeat } from "../models/catalog";
+import { DEFAULT_BOOKING_MODE_KEY } from "./extensionPreferences";
 
 export const CURRENT_STORAGE_SCHEMA_VERSION = 1;
 
@@ -23,6 +24,10 @@ const LEGACY_ACCOUNT_SELECTION_PREFIX = "lastSeatSelectionByAccount";
 const OPAQUE_PROFILE_ID_PATTERN = /^profile_[A-Za-z0-9_-]{43}$/;
 
 export type GuestCopyDecision = "copied" | "kept-separate";
+
+export function guestFavouriteSyncEnabled(decision?: GuestCopyDecision) {
+  return decision !== "kept-separate";
+}
 
 export interface GuestCopyState {
   decision: GuestCopyDecision;
@@ -436,6 +441,7 @@ function knownStorageKey(key: string) {
       PROFILE_ORDER_KEY,
       LAST_ACTIVE_PROFILE_KEY,
       PRIVACY_ACKNOWLEDGEMENT_KEY,
+      DEFAULT_BOOKING_MODE_KEY,
       GUEST_FAVOURITES_KEY,
       GUEST_SELECTION_KEY,
       LEGACY_LAST_ACTIVE_USER_KEY,

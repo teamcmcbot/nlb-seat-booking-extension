@@ -385,10 +385,9 @@ The important consequences are:
 
 1. There is no literal `undefined` profile key.
 2. Signed-out favourites and preferences always belong to Guest.
-3. Signing in never silently moves Guest data. When Guest has favourites, an
-   account chooses whether to copy them or keep them separate. A profile that
-   copied is prompted again only for newly added Guest favourites, while Keep
-   separate remains a persistent opt-out.
+3. Signing in never moves or deletes Guest data. Account sync is enabled by
+   default and automatically copies missing Guest favourites after sign-in;
+   disabling sync remains a persistent per-profile opt-out.
 4. Copying merges without deleting Guest favourites.
 5. Switching from user 1 to user 2 keeps their opaque favourites and
    preferences separate.
@@ -467,14 +466,12 @@ are persisted by the extension.
 
 ### Guest-to-account transition
 
-Do not silently move Guest data into the first account. When a user signs in
-and Guest has data, offer an explicit one-time choice:
-
-- **Copy Guest favourites to this account**; or
-- **Keep Guest favourites separate**.
-
-Copying is safer and more understandable than moving. The user can delete the
-Guest profile later from Settings.
+Never move Guest data into an account. Provide an account-specific **Sync
+favourite seats** toggle, enabled by default. When enabled, copy Guest
+favourites missing from the account automatically after sign-in. When
+disabled, keep both lists separate. Copying is one-way and additive: do not
+propagate removals in either direction. The user can clear the Guest profile
+later from Settings.
 
 ### Migration from the current schema
 
@@ -554,7 +551,8 @@ must not delete favourites or preferences.
 Keep the first release small. Reasonable settings are:
 
 - acknowledgement/disclosure status;
-- default adjacent-slot booking mode, if users genuinely need it;
+- default adjacent-slot booking mode, implemented as an installation-wide
+  `combine` or `separate` preference with `combine` as the fallback;
 - map zoom preference only if it is intentionally persisted; and
 - optional export/import of favourites after the core deletion model is
   stable.
@@ -631,13 +629,12 @@ Implementation status (2026-08-19): schema 1 derives stable profile IDs with
 HMAC-SHA-256 using a random installation-local 256-bit secret. Migration
 writes and verifies opaque targets before removing legacy keys, commits the
 schema version last, and reuses the same secret and targets when resuming.
-Signed-out operation now always uses Guest. Copy decisions remember which
-Guest favourite identities were acknowledged, so later additions can be
-offered without repeatedly prompting for the same seats; Keep separate is a
-persistent opt-out. The header and Settings use stable Profile N labels plus a
-masked first/last-character account indicator. Complete raw NLB IDs remain
-only in transient account-session memory for derivation and same-session
-safety checks.
+Signed-out operation now always uses Guest. Per-account sync decisions remember
+which Guest favourite identities were copied, so later additions can be synced
+without repeating work; disabling sync is a persistent opt-out. The header and
+Settings use stable Profile N labels plus a masked first/last-character account
+indicator. Complete raw NLB IDs remain only in transient account-session memory
+for derivation and same-session safety checks.
 
 ### Phase 3 — Settings and disclosure UI
 

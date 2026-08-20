@@ -5,14 +5,19 @@ import {
   clearAllProfileData,
   clearCurrentProfileData,
   clearGuestProfileData,
+  guestFavouriteSyncEnabled,
   loadGuestCopyDecision,
   readProfileStorageInventory,
-  resetGuestCopyDecision,
   saveGuestCopyDecision,
   type ProfileStorageInventory,
   type StoredProfileSummary,
 } from "../services/profileStorage";
 import { clearAuthenticationPending } from "../services/authentication";
+import {
+  loadDefaultBookingMode,
+  saveDefaultBookingMode,
+  type DefaultBookingMode,
+} from "../services/extensionPreferences";
 
 const SOURCE_URL = "https://github.com/teamcmcbot/nlb-seat-booking-extension";
 const PRIVACY_URL = `${SOURCE_URL}/blob/main/PRIVACY.md`;
@@ -87,6 +92,8 @@ export function SettingsDialog({
   const [guestDecision, setGuestDecision] = useState<
     "copied" | "kept-separate" | undefined
   >();
+  const [defaultBookingMode, setDefaultBookingMode] =
+    useState<DefaultBookingMode>("combine");
   const [confirmation, setConfirmation] = useState<Confirmation>();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -129,16 +136,18 @@ export function SettingsDialog({
       currentProfileId
         ? loadGuestCopyDecision(currentProfileId)
         : Promise.resolve(undefined),
+      loadDefaultBookingMode(),
     ])
-      .then(([nextInventory, decision]) => {
+      .then(([nextInventory, decision, bookingMode]) => {
         if (active) {
           setInventory(nextInventory);
           setGuestDecision(decision);
+          setDefaultBookingMode(bookingMode);
         }
       })
       .catch(() => {
         if (active) {
-          setError("Local profile information could not be loaded.");
+          setError("Local settings could not be loaded.");
         }
       });
     return () => {
@@ -204,23 +213,36 @@ export function SettingsDialog({
     }
   }
 
-  async function setCopyPreference(preference: "prompt" | "kept-separate") {
+  async function setGuestSyncEnabled(enabled: boolean) {
     if (!currentProfileId) {
       return;
     }
     setBusy(true);
     setError("");
     try {
-      if (preference === "prompt") {
-        await resetGuestCopyDecision(currentProfileId);
-        setGuestDecision(undefined);
-      } else {
-        await saveGuestCopyDecision(currentProfileId, "kept-separate");
-        setGuestDecision("kept-separate");
-      }
+      const decision = enabled ? "copied" : "kept-separate";
+      await saveGuestCopyDecision(currentProfileId, decision);
+      setGuestDecision(decision);
       await onLocalDataChanged("preference");
     } catch {
-      setError("The Guest-favourites preference could not be changed.");
+      setError("The signed-out favourites sync preference could not be changed.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function changeDefaultBookingMode(mode: DefaultBookingMode) {
+    if (mode === defaultBookingMode) {
+      return;
+    }
+    setBusy(true);
+    setError("");
+    try {
+      await saveDefaultBookingMode(mode);
+      setDefaultBookingMode(mode);
+      await onLocalDataChanged("preference");
+    } catch {
+      setError("The default booking mode could not be changed.");
     } finally {
       setBusy(false);
     }
@@ -350,12 +372,83 @@ export function SettingsDialog({
           </section>
 
           <section>
+            <div className="nlb-seat-helper__settings-section-heading">
+              <h2>Booking default</h2>
+              <span className="nlb-seat-helper__settings-tooltip-wrap">
+                <button
+                  type="button"
+                  className="nlb-seat-helper__settings-info-button"
+                  aria-label="Explain adjacent-hour booking options"
+                  aria-describedby="nlb-seat-helper-booking-mode-tooltip"
+                >
+                  i
+                </button>
+                <span
+                  id="nlb-seat-helper-booking-mode-tooltip"
+                  className="nlb-seat-helper__settings-tooltip"
+                  role="tooltip"
+                >
+                  <strong>Combine adjacent hours:</strong> selecting 2pm–6pm
+                  for one seat is booked as one 4-hour booking, if NLB's maximum
+                  duration allows it.
+                  <br />
+                  <strong>Book each hour separately:</strong> the same selection
+                  is booked as four independent 1-hour bookings: 2–3pm, 3–4pm,
+                  4–5pm, and 5–6pm.
+                </span>
+              </span>
+            </div>
+            <p>
+              Choose the option selected automatically when you start a new
+              booking. You can still change it before each booking.
+            </p>
+            <fieldset className="nlb-seat-helper__settings-booking-mode">
+              <legend>Default adjacent-hour booking mode</legend>
+              <label
+                className={
+                  defaultBookingMode === "combine" ? "is-selected" : ""
+                }
+              >
+                <input
+                  type="radio"
+                  name="nlb-default-booking-mode"
+                  checked={defaultBookingMode === "combine"}
+                  disabled={busy}
+                  onChange={() => void changeDefaultBookingMode("combine")}
+                />
+                <span>
+                  <strong>Combine adjacent hours</strong>
+                  <small>Fewer booking requests</small>
+                </span>
+              </label>
+              <label
+                className={
+                  defaultBookingMode === "separate" ? "is-selected" : ""
+                }
+              >
+                <input
+                  type="radio"
+                  name="nlb-default-booking-mode"
+                  checked={defaultBookingMode === "separate"}
+                  disabled={busy}
+                  onChange={() => void changeDefaultBookingMode("separate")}
+                />
+                <span>
+                  <strong>Book each hour separately</strong>
+                  <small>Independent hourly reservations</small>
+                </span>
+              </label>
+            </fieldset>
+          </section>
+
+          <section>
             <h2>Local data</h2>
             <p>
-              Stored locally: favourite seats, last selected areas, opaque
-              Profile N identifiers, Guest-copy choices, and this disclosure
-              acknowledgement. Credentials, cookies, bookings, quotas, and
-              availability results are not stored by the extension.
+              Stored locally: favourite seats, last selected areas, the default
+              booking mode, opaque Profile N identifiers, signed-out favourite
+              sync choices, and this disclosure acknowledgement. Credentials,
+              cookies, bookings, quotas, and availability results are not
+              stored by the extension.
             </p>
 
             {!inventory ? (
@@ -446,34 +539,54 @@ export function SettingsDialog({
 
           {currentProfileId && (
             <section>
-              <h2>Guest favourites for this account</h2>
-              <p>
-                Choose whether this account should offer newly added Guest
-                favourites. Copying is always additive and never deletes Guest
-                data or account favourites.
-              </p>
-              <div className="nlb-seat-helper__settings-choice">
-                <button
-                  type="button"
-                  className={
-                    guestDecision !== "kept-separate" ? "is-selected" : ""
-                  }
-                  disabled={busy || guestDecision !== "kept-separate"}
-                  onClick={() => void setCopyPreference("prompt")}
-                >
-                  Offer new Guest favourites
-                </button>
-                <button
-                  type="button"
-                  className={
-                    guestDecision === "kept-separate" ? "is-selected" : ""
-                  }
-                  disabled={busy || guestDecision === "kept-separate"}
-                  onClick={() => void setCopyPreference("kept-separate")}
-                >
-                  Always keep separate
-                </button>
+              <div className="nlb-seat-helper__settings-section-heading">
+                <h2>Sync favourite seats</h2>
+                <span className="nlb-seat-helper__settings-tooltip-wrap">
+                  <button
+                    type="button"
+                    className="nlb-seat-helper__settings-info-button"
+                    aria-label="Explain signed-out favourite-seat syncing"
+                    aria-describedby="nlb-seat-helper-guest-copy-tooltip"
+                  >
+                    i
+                  </button>
+                  <span
+                    id="nlb-seat-helper-guest-copy-tooltip"
+                    className="nlb-seat-helper__settings-tooltip"
+                    role="tooltip"
+                  >
+                    <strong>On:</strong> favourite seats added while signed out
+                    are copied automatically into this account after sign-in.
+                    The signed-out list remains unchanged.
+                    <br />
+                    <strong>Off:</strong> signed-out and account favourites stay
+                    separate. Turning sync off does not remove seats already
+                    copied, and removing a seat from either list never removes
+                    it from the other.
+                  </span>
+                </span>
               </div>
+              <p>
+                Automatically sync favourite seats added while signed out to
+                this account after sign-in.
+              </p>
+              <label className="nlb-seat-helper__settings-switch-row">
+                <span>
+                  <strong>Automatically sync signed-out favourites</strong>
+                  <small>
+                    {guestFavouriteSyncEnabled(guestDecision) ? "On" : "Off"}
+                  </small>
+                </span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={guestFavouriteSyncEnabled(guestDecision)}
+                  disabled={busy}
+                  onChange={(event) =>
+                    void setGuestSyncEnabled(event.target.checked)
+                  }
+                />
+              </label>
             </section>
           )}
 
@@ -499,7 +612,7 @@ export function SettingsDialog({
                     kind: "all",
                     title: "Clear all Library Seats SG data?",
                     description:
-                      "This removes Guest data, every saved profile, favourite seats, saved areas, profile metadata, Guest-copy choices, the privacy acknowledgement, and the pending sign-in marker. It does not sign out of NLB or cancel bookings. If currently signed in, a fresh profile will be created for that session and seats required by active bookings may be added again.",
+                      "This removes Guest data, every saved profile, favourite seats, saved areas, profile metadata, favourite-sync choices, the default booking mode, the privacy acknowledgement, and the pending sign-in marker. It does not sign out of NLB or cancel bookings. If currently signed in, a fresh profile will be created for that session and seats required by active bookings may be added again.",
                     confirmLabel: "Clear all local data",
                   })
                 }

@@ -19,6 +19,39 @@ authentication boundary. People sharing one Chrome profile also share its
 extension storage. Use separate Chrome profiles or Chrome Guest mode on a
 shared computer.
 
+## Booking default
+
+Choose which adjacent-hour option should be selected whenever a new booking
+selection is started:
+
+- **Combine adjacent hours** merges consecutive selected intervals for the
+  same seat into fewer booking requests, up to the area's maximum booking
+  duration. This is the default when no preference has been saved.
+- **Book each hour separately** submits each selected interval as an independent
+  reservation.
+
+The information tooltip beside the section title gives a concrete comparison:
+a 2pm–6pm selection can become one 4-hour booking when combined, or four
+independent 1-hour bookings when separated. It opens on pointer hover or
+keyboard/touch focus. This preference only chooses the initial option; it can
+still be changed in the booking panel before every booking.
+
+The preference applies to this installation of Library Seats SG rather than
+one NLB account. **Clear all local data** resets it to **Combine adjacent
+hours**.
+
+## Sync favourite seats
+
+The account-specific toggle is enabled by default. When on, favourite seats
+added while signed out are copied automatically into the current account after
+sign-in. When off, the signed-out Guest list and account list stay separate.
+
+Syncing is one-way and additive. Turning it off does not remove seats already
+copied. Removing a favourite from Guest never removes it from an account, and
+removing one from an account never removes the Guest copy. The information
+tooltip explains these boundaries without taking permanent space in the
+dialog.
+
 ## Local-data actions
 
 ### Clear Guest
@@ -54,9 +87,9 @@ elsewhere, or when recovering from an NLB response error.
 
 Removes all data owned by Library Seats SG from `chrome.storage.local`,
 including Guest data, every saved account profile, favourite seats, saved
-areas, profile metadata, Guest-copy choices, and the disclosure
-acknowledgement. It also removes the short-lived pending sign-in marker from
-the current Seat Booking tab.
+areas, profile metadata, favourite-sync choices, the default booking mode, and the
+disclosure acknowledgement. It also removes the short-lived pending sign-in
+marker from the current Seat Booking tab.
 
 It does not sign out of NLB, cancel bookings, or delete information held by
 NLB. If an NLB account remains signed in, the extension can create a fresh

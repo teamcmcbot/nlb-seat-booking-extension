@@ -26,6 +26,7 @@ import {
   deriveOpaqueProfileId,
   GUEST_FAVOURITES_KEY,
   GUEST_SELECTION_KEY,
+  guestFavouriteSyncEnabled,
   isOpaqueProfileId,
   LAST_ACTIVE_PROFILE_KEY,
   loadGuestCopyDecision,
@@ -39,6 +40,7 @@ import {
   saveGuestCopyDecision,
   STORAGE_SCHEMA_VERSION_KEY,
 } from "./profileStorage";
+import { DEFAULT_BOOKING_MODE_KEY } from "./extensionPreferences";
 
 type StorageRecord = Record<string, unknown>;
 
@@ -414,7 +416,13 @@ describe("schema-1 inventory and deletion", () => {
     expect(values[LAST_ACTIVE_PROFILE_KEY]).toBe(profileId);
   });
 
-  it("can reset a persistent Guest-copy preference", async () => {
+  it("treats signed-out favourite sync as on unless explicitly disabled", () => {
+    expect(guestFavouriteSyncEnabled()).toBe(true);
+    expect(guestFavouriteSyncEnabled("copied")).toBe(true);
+    expect(guestFavouriteSyncEnabled("kept-separate")).toBe(false);
+  });
+
+  it("can reset a persistent favourite-sync preference", async () => {
     const { values } = installChromeStorage();
     const profileId = await profileUserId("user-1");
     await saveGuestCopyDecision(profileId, "kept-separate");
@@ -442,6 +450,7 @@ describe("schema-1 inventory and deletion", () => {
   it("clears all known data while preserving unrelated storage", async () => {
     const { values } = installChromeStorage({
       ...storageFixtures.multipleAccounts,
+      [DEFAULT_BOOKING_MODE_KEY]: "separate",
       unrelatedExtensionKey: "preserve me",
     });
     await profileUserId();

@@ -50,12 +50,14 @@ import {
   isBookingCancelable,
 } from "../services/bookingConflicts";
 import { buildBookingPlan } from "../services/bookingPlanner";
+import { loadDefaultBookingMode } from "../services/extensionPreferences";
 import {
   loadLastSeatSelection,
   saveLastSeatSelection,
 } from "../services/preferences";
 import { SIGNED_OUT_PROFILE_ID } from "../services/accountProfiles";
 import {
+  guestFavouriteSyncEnabled,
   loadGuestCopyState,
   saveGuestCopyDecision,
 } from "../services/profileStorage";
@@ -403,10 +405,8 @@ export function SeatAssistant({
   const [selectionMessage, setSelectionMessage] = useState("");
   const [automaticFavouriteMessage, setAutomaticFavouriteMessage] =
     useState("");
-  const [guestCopyOffer, setGuestCopyOffer] = useState(false);
-  const [guestCopyBusy, setGuestCopyBusy] = useState(false);
-  const [guestCopyError, setGuestCopyError] = useState("");
-  const [bookSeparately, setBookSeparately] = useState(true);
+  const [favouriteSyncError, setFavouriteSyncError] = useState("");
+  const [bookSeparately, setBookSeparately] = useState(false);
   const [reviewingBooking, setReviewingBooking] = useState(false);
   const [reviewingCancellation, setReviewingCancellation] = useState(false);
   const [cancellationReasonCode, setCancellationReasonCode] = useState("");
@@ -436,6 +436,24 @@ export function SeatAssistant({
     setMapFocusSeatId("");
     setMapExpanded(true);
   }
+
+  useEffect(() => {
+    let active = true;
+    loadDefaultBookingMode()
+      .then((mode) => {
+        if (active) {
+          setBookSeparately(mode === "separate");
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setBookSeparately(false);
+        }
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!reviewingBooking && !reviewingCancellation) {
@@ -720,17 +738,30 @@ export function SeatAssistant({
       (favourite) => !existing.has(favouriteIdentity(favourite)),
     );
     if (additions.length === 0) {
-      return;
+      return undefined;
     }
 
+    let active = true;
     const next = [...favourites, ...additions];
-    setFavourites(next);
-    setAutomaticFavouriteMessage(
-      `${additions.length} booked seat${
-        additions.length === 1 ? " was" : "s were"
-      } added to this account's favourites.`,
-    );
-    void saveFavouriteSeats(profileUserId, next);
+    void saveFavouriteSeats(profileUserId, next)
+      .then(() => {
+        if (active) {
+          setFavourites(next);
+          setAutomaticFavouriteMessage(
+            `${additions.length} booked seat${
+              additions.length === 1 ? " was" : "s were"
+            } added to this account's favourites.`,
+          );
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setFavouriteSyncError("Booked-seat favourites could not be saved.");
+        }
+      });
+    return () => {
+      active = false;
+    };
   }, [
     bookingFavouriteState.favourites,
     favourites,
@@ -741,40 +772,55 @@ export function SeatAssistant({
 
   useEffect(() => {
     if (!storageReady || !session) {
-      setGuestCopyOffer(false);
       return undefined;
     }
 
     let active = true;
+    const favouriteKeys = new Set(favourites.map(favouriteIdentity));
+    const bookedFavouritePending = bookingFavouriteState.favourites.some(
+      (favourite) => !favouriteKeys.has(favouriteIdentity(favourite)),
+    );
+    if (bookedFavouritePending) {
+      return () => {
+        active = false;
+      };
+    }
     Promise.all([
       loadFavouriteSeats(SIGNED_OUT_PROFILE_ID),
       loadGuestCopyState(profileUserId),
     ])
-      .then(([guestFavourites, copyState]) => {
+      .then(async ([guestFavourites, copyState]) => {
         if (!active) {
           return;
         }
 
-        if (copyState?.decision === "kept-separate") {
-          setGuestCopyOffer(false);
+        if (!guestFavouriteSyncEnabled(copyState?.decision)) {
           return;
         }
 
         const guestKeys = guestFavourites.map(favouriteIdentity);
-        const hasNewGuestFavourite =
-          guestFavouritesNeedingCopy(
-            guestFavourites,
-            favourites,
-            copyState,
-          ).length > 0;
-        setGuestCopyOffer(
-          guestFavourites.length > 0 &&
-            (!copyState || hasNewGuestFavourite),
+        const favouritesToSync = guestFavouritesNeedingCopy(
+          guestFavourites,
+          favourites,
+          copyState,
         );
+        if (favouritesToSync.length > 0) {
+          const next = await copyGuestFavouritesToProfile(profileUserId);
+          await saveGuestCopyDecision(profileUserId, "copied", guestKeys);
+          if (active) {
+            setFavourites(next);
+            setFavouriteSyncError("");
+            setAutomaticFavouriteMessage(
+              `${favouritesToSync.length} signed-out favourite seat${
+                favouritesToSync.length === 1 ? " was" : "s were"
+              } synced to this account.`,
+            );
+          }
+          return;
+        }
 
         if (
           copyState?.decision === "copied" &&
-          !hasNewGuestFavourite &&
           (copyState.acknowledgedFavouriteKeys?.length !== guestKeys.length ||
             guestKeys.some(
               (key) =>
@@ -786,50 +832,20 @@ export function SeatAssistant({
       })
       .catch(() => {
         if (active) {
-          setGuestCopyError("Guest favourites could not be checked.");
+          setFavouriteSyncError("Signed-out favourites could not be synced.");
         }
       });
 
     return () => {
       active = false;
     };
-  }, [favourites, profileUserId, session, storageReady]);
-
-  async function copyGuestFavourites() {
-    setGuestCopyBusy(true);
-    setGuestCopyError("");
-    try {
-      const guestFavourites = await loadFavouriteSeats(SIGNED_OUT_PROFILE_ID);
-      const next = await copyGuestFavouritesToProfile(profileUserId);
-      await saveGuestCopyDecision(
-        profileUserId,
-        "copied",
-        guestFavourites.map(favouriteIdentity),
-      );
-      setFavourites(next);
-      setGuestCopyOffer(false);
-      setAutomaticFavouriteMessage(
-        "Guest favourites were copied to this account. Guest data remains separate.",
-      );
-    } catch {
-      setGuestCopyError("Guest favourites could not be copied.");
-    } finally {
-      setGuestCopyBusy(false);
-    }
-  }
-
-  async function keepGuestFavouritesSeparate() {
-    setGuestCopyBusy(true);
-    setGuestCopyError("");
-    try {
-      await saveGuestCopyDecision(profileUserId, "kept-separate");
-      setGuestCopyOffer(false);
-    } catch {
-      setGuestCopyError("The Guest preference could not be saved.");
-    } finally {
-      setGuestCopyBusy(false);
-    }
-  }
+  }, [
+    bookingFavouriteState.favourites,
+    favourites,
+    profileUserId,
+    session,
+    storageReady,
+  ]);
 
   useEffect(() => {
     const reasons = session?.cancellationReasons ?? [];
@@ -1988,40 +2004,6 @@ export function SeatAssistant({
         </label>
       </div>
 
-      {guestCopyOffer && (
-        <section
-          className="nlb-seat-helper__guest-copy"
-          aria-label="Guest favourites"
-        >
-          <strong>Copy Guest favourites?</strong>
-          <p>
-            Signed-out favourites are separate. After copying, you will be
-            asked again only when Guest has new seats.
-          </p>
-          {guestCopyError && (
-            <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
-              {guestCopyError}
-            </p>
-          )}
-          <div>
-            <button
-              type="button"
-              onClick={() => void copyGuestFavourites()}
-              disabled={guestCopyBusy}
-            >
-              Copy to this account
-            </button>
-            <button
-              type="button"
-              onClick={() => void keepGuestFavouritesSeparate()}
-              disabled={guestCopyBusy}
-            >
-              Always keep separate
-            </button>
-          </div>
-        </section>
-      )}
-
       {!area && (
         <p className="nlb-seat-helper__empty">
           Choose a library and a specific area to manage favourite seats.
@@ -2059,6 +2041,12 @@ export function SeatAssistant({
           {automaticFavouriteMessage && (
             <p className="nlb-seat-helper__notice">
               {automaticFavouriteMessage}
+            </p>
+          )}
+
+          {favouriteSyncError && (
+            <p className="nlb-seat-helper__notice nlb-seat-helper__notice--error">
+              {favouriteSyncError}
             </p>
           )}
 

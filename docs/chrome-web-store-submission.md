@@ -97,7 +97,7 @@ Library Seats SG provides a clearer interface on the NLB Seat Booking website fo
 **`storage` permission justification**
 
 ```text
-Used only to keep favourite-seat selections, the last selected library and area, first-use acknowledgement, and pseudonymous local profile preferences in chrome.storage.local. Account details, bookings, quotas, availability, credentials, and cookies are not persistently stored by the extension.
+Used only to keep favourite-seat selections, the last selected library and area, the default adjacent-hour booking mode, first-use acknowledgement, and pseudonymous local profile preferences in chrome.storage.local. Account details, bookings, quotas, availability, credentials, and cookies are not persistently stored by the extension.
 ```
 
 **NLB site-access justification**

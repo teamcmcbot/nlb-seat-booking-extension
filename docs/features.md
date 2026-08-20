@@ -18,10 +18,10 @@ steps remain in the repository [`README`](../README.md).
   for example **Signed in as A*******Z**, with the stable **Profile 1** label
   presented as a separate badge so account switchers can verify the active
   account without exposing the complete NLB user ID.
-- Offers a choice to copy Guest favourites into each signed-in account or keep
-  them separate. Accounts that copy are prompted again for newly added Guest
-  favourites; **Keep separate** remains a persistent opt-out. Copying never
-  deletes Guest data.
+- Provides an account-specific **Sync favourite seats** toggle, enabled by
+  default. Newly added signed-out favourites are copied automatically after
+  sign-in when enabled; disabling sync keeps the lists separate. Copying never
+  deletes Guest data, and removals are not synchronized in either direction.
 - Refreshes the signed-in account from the header after login without
   reloading the NLB page.
 - Shows remaining versus total Study Area quota for the selected date.
@@ -36,8 +36,11 @@ steps remain in the repository [`README`](../README.md).
   session explanation, and project support links.
 - Shows only Guest while signed out, and only Guest plus the current account
   while signed in. Other saved account profiles and their counts stay hidden.
-- Lets the current account switch between offering new Guest favourites and
-  always keeping Guest separate.
+- Lets the current account turn automatic one-way syncing of newly added
+  signed-out favourites on or off.
+- Lets the user choose whether the booking panel defaults to combining
+  adjacent hours or booking every interval separately, with an in-Settings
+  explanation of both modes.
 - Provides separately confirmed actions to clear Guest, clear the current
   profile, or clear all extension-local data.
 - Includes a non-destructive action to reset the current interface and refresh
@@ -153,6 +156,9 @@ steps remain in the repository [`README`](../README.md).
   times.
 - Can combine adjacent intervals for the same seat into a continuous booking
   or submit every interval separately.
+- Defaults to combining adjacent intervals unless the installation-wide
+  Settings preference chooses separate requests; the booking panel can still
+  override the default for each selection.
 - Opens an immediate confirmation overlay with the seat and time summary before
   any booking requests are sent.
 - Requires both the refreshed reference matrix and the exact booking preflight

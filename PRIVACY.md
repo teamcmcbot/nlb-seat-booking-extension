@@ -94,8 +94,9 @@ Library Seats SG uses the Chrome `storage` permission only for
 - Guest and per-profile favourite-seat records, including NLB library, area,
   and seat identifiers, codes, and names;
 - the last selected library and area for Guest and each profile;
-- each profile's Guest-favourite copy decision and the favourite identities
+- each profile's signed-out favourite sync decision and the favourite identities
   already acknowledged by that decision;
+- the installation's default adjacent-hour booking mode;
 - the storage schema version; and
 - whether the first-use privacy and session disclosure was acknowledged.
 

@@ -68,7 +68,7 @@ Use the closest dashboard categories available at submission time:
 | Personally identifiable information / account identifiers | Yes | The NLB account identifier is processed transiently to derive an opaque local profile ID and masked display. The complete value is not persisted or sent to the developer. |
 | Authentication information | Yes, conservatively | The extension has sign-in functionality and makes authenticated same-origin NLB requests. Chrome attaches the existing NLB session; extension code does not read or store the password, cookie, or token. If the dashboard definition explicitly excludes this behavior, record that definition before changing the answer. |
 | Website content | Yes | The extension processes NLB account, catalog, rules, booking, quota, availability, and seat-plan responses to render its interface. |
-| User activity | Yes | Favourite-seat choices, saved areas, requested dates/times, confirmations, and Guest-copy choices are user interactions necessary for the feature. Only the documented preferences are persisted locally. |
+| User activity | Yes | Favourite-seat choices, saved areas, requested dates/times, confirmations, and signed-out favourite sync choices are user interactions necessary for the feature. Only the documented preferences are persisted locally. |
 | Location | No | The extension does not request or read device location and continues to use NLB's offsite mode. |
 | Financial and payment information | No | No payments or financial information are handled. |
 | Health information | No | No health information is handled. |

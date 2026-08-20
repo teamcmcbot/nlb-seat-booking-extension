@@ -93,12 +93,14 @@ persisted.
 
 When signed out, catalog and availability features remain available. The
 workspace always uses the permanent Guest profile rather than borrowing the
-last signed-in account's favourites or area preference. When an account first
-encounters Guest favourites, the workspace asks whether to copy them into the
-account or keep them separate. Copying merges favourites without deleting the
-Guest copy and records the acknowledged favourite identities. A later Guest
-favourite missing from that account produces another copy prompt. **Keep
-separate** remains a persistent per-profile opt-out.
+last signed-in account's favourites or area preference. Each account has a
+**Sync favourite seats** toggle that is enabled by default. When enabled, Guest
+favourites missing from that account are copied automatically after sign-in.
+Copying merges favourites without deleting the Guest copy and records the
+acknowledged favourite identities. Disabling sync is a persistent per-profile
+opt-out. The flow is one-way and additive: removing a seat from Guest does not
+remove it from an account, and removing it from an account does not remove the
+Guest copy.
 
 The header and Settings identify the current account with an in-memory masked
 identifier, such as **Signed in as A*******Z**, and present its stable neutral
@@ -164,7 +166,7 @@ flowchart TD
 | `src/services/seatPlanMaintenance.ts` | Produces sanitized exports and runs optional bounded branch-level metadata discovery with exact-area response parsing. |
 | `src/data/seatPlans/` | Stores reviewed, non-account-specific seat-plan coordinates. |
 | `src/components/ClickableSeatPlan.tsx` | Renders verified keyboard- and pointer-accessible favourite hotspots over a plan. |
-| `src/components/SettingsDialog.tsx` | Presents disclosure, opaque profile inventory, Guest-copy preferences, recovery, and confirmed local-data deletion. |
+| `src/components/SettingsDialog.tsx` | Presents disclosure, opaque profile inventory, signed-out favourite sync preferences, recovery, and confirmed local-data deletion. |
 | `docs/data/seat-plan-baseline.json` | Stores the point-in-time normalized catalog, map metadata, and SHA-256 evidence. |
 | `scripts/seat-plan-*.mjs` | Captures, audits, verifies, and prepares annotation maintenance evidence. |
 | `src/services/preferences.ts` | Persists the last selected branch and area. |
@@ -553,7 +555,8 @@ Persisted in `chrome.storage.local`:
 - opaque HMAC-derived profile IDs and their stable display order;
 - favourite seats for each account;
 - the last selected branch and area for each account;
-- the Guest-copy choice for each account; and
+- the signed-out favourite sync choice for each account; and
+- the installation-wide default adjacent-hour booking mode; and
 - the privacy/session disclosure acknowledgement.
 
 Schema 1 replaces the legacy raw-ID key suffixes with opaque profile IDs and
@@ -600,7 +603,7 @@ Settings exposes three distinct deletion scopes:
 
 1. **Clear Guest** removes only Guest favourites and its saved area.
 2. **Clear current profile** removes that account's favourites and saved area
-   while retaining its Profile N identity and Guest-copy preference.
+   while retaining its Profile N identity and favourite-sync preference.
 3. **Clear all local data** removes Guest, every profile, profile secret and
    order, preferences, disclosure acknowledgement, and the short-lived
    sign-in marker. It neither signs out of NLB nor cancels bookings. If the NLB
@@ -613,6 +616,12 @@ The current workspace remounts after relevant local changes. The recovery
 action performs no deletion; it discards current interface state and fetches
 fresh account and catalog data from NLB. The user-facing action reference and
 shared-computer cleanup sequence are documented in [`settings.md`](settings.md).
+
+The **Booking default** setting stores either `combine` or `separate` for the
+installation. Missing or malformed values fail safely to `combine`. Each new
+`SeatAssistant` instance loads that preference into its adjacent-hour radio
+selection; changing the option in the booking panel affects only that booking
+selection and does not rewrite the saved default.
 
 Kept only in memory:
 

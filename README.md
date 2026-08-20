@@ -104,7 +104,8 @@ Requests use the NLB page's existing signed-in session with
 - favourite seat selections for each account;
 - the last selected library and area for each account;
 - each account's Guest-favourites copy decision and acknowledged Guest
-  favourite identities; and
+  favourite identities;
+- the installation's default adjacent-hour booking mode; and
 - the local privacy/session disclosure acknowledgement.
 
 The raw NLB user ID is used transiently in memory to associate the current NLB

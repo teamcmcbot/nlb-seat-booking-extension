@@ -1146,42 +1146,6 @@
   color: #914d44;
 }
 
-.nlb-seat-helper__guest-copy {
-  margin-top: 10px;
-  padding: 9px;
-  border: 1px solid #c9ded2;
-  border-radius: 8px;
-  background: #f2faf6;
-  color: #345c48;
-  font-size: 10px;
-}
-
-.nlb-seat-helper__guest-copy p {
-  margin: 3px 0 7px;
-}
-
-.nlb-seat-helper__guest-copy div {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-
-.nlb-seat-helper__guest-copy button {
-  padding: 5px 7px;
-  border: 1px solid #86aa97;
-  border-radius: 6px;
-  background: #fff;
-  color: #345c48;
-  font: inherit;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.nlb-seat-helper__guest-copy button:disabled {
-  cursor: wait;
-  opacity: 0.6;
-}
-
 .nlb-seat-helper__favourite-list {
   display: grid;
   align-content: start;
@@ -1795,6 +1759,131 @@
   color: #914d44 !important;
 }
 
+.nlb-seat-helper__settings-section-heading {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.nlb-seat-helper__settings-section-heading h2 {
+  margin-bottom: 0;
+}
+
+.nlb-seat-helper__settings-tooltip-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+.nlb-seat-helper__settings-content
+  button.nlb-seat-helper__settings-info-button {
+  display: inline-grid;
+  box-sizing: border-box;
+  width: 18px;
+  min-width: 18px;
+  height: 18px;
+  min-height: 18px;
+  flex: 0 0 18px;
+  padding: 0;
+  border-radius: 50%;
+  place-items: center;
+  color: #176c48;
+  font-family: Georgia, serif;
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.nlb-seat-helper__settings-tooltip {
+  position: absolute;
+  z-index: 4;
+  top: calc(100% + 7px);
+  left: 50%;
+  width: min(340px, calc(100vw - 64px));
+  padding: 9px 10px;
+  border: 1px solid #b9d5c7;
+  border-radius: 8px;
+  background: #f7fbf9;
+  box-shadow: 0 7px 20px rgb(24 55 40 / 18%);
+  color: #52665c;
+  font-size: 10px;
+  line-height: 1.5;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-18px) translateY(-3px);
+  transition:
+    opacity 120ms ease,
+    transform 120ms ease;
+  visibility: hidden;
+}
+
+.nlb-seat-helper__settings-tooltip strong {
+  color: #2f4b3d;
+}
+
+.nlb-seat-helper__settings-tooltip-wrap:hover
+  .nlb-seat-helper__settings-tooltip,
+.nlb-seat-helper__settings-tooltip-wrap:focus-within
+  .nlb-seat-helper__settings-tooltip {
+  opacity: 1;
+  transform: translateX(-18px) translateY(0);
+  visibility: visible;
+}
+
+.nlb-seat-helper__settings-booking-mode {
+  display: grid;
+  gap: 7px;
+  margin: 9px 0 0;
+  padding: 0;
+  border: 0;
+}
+
+.nlb-seat-helper__settings-booking-mode legend {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.nlb-seat-helper__settings-booking-mode label {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 8px 9px;
+  border: 1px solid #dce6e1;
+  border-radius: 8px;
+  background: #fafcfb;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__settings-booking-mode label.is-selected {
+  border-color: #65a887;
+  background: #eef8f2;
+}
+
+.nlb-seat-helper__settings-booking-mode input {
+  margin: 2px 0 0;
+  accent-color: #176c48;
+}
+
+.nlb-seat-helper__settings-booking-mode span,
+.nlb-seat-helper__settings-booking-mode strong,
+.nlb-seat-helper__settings-booking-mode small {
+  display: block;
+}
+
+.nlb-seat-helper__settings-booking-mode strong {
+  color: #314b3e;
+  font-size: 11px;
+}
+
+.nlb-seat-helper__settings-booking-mode small {
+  margin-top: 2px;
+  color: #75827c;
+  font-size: 9px;
+}
+
 .nlb-seat-helper__settings-profiles {
   display: grid;
   gap: 7px;
@@ -1867,7 +1956,6 @@
   font-size: 10px;
 }
 
-.nlb-seat-helper__settings-choice,
 .nlb-seat-helper__settings-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1875,10 +1963,83 @@
   margin-top: 9px;
 }
 
-.nlb-seat-helper__settings-choice button.is-selected {
-  border-color: #4f9572;
-  background: #e5f4eb;
-  color: #185f3f;
+.nlb-seat-helper__settings-switch-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+  padding: 9px;
+  border: 1px solid #dce6e1;
+  border-radius: 8px;
+  background: #fafcfb;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__settings-switch-row > span,
+.nlb-seat-helper__settings-switch-row strong,
+.nlb-seat-helper__settings-switch-row small {
+  display: block;
+}
+
+.nlb-seat-helper__settings-switch-row strong {
+  color: #314b3e;
+  font-size: 11px;
+}
+
+.nlb-seat-helper__settings-switch-row small {
+  margin-top: 2px;
+  color: #75827c;
+  font-size: 9px;
+}
+
+.nlb-seat-helper__settings-switch-row input {
+  position: relative;
+  box-sizing: border-box;
+  width: 34px;
+  min-width: 34px;
+  height: 20px;
+  margin: 0;
+  border: 1px solid #9baba3;
+  border-radius: 999px;
+  appearance: none;
+  background: #d7dfdb;
+  cursor: pointer;
+  transition:
+    border-color 120ms ease,
+    background 120ms ease;
+}
+
+.nlb-seat-helper__settings-switch-row input::before {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgb(22 49 36 / 25%);
+  content: "";
+  transition: transform 120ms ease;
+}
+
+.nlb-seat-helper__settings-switch-row input:checked {
+  border-color: #27805a;
+  background: #27805a;
+}
+
+.nlb-seat-helper__settings-switch-row input:checked::before {
+  transform: translateX(14px);
+}
+
+.nlb-seat-helper__settings-switch-row input:focus-visible {
+  outline: 3px solid rgb(38 123 83 / 28%);
+  outline-offset: 2px;
+}
+
+.nlb-seat-helper__settings-switch-row input:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .nlb-seat-helper__settings-content button.is-danger,

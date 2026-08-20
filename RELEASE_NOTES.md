@@ -16,16 +16,16 @@ in v1.3.0.
 - Migrates raw account-key suffixes to installation-local HMAC-derived opaque
   profiles, verifies targets before deleting legacy keys, and resumes safely
   after an interrupted migration.
-- Gives signed-out favourites a permanent Guest profile and asks each account
-  whether to copy those favourites or keep them separate. Profiles that copy
-  are prompted again only for newly added Guest favourites.
+- Gives signed-out favourites a permanent Guest profile and an account-specific
+  sync toggle. Sync is enabled by default and automatically copies newly added
+  signed-out favourites into the account without removing the Guest copy.
 - Removes the complete raw NLB user ID from persistent extension storage,
   visible markup, tooltips, and accessibility labels.
 - Shows an in-memory first/last-character masked identifier in the natural
   **Signed in as A*******Z** order, with the stable **Profile N** label rendered
   as a separate badge for users who switch between accounts.
 - Adds an accessible Settings dialog with first-use session/privacy
-  disclosure, project links, opaque profile summaries, Guest-copy preference
+  disclosure, project links, opaque profile summaries, favourite-sync preference
   controls, and a reset-and-refresh recovery action.
 - Adds separately confirmed controls for clearing Guest, clearing the current
   profile without changing its identity, and clearing all extension-local
@@ -35,6 +35,10 @@ in v1.3.0.
   saved-area status from being exposed through Settings on a shared browser.
 - Adds a user-facing Settings guide covering every reset and deletion action
   and the safe sign-out-then-clear sequence for public computers.
+- Adds an installation-wide booking default in Settings, with an accessible
+  information control explaining combined versus separate adjacent-hour
+  requests. New installations default to combining adjacent hours while the
+  booking panel retains its per-selection override.
 - Adopts the public product name **Library Seats SG - for NLB** and moves the
   masked current-account indicator onto a compact second header row while
   keeping all account and utility buttons together on the first row.
