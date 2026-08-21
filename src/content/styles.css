@@ -798,21 +798,35 @@
     stroke 120ms ease;
 }
 
-.nlb-seat-helper__seat-hotspot:hover rect {
+.nlb-seat-helper__seat-hotspot:hover .nlb-seat-helper__seat-hitbox {
   fill: rgb(22 138 81 / 18%);
 }
 
-.nlb-seat-helper__seat-hotspot:focus-visible rect {
+.nlb-seat-helper__seat-hotspot:focus-visible .nlb-seat-helper__seat-hitbox {
   fill: rgb(22 138 81 / 18%);
   stroke: #0b7440;
 }
 
-.nlb-seat-helper__seat-hotspot.is-favourite rect {
+.nlb-seat-helper__seat-hotspot.is-favourite .nlb-seat-helper__seat-hitbox {
   fill: rgb(22 138 81 / 26%);
-  stroke: #08713d;
 }
 
-.nlb-seat-helper__seat-hotspot text {
+.nlb-seat-helper__seat-selection-layer {
+  fill: transparent;
+  pointer-events: none;
+}
+
+.nlb-seat-helper__seat-hotspot .nlb-seat-helper__seat-selection-layer--outer {
+  stroke: #fff;
+  stroke-width: 8px;
+}
+
+.nlb-seat-helper__seat-hotspot .nlb-seat-helper__seat-selection-layer--green {
+  stroke: #16a05a;
+  stroke-width: 4px;
+}
+
+.nlb-seat-helper__favourite-star {
   fill: #08713d;
   font-weight: 800;
   paint-order: stroke;

@@ -200,6 +200,22 @@ describe("Woodlands Library Zones K through P seat-plan annotations", () => {
       x: 924,
       y: 439,
     });
+    expect(hotspot(WOODLANDS_LEVEL_3_ZONE_M_SEAT_PLAN, "S243")).toMatchObject({
+      x: 148,
+      y: 248,
+    });
+    expect(hotspot(WOODLANDS_LEVEL_3_ZONE_M_SEAT_PLAN, "S244")).toMatchObject({
+      x: 203,
+      y: 248,
+    });
+    expect(hotspot(WOODLANDS_LEVEL_3_ZONE_M_SEAT_PLAN, "S255")).toMatchObject({
+      x: 149,
+      y: 439,
+    });
+    expect(hotspot(WOODLANDS_LEVEL_3_ZONE_M_SEAT_PLAN, "S256")).toMatchObject({
+      x: 204,
+      y: 439,
+    });
   });
 
   it("preserves Zone N's left/right pairs and top-to-bottom direction", () => {

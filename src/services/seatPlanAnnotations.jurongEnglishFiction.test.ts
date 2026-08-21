@@ -84,6 +84,30 @@ function englishFictionArea(): Area {
 }
 
 describe("Jurong Library English Fiction seat-plan annotation", () => {
+  it("keeps the later seat groups aligned with their reviewed offsets", () => {
+    const byName = new Map(
+      JURONG_LEVEL_2_ENGLISH_FICTION_SEAT_PLAN.hotspots.map((hotspot) => [
+        hotspot.seatName,
+        hotspot,
+      ]),
+    );
+
+    expect(["S33", "S35", "S37", "S39"].map((name) => byName.get(name)?.y)).toEqual([
+      176,
+      176,
+      176,
+      176,
+    ]);
+    expect(["S34", "S36", "S38", "S40"].map((name) => byName.get(name)?.y)).toEqual([
+      213,
+      213,
+      213,
+      213,
+    ]);
+    expect(byName.get("S41")).toMatchObject({ x: 786, y: 176 });
+    expect(byName.get("S52")).toMatchObject({ x: 977, y: 213 });
+  });
+
   it("maps every seat from S1 through S52", () => {
     const definition = JURONG_LEVEL_2_ENGLISH_FICTION_SEAT_PLAN;
 

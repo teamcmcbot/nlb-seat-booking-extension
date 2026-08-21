@@ -283,74 +283,115 @@ export function ClickableSeatPlan({
             height={definition.imageHeight}
           />
         )}
-        {resolution.status === "ready" &&
-          resolution.hotspots.map(({ seat, bounds }) => {
-            const favourite = favouriteIds.has(seat.id);
-            const action = favourite ? "Remove" : "Add";
-            const toggle = () => void onToggleFavourite(seat);
-            const starFontSize = Math.max(
-              8,
-              Math.min(bounds.width, bounds.height) * 0.5,
-            );
-            const starY =
-              bounds.y >= starFontSize + 2
-                ? bounds.y - starFontSize * 0.5
-                : bounds.y + starFontSize * 0.5;
+        {resolution.status === "ready" && (
+          <>
+            {resolution.hotspots.map(({ seat, bounds }) => {
+              const favourite = favouriteIds.has(seat.id);
+              const action = favourite ? "Remove" : "Add";
+              const toggle = () => void onToggleFavourite(seat);
+              const cornerRadius =
+                Math.min(bounds.width, bounds.height) <= 20 ? 2 : 8;
 
-            return (
-              <g
-                key={seat.id}
-                ref={(node) => {
-                  if (node) {
-                    hotspotRefs.current.set(seat.id, node);
-                  } else {
-                    hotspotRefs.current.delete(seat.id);
+              return (
+                <g
+                  key={seat.id}
+                  ref={(node) => {
+                    if (node) {
+                      hotspotRefs.current.set(seat.id, node);
+                    } else {
+                      hotspotRefs.current.delete(seat.id);
+                    }
+                  }}
+                  className={`nlb-seat-helper__seat-hotspot${
+                    favourite ? " is-favourite" : ""
+                  }`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`${action} ${seat.name} ${
+                    favourite ? "from" : "to"
+                  } favourites`}
+                  aria-pressed={favourite}
+                  onClick={(event) => {
+                    toggle();
+                    event.currentTarget.blur();
+                  }}
+                  onKeyDown={(event) =>
+                    toggleOnKeyboard(event, toggle)
                   }
-                }}
-                className={`nlb-seat-helper__seat-hotspot${
-                  favourite ? " is-favourite" : ""
-                }`}
-                role="button"
-                tabIndex={0}
-                aria-label={`${action} ${seat.name} ${
-                  favourite ? "from" : "to"
-                } favourites`}
-                aria-pressed={favourite}
-                onClick={(event) => {
-                  toggle();
-                  event.currentTarget.blur();
-                }}
-                onKeyDown={(event) =>
-                  toggleOnKeyboard(event, toggle)
+                >
+                  <title>{`${seat.name}${
+                    favourite ? " — favourite" : ""
+                  }`}</title>
+                  <rect
+                    className="nlb-seat-helper__seat-hitbox"
+                    x={bounds.x}
+                    y={bounds.y}
+                    width={bounds.width}
+                    height={bounds.height}
+                    rx={cornerRadius}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  {favourite && (
+                    <>
+                      <rect
+                        className="nlb-seat-helper__seat-selection-layer nlb-seat-helper__seat-selection-layer--outer"
+                        x={bounds.x}
+                        y={bounds.y}
+                        width={bounds.width}
+                        height={bounds.height}
+                        rx={cornerRadius}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                      <rect
+                        className="nlb-seat-helper__seat-selection-layer nlb-seat-helper__seat-selection-layer--green"
+                        x={bounds.x}
+                        y={bounds.y}
+                        width={bounds.width}
+                        height={bounds.height}
+                        rx={cornerRadius}
+                        vectorEffect="non-scaling-stroke"
+                      />
+                    </>
+                  )}
+                </g>
+              );
+            })}
+            <g
+              className="nlb-seat-helper__favourite-stars"
+              aria-hidden="true"
+            >
+              {resolution.hotspots.map(({ seat, bounds }) => {
+                if (!favouriteIds.has(seat.id)) {
+                  return null;
                 }
-              >
-                <title>{`${seat.name}${
-                  favourite ? " — favourite" : ""
-                }`}</title>
-                <rect
-                  x={bounds.x}
-                  y={bounds.y}
-                  width={bounds.width}
-                  height={bounds.height}
-                  rx={8}
-                  vectorEffect="non-scaling-stroke"
-                />
-                {favourite && (
+
+                const starFontSize = Math.max(
+                  8,
+                  Math.min(bounds.width, bounds.height) * 0.5,
+                );
+                const starY =
+                  bounds.y >= starFontSize + 2
+                    ? bounds.y - starFontSize * 0.5
+                    : bounds.y + starFontSize * 0.5;
+
+                return (
                   <text
+                    key={seat.id}
+                    className="nlb-seat-helper__favourite-star"
                     x={bounds.x + bounds.width / 2}
                     y={starY}
                     textAnchor="middle"
                     dominantBaseline="central"
                     fontSize={starFontSize}
                     strokeWidth={Math.max(2, starFontSize * 0.12)}
-                    aria-hidden="true"
                   >
                     ★
                   </text>
-                )}
-              </g>
-            );
-          })}
+                );
+              })}
+            </g>
+          </>
+        )}
       </svg>
     </div>
   ) : (

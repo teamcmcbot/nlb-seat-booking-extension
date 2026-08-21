@@ -67,7 +67,8 @@ export const PUNGGOL_LEVEL_3_STUDY_ZONE_SEAT_PLAN: SeatPlanDefinition = {
   imageHeight: 1040,
   coverage: "complete",
   hotspots: [
-    ...horizontalSeatRow(1, 17, 166, 210, 86.2, 44, 44),
+    ...horizontalSeatRow(1, 15, 166, 210, 86.2, 44, 44),
+    ...horizontalSeatRow(16, 2, 1467, 210, 86.2, 44, 44),
 
     ...horizontalSeatRow(28, 8, 420, 288, 86.1, 44, 45, -1),
     ...horizontalSeatRow(20, 3, 1201, 288, 86.1, 44, 45, -1),
@@ -84,8 +85,11 @@ export const PUNGGOL_LEVEL_3_STUDY_ZONE_SEAT_PLAN: SeatPlanDefinition = {
     ...horizontalSeatRow(66, 5, 684, 825, 86.1, 45, 47),
     ...horizontalSeatRow(71, 3, 1199, 825, 86.1, 44, 47),
 
-    ...horizontalSeatRow(86, 7, 416, 920, 86.1, 44, 49, -1),
-    ...horizontalSeatRow(79, 6, 1115, 920, 86.1, 44, 49, -1),
+    ...horizontalSeatRow(86, 1, 416, 924, 86.1, 44, 49, -1),
+    ...horizontalSeatRow(85, 1, 506, 924, 86.1, 44, 49, -1),
+    ...horizontalSeatRow(84, 3, 594, 924, 86.1, 44, 49, -1),
+    ...horizontalSeatRow(81, 2, 856, 924, 86.1, 44, 49, -1),
+    ...horizontalSeatRow(79, 6, 1121, 924, 86.1, 44, 49, -1),
   ],
 };
 
