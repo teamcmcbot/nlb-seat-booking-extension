@@ -799,16 +799,33 @@
 }
 
 .nlb-seat-helper__seat-hotspot:hover .nlb-seat-helper__seat-hitbox {
-  fill: rgb(22 138 81 / 18%);
+  fill: transparent;
 }
 
 .nlb-seat-helper__seat-hotspot:focus-visible .nlb-seat-helper__seat-hitbox {
-  fill: rgb(22 138 81 / 18%);
-  stroke: #0b7440;
+  fill: transparent;
 }
 
 .nlb-seat-helper__seat-hotspot.is-favourite .nlb-seat-helper__seat-hitbox {
   fill: rgb(22 138 81 / 26%);
+}
+
+.nlb-seat-helper__seat-hover-layer {
+  fill: transparent;
+  pointer-events: none;
+  stroke: transparent;
+}
+
+.nlb-seat-helper__seat-hotspot:hover .nlb-seat-helper__seat-hover-layer--outer,
+.nlb-seat-helper__seat-hotspot:focus-visible .nlb-seat-helper__seat-hover-layer--outer {
+  stroke: #fff;
+  stroke-width: 6px;
+}
+
+.nlb-seat-helper__seat-hotspot:hover .nlb-seat-helper__seat-hover-layer--inner,
+.nlb-seat-helper__seat-hotspot:focus-visible .nlb-seat-helper__seat-hover-layer--inner {
+  stroke: #08713d;
+  stroke-width: 2px;
 }
 
 .nlb-seat-helper__seat-selection-layer {

@@ -331,6 +331,24 @@ export function ClickableSeatPlan({
                     rx={cornerRadius}
                     vectorEffect="non-scaling-stroke"
                   />
+                  <rect
+                    className="nlb-seat-helper__seat-hover-layer nlb-seat-helper__seat-hover-layer--outer"
+                    x={bounds.x}
+                    y={bounds.y}
+                    width={bounds.width}
+                    height={bounds.height}
+                    rx={cornerRadius}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <rect
+                    className="nlb-seat-helper__seat-hover-layer nlb-seat-helper__seat-hover-layer--inner"
+                    x={bounds.x}
+                    y={bounds.y}
+                    width={bounds.width}
+                    height={bounds.height}
+                    rx={cornerRadius}
+                    vectorEffect="non-scaling-stroke"
+                  />
                   {favourite && (
                     <>
                       <rect
