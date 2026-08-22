@@ -19,10 +19,11 @@ function pairedTable(
   rowStep: number,
   width: number,
   height: number,
+  expand = 0,
 ): SeatHotspotDefinition[] {
   return Array.from({ length: rows }, (_, row) => [
-    hotspot(`S${firstSeatNumber + row * 2}`, leftX, firstY + row * rowStep, width, height),
-    hotspot(`S${firstSeatNumber + row * 2 + 1}`, rightX, firstY + row * rowStep, width, height),
+    hotspot(`S${firstSeatNumber + row * 2}`, leftX - expand / 2, firstY + row * rowStep - expand / 2, width + expand, height + expand),
+    hotspot(`S${firstSeatNumber + row * 2 + 1}`, rightX - expand / 2, firstY + row * rowStep - expand / 2, width + expand, height + expand),
   ]).flat();
 }
 
@@ -52,19 +53,19 @@ export const TAMPINES_LEVEL_5_CO_WORKING_LOUNGE_SEAT_PLAN: SeatPlanDefinition = 
     hotspot("S151", 3180, 1580, 125, 125),
     hotspot("S152", 2635, 1580, 125, 125),
     hotspot("S153", 2425, 1340, 125, 125),
-    hotspot("S154", 1885, 1340, 125, 125),
-    hotspot("S155", 2425, 1580, 125, 125),
-    hotspot("S156", 1885, 1580, 125, 125),
-    hotspot("S157", 1550, 1340, 125, 125),
-    hotspot("S158", 1005, 1340, 125, 125),
-    hotspot("S159", 1550, 1580, 125, 125),
-    hotspot("S160", 1005, 1580, 125, 125),
-    hotspot("S161", 2040, 585, 170, 150),
-    hotspot("S162", 2325, 585, 170, 150),
-    hotspot("S163", 2610, 585, 170, 150),
-    hotspot("S164", 2195, 840, 170, 150),
-    hotspot("S165", 2480, 840, 170, 150),
-    hotspot("S166", 2765, 840, 170, 150),
+    hotspot("S154", 1840, 1335, 135, 135),
+    hotspot("S155", 2405, 1575, 135, 135),
+    hotspot("S156", 1840, 1575, 135, 135),
+    hotspot("S157", 1540, 1335, 135, 135),
+    hotspot("S158", 965, 1335, 135, 135),
+    hotspot("S159", 1540, 1575, 135, 135),
+    hotspot("S160", 965, 1575, 135, 135),
+    hotspot("S161", 2035, 580, 180, 160),
+    hotspot("S162", 2320, 580, 180, 160),
+    hotspot("S163", 2630, 580, 180, 160),
+    hotspot("S164", 2190, 835, 180, 160),
+    hotspot("S165", 2475, 835, 180, 160),
+    hotspot("S166", 2785, 835, 180, 160),
   ],
 };
 
@@ -77,8 +78,12 @@ export const TAMPINES_LEVEL_5_OUTSIDE_STUDY_LOUNGE_SEAT_PLAN: SeatPlanDefinition
   imageHeight: 2098,
   coverage: "complete",
   hotspots: [
-    ...pairedTable(69, 6, 405, 705, 35, 160, 100, 115),
-    ...pairedTable(81, 6, 405, 705, 1080, 160, 100, 115),
+    ...pairedTable(69, 1, 405, 705, 35, 160, 100, 115),
+    ...pairedTable(71, 1, 410, 710, 200, 160, 100, 115),
+    ...pairedTable(73, 2, 410, 710, 360, 160, 100, 115, 8),
+    ...pairedTable(77, 2, 410, 710, 689, 160, 100, 115, 8),
+    ...pairedTable(81, 4, 410, 710, 1099, 160, 100, 115, 8),
+    ...pairedTable(89, 2, 410, 710, 1748, 160, 100, 115, 8),
   ],
 };
 
@@ -159,10 +164,12 @@ export const TAMPINES_LEVEL_5_STUDY_LOUNGE_SEAT_PLAN: SeatPlanDefinition = {
   imageHeight: 2098,
   coverage: "complete",
   hotspots: [
-    ...pairedTable(29, 5, 120, 430, 145, 170, 100, 115),
-    ...pairedTable(39, 5, 175, 485, 1120, 165, 100, 115),
-    ...pairedTable(49, 5, 685, 990, 145, 170, 100, 115),
-    ...pairedTable(59, 5, 805, 1110, 1120, 165, 100, 115),
+    ...pairedTable(29, 5, 120, 430, 145, 170, 100, 115, 8),
+    ...pairedTable(39, 4, 175, 485, 1120, 165, 100, 115, 8),
+    ...pairedTable(47, 1, 175, 485, 1800, 165, 100, 115, 8),
+    ...pairedTable(49, 5, 685, 990, 145, 170, 100, 115, 8),
+    ...pairedTable(59, 4, 805, 1110, 1120, 165, 100, 115, 8),
+    ...pairedTable(67, 1, 805, 1110, 1800, 165, 100, 115, 8),
   ],
 };
 

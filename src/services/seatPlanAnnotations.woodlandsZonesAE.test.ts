@@ -210,5 +210,8 @@ describe("Woodlands Library Zones A-E seat-plan annotations", () => {
     expectLeftToRight(WOODLANDS_LEVEL_2_ZONE_D_SEAT_PLAN, ["S65", "S66", "S67", "S68", "S69", "S70", "S71", "S72", "S73", "S74"]);
     expectLeftToRight(WOODLANDS_LEVEL_2_ZONE_D_SEAT_PLAN, ["S88", "S89", "S90", "S91", "S92", "S93", "S94"]);
     expectLeftToRight(WOODLANDS_LEVEL_2_ZONE_E_SEAT_PLAN, ZONE_E_SEATS);
+    expect(hotspot(WOODLANDS_LEVEL_2_ZONE_D_SEAT_PLAN, "S86")).toMatchObject({ x: 873, y: 194 });
+    expect(hotspot(WOODLANDS_LEVEL_2_ZONE_D_SEAT_PLAN, "S87")).toMatchObject({ x: 930, y: 194 });
+    expect(hotspot(WOODLANDS_LEVEL_2_ZONE_D_SEAT_PLAN, "S85")).toMatchObject({ x: 815, y: 194 });
   });
 });

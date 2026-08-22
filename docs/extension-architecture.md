@@ -33,8 +33,11 @@ scrollable viewport with 100%, 125%, 150%, 175%, and 200% zoom levels. Its
 scrollbar tracks sit outside the map, and the map background supports mouse or
 touch drag-to-pan in addition to trackpad and wheel scrolling. Clicking a seat
 in the sidebar centers that seat in the viewport; clicking an annotated seat
-on the map toggles the same favourite state. The timeline's expandable
-**Legend** explains the availability and booking colors.
+on the map toggles the same favourite state. Hovering or keyboard-focusing a
+sidebar seat adds a temporary amber-and-white preview outline to the matching
+map hotspot without changing favourite state or moving the viewport. Direct
+map hover remains a separate green/white contrast treatment. The timeline's
+expandable **Legend** explains the availability and booking colors.
 
 Verified seat-plan definitions can add interactive hotspots over an exact map
 revision. Definitions use source-image coordinates and resolve each annotated

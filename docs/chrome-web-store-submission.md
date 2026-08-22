@@ -1,6 +1,6 @@
 # Chrome Web Store submission sheet
 
-Status: ready-to-paste draft for Library Seats SG - for NLB v1.3.1, reviewed
+Status: ready-to-paste draft for Library Seats SG - for NLB v1.3.2, reviewed
 20 August 2026. Recheck the dashboard labels and the exact uploaded ZIP at
 submission time.
 
@@ -17,10 +17,10 @@ and the detailed data-category mapping is in
 Library Seats SG - for NLB
 ```
 
-**Summary — 123 characters**
+**Summary — 108 characters**
 
 ```text
-Save favourite seats, compare availability across the day, and review NLB bookings or cancellations before submitting them.
+Find favourite seats, check availability, and book multiple NLB sessions with clear review and confirmation.
 ```
 
 **Category**
@@ -38,18 +38,20 @@ English (United Kingdom)
 **Detailed description**
 
 ```text
-Spend less time checking seats and more time using the library.
+Spend less time searching for a seat and more time using the library.
 
-Library Seats SG adds a clearer seat-booking workspace to the NLB Seat Booking page. Save the seats you prefer, compare their availability across the day, and review bookings or cancellations before anything is submitted.
+Library Seats SG opens on the NLB Seat Booking page and adds a clearer workspace for planning your visit. Choose a library, area, and date; use the seat picker to locate seats and save favourites; then check or refresh availability before booking.
 
 Key features:
 
+• Opens automatically on NLB Seat Booking pages.
+• Choose a library, area, and date from one workspace.
 • Save favourite seats separately for each local profile.
-• Compare seat availability across the selected day.
 • Find seats by number and, where available, choose them from an interactive plan.
-• Select non-overlapping seats and time slots in one planning view.
+• Check or refresh availability across the selected day.
+• Select multiple non-overlapping time blocks in one planning view, including separate sessions with a break.
 • Review every booking before it is sent to NLB.
-• View upcoming bookings and cancel eligible bookings with confirmation.
+• See booking success and upcoming sessions, and cancel eligible bookings with confirmation.
 • Respect quota, duration, opening-hour, closure, and availability information returned by NLB.
 
 Privacy:
@@ -164,7 +166,8 @@ Signed-out review:
 1. Install the extension and open https://www.nlb.gov.sg/seatbooking/.
 2. The Library Seats SG panel appears on the page without requiring an account.
 3. Choose a library, a specific area, and a date.
-4. Signed-out users can inspect the interface, browse the catalog supplied by NLB, save Guest favourite seats, open Settings, read the privacy/session disclosure, and use the local-data deletion controls.
+4. Open the seat picker to search the plan and save Guest favourite seats.
+5. Signed-out users can inspect the interface, browse the catalog supplied by NLB, use Check or Refresh where available, open Settings, read the privacy/session disclosure, and use the local-data deletion controls.
 
 Account-gated features:
 • NLB controls account eligibility and authentication. The developer cannot provide or share an NLB test account.
@@ -188,10 +191,14 @@ Safety and network behavior:
 - [ ] Upload the freshly packaged `nlb-seat-helper.zip`, not GitHub's source
   archive.
 - [ ] Confirm the uploaded version and summary match `public/manifest.json`.
-- [ ] Upload the reviewed 128×128 icon, 440×280 promo tile, and current
-  screenshots from `assets/chrome-web-store/`.
-- [ ] Approve or recapture the visible Guest favourite-seat numbers; confirm
-  no account label, profile number, raw account ID, booking reference,
+- [ ] Upload the reviewed 128×128 icon, 440×280 promo tile, and the five
+  recommended screenshots: `store-overview.png`, `store-seat-picker.png`,
+  `booking-flow-01-selection.png`, `booking-flow-02-confirmation.png`, and
+  `booking-flow-04-upcoming.png` from `assets/chrome-web-store/`.
+- [ ] Keep `booking-flow-03-success.png` as an approved alternate because the
+  Chrome Web Store listing accepts at most five screenshots.
+- [ ] Approve or recapture the visible masked profile, booking date, seat
+  names, and booking status; confirm no raw account ID, booking reference,
   credentials, cookie, or API response appears.
 - [ ] Confirm NLB seat-plan material appears only inside the approved authentic
   feature screenshots and not in standalone promotional artwork.

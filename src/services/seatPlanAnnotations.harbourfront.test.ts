@@ -122,6 +122,14 @@ const cases: readonly {
 ];
 
 describe("Harbourfront Library seat-plan annotations", () => {
+  it("positions Reading Lounge 1 Middle Tier S21 over its seat label", () => {
+    expect(
+      HARBOURFRONT_LEVEL_3_READING_LOUNGE_1_MIDDLE_TIER_SEAT_PLAN.hotspots.find(
+        (hotspot) => hotspot.seatName === "S21",
+      ),
+    ).toMatchObject({ x: 497, y: 240, width: 46, height: 50 });
+  });
+
   it.each(cases)("has complete verified coverage for $label", (testCase) => {
     expect(testCase.definition.coverage).toBe("complete");
     expect(testCase.definition.hotspots).toHaveLength(

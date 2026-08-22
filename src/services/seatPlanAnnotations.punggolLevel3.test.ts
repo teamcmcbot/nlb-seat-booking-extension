@@ -140,16 +140,20 @@ describe("Punggol Library Level 3 seat-plan annotations", () => {
     const definition = PUNGGOL_LEVEL_3_STUDY_ZONE_SEAT_PLAN;
 
     expect(hotspot(definition, "S1")).toMatchObject({ x: 166, y: 210 });
-    expect(hotspot(definition, "S17")).toMatchObject({ x: 1545, y: 210 });
+    expect(hotspot(definition, "S16")).toMatchObject({ x: 1467, y: 210 });
+    expect(hotspot(definition, "S17")).toMatchObject({ x: 1553, y: 210 });
     expect(hotspot(definition, "S28")).toMatchObject({ x: 420, y: 288 });
     expect(hotspot(definition, "S21")).toMatchObject({ x: 1023, y: 288 });
     expect(hotspot(definition, "S29")).toMatchObject({ x: 416, y: 410 });
     expect(hotspot(definition, "S36")).toMatchObject({ x: 1019, y: 410 });
     expect(hotspot(definition, "S65")).toMatchObject({ x: 685, y: 701 });
     expect(hotspot(definition, "S61")).toMatchObject({ x: 1029, y: 701 });
-    expect(hotspot(definition, "S86")).toMatchObject({ x: 416, y: 920 });
-    expect(hotspot(definition, "S80")).toMatchObject({ x: 933, y: 920 });
-    expect(hotspot(definition, "S79")).toMatchObject({ x: 1115, y: 920 });
-    expect(hotspot(definition, "S74")).toMatchObject({ x: 1546, y: 920 });
+    expect(hotspot(definition, "S86")).toMatchObject({ x: 416, y: 924 });
+    expect(hotspot(definition, "S85")).toMatchObject({ x: 506, y: 924 });
+    expect(hotspot(definition, "S84")).toMatchObject({ x: 594, y: 924 });
+    expect(hotspot(definition, "S81")).toMatchObject({ x: 856, y: 924 });
+    expect(hotspot(definition, "S80")).toMatchObject({ x: 942, y: 924 });
+    expect(hotspot(definition, "S79")).toMatchObject({ x: 1121, y: 924 });
+    expect(hotspot(definition, "S74")).toMatchObject({ x: 1552, y: 924 });
   });
 });

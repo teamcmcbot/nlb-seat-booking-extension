@@ -142,6 +142,13 @@ describe("Tampines Library Level 5 seat-plan annotations", () => {
     expect(byName(plan, "S164").y).toBeGreaterThan(byName(plan, "S161").y);
     expect(byName(plan, "S158").x).toBeLessThan(byName(plan, "S157").x);
     expect(byName(plan, "S160").y).toBeGreaterThan(byName(plan, "S158").y);
+    expect(byName(plan, "S154")).toMatchObject({ x: 1840, y: 1335 });
+    expect(byName(plan, "S156")).toMatchObject({ x: 1840, y: 1575 });
+    expect(byName(plan, "S155")).toMatchObject({ x: 2405, y: 1575 });
+    expect(byName(plan, "S158")).toMatchObject({ x: 965, y: 1335 });
+    expect(byName(plan, "S160")).toMatchObject({ x: 965, y: 1575 });
+    expect(byName(plan, "S163")).toMatchObject({ x: 2630, y: 580 });
+    expect(byName(plan, "S166")).toMatchObject({ x: 2785, y: 835 });
   });
 
   it("preserves paired-table ordering outside the Study Lounge", () => {
@@ -150,6 +157,13 @@ describe("Tampines Library Level 5 seat-plan annotations", () => {
     expect(byName(plan, "S69").y).toBeLessThan(byName(plan, "S79").y);
     expect(byName(plan, "S81").y).toBeLessThan(byName(plan, "S91").y);
     expect(byName(plan, "S80").y).toBeLessThan(byName(plan, "S81").y);
+    expect(byName(plan, "S71")).toMatchObject({ x: 410, y: 200 });
+    expect(byName(plan, "S80")).toMatchObject({ x: 706, y: 845 });
+    expect(byName(plan, "S77")).toMatchObject({ x: 406, y: 685 });
+    expect(byName(plan, "S88")).toMatchObject({ x: 706, y: 1575 });
+    expect(byName(plan, "S81")).toMatchObject({ x: 406, y: 1095 });
+    expect(byName(plan, "S89")).toMatchObject({ x: 406, y: 1744 });
+    expect(byName(plan, "S92")).toMatchObject({ x: 706, y: 1904 });
   });
 
   it("preserves alternating top/bottom numbering in SG Collection and Study Area", () => {
@@ -175,5 +189,9 @@ describe("Tampines Library Level 5 seat-plan annotations", () => {
       expect(byName(plan, `S${first}`).x).toBeLessThan(byName(plan, `S${first + 1}`).x);
       expect(byName(plan, `S${first}`).y).toBeLessThan(byName(plan, `S${last}`).y);
     }
+    expect(byName(plan, "S47")).toMatchObject({ x: 171, y: 1796 });
+    expect(byName(plan, "S48")).toMatchObject({ x: 481, y: 1796 });
+    expect(byName(plan, "S67")).toMatchObject({ x: 801, y: 1796 });
+    expect(byName(plan, "S68")).toMatchObject({ x: 1106, y: 1796 });
   });
 });

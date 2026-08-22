@@ -1,11 +1,13 @@
 # Feature reference
 
 This document records the detailed user-visible capabilities and safeguards in
-Library Seats SG - for NLB v1.3.1. The shorter project overview and normal usage
+Library Seats SG - for NLB v1.3.2. The shorter project overview and normal usage
 steps remain in the repository [`README`](../README.md).
 
 ## Account and quota
 
+- Opens its workspace automatically on matching NLB Seat Booking pages, so no
+  separate extension tab is required.
 - Signs in through NLB's official authentication page directly from the
   extension header.
 - Signs out of both Seat Booking and the central NLB session from the
@@ -50,6 +52,8 @@ steps remain in the repository [`README`](../README.md).
 
 ## Libraries, areas, dates, and times
 
+- Lets users choose the library, area, and date from the extension workspace
+  before reviewing seat availability.
 - Extracts the current library, area, seat, and booking rules from NLB's
   `GetAccountInfo` response.
 - Excludes `facilityId: 2` discussion rooms and breakout rooms.
@@ -87,6 +91,11 @@ steps remain in the repository [`README`](../README.md).
   the NLB response.
 - Opens a full-screen seat picker with the enlarged plan and searchable
   favourite-seat controls side by side, while keeping the normal panel slim.
+- Highlights the matching map seat with a temporary high-contrast preview when
+  a favourite seat is hovered or keyboard-focused in the picker sidebar.
+- Uses a transparent map-center hover treatment with white contrast and green
+  inner strokes, while the sidebar uses a light green hover state that preserves
+  the existing favourite-seat meaning.
 - Provides 100%, 125%, 150%, 175%, and 200% map zoom levels, with visible
   scrollbar tracks outside the map and mouse, touch, trackpad, or wheel
   navigation.

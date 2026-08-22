@@ -389,6 +389,7 @@ export function SeatAssistant({
   const [now, setNow] = useState(() => new Date());
   const [mapExpanded, setMapExpanded] = useState(false);
   const [mapFocusSeatId, setMapFocusSeatId] = useState("");
+  const [mapPreviewSeatId, setMapPreviewSeatId] = useState("");
   const [loadingMapKey, setLoadingMapKey] = useState("");
   const [discoveredMaps, setDiscoveredMaps] = useState<
     Record<string, string[]>
@@ -429,11 +430,13 @@ export function SeatAssistant({
   function closeMapPicker() {
     setMapExpanded(false);
     setMapFocusSeatId("");
+    setMapPreviewSeatId("");
     window.requestAnimationFrame(() => mapTriggerRef.current?.focus());
   }
 
   function openMapPicker() {
     setMapFocusSeatId("");
+    setMapPreviewSeatId("");
     setMapExpanded(true);
   }
 
@@ -1877,6 +1880,7 @@ export function SeatAssistant({
   function renderSeatManagerContents(
     autoFocus = false,
     onSeatSelected?: (seat: Seat) => void,
+    onSeatPreview?: (seatId?: string) => void,
   ) {
     return (
       <>
@@ -1903,6 +1907,10 @@ export function SeatAssistant({
                   onSeatSelected?.(seat);
                   void toggleFavourite(seat);
                 }}
+                onMouseEnter={() => onSeatPreview?.(seat.id)}
+                onMouseLeave={() => onSeatPreview?.()}
+                onFocus={() => onSeatPreview?.(seat.id)}
+                onBlur={() => onSeatPreview?.()}
                 aria-pressed={selected}
               >
                 <span aria-hidden="true">{selected ? "★" : "☆"}</span>
@@ -2797,6 +2805,7 @@ export function SeatAssistant({
                     mapPath={seatPlanPath}
                     favouriteIds={favouriteIds}
                     focusSeatId={mapFocusSeatId}
+                    previewSeatId={mapPreviewSeatId}
                     onToggleFavourite={toggleFavourite}
                   />
                 </div>
@@ -2815,8 +2824,10 @@ export function SeatAssistant({
                     <span aria-hidden="true">★</span>
                   </div>
                   <div className="nlb-seat-helper__seat-manager">
-                    {renderSeatManagerContents(true, (seat) =>
-                      setMapFocusSeatId(seat.id),
+                    {renderSeatManagerContents(
+                      true,
+                      (seat) => setMapFocusSeatId(seat.id),
+                      (seatId) => setMapPreviewSeatId(seatId ?? ""),
                     )}
                   </div>
                   <button

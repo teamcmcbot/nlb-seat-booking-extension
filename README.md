@@ -1,7 +1,8 @@
 # Library Seats SG - for NLB
 
-A free Chrome extension that makes it easier to find and manage library seats on
-the [NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/) website.
+A free Chrome extension that opens on the
+[NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/) website and makes it
+easier to find and manage library seats.
 
 Save the seats you like, compare availability across the day, and review
 bookings or cancellations in one clear workspace. You still sign in through
@@ -16,20 +17,27 @@ By installing or using the extension, you agree to the [Terms of Use](TERMS.md).
 ## At a glance
 
 - Save favourite seats separately for Guest and each NLB account you use.
+- Choose a library, area, and date from the extension workspace.
+- Check or refresh availability without repeatedly opening individual seats.
 - Compare a full day of availability without repeatedly opening individual
   seats.
 - Search by seat number or use a reviewed interactive seat plan where one is
   available.
-- Plan multiple non-overlapping seats and time blocks in one view.
+- Plan multiple non-overlapping seats and time blocks—including separate
+  sessions with a break—in one view.
 - Review every booking or cancellation before anything is sent to NLB.
 
 Library Seats SG is designed for students, working adults, senior citizens, and
 other frequent library users who regularly book library seats and want a simpler
 way to check their preferred places.
 
-![Library Seats SG availability overview](assets/chrome-web-store/store-overview.png)
+![Library Seats SG workspace overview](assets/chrome-web-store/store-overview.png)
 
-![Library Seats SG interactive seat picker](assets/chrome-web-store/store-seat-picker.png)
+![Library Seats SG seat picker](assets/chrome-web-store/store-seat-picker.png)
+
+![Library Seats SG multi-session booking selection](assets/chrome-web-store/booking-flow-01-selection.png)
+
+![Library Seats SG upcoming multi-session bookings](assets/chrome-web-store/booking-flow-04-upcoming.png)
 
 ## Install
 
@@ -227,7 +235,8 @@ versioned download.
 
 ## Usage
 
-1. Open the Seat Booking page and sign in from the extension header.
+1. Open or refresh the NLB Seat Booking page; the extension workspace appears
+   automatically. Sign in from the extension header when needed.
 2. Select a library, a specific area, and an available date.
 3. Open **Manage** and choose favourite seats.
 4. For today, review the immediately loaded matrix or click **Refresh**. If
