@@ -53,14 +53,14 @@ THIRD_PARTY_NOTICES.txt
 
 ## Publish
 
-For version `1.3.1`:
+For version `1.3.2`:
 
 ```bash
-git tag v1.3.1
-git push origin v1.3.1
-gh release create v1.3.1 nlb-seat-helper.zip \
+git tag v1.3.2
+git push origin v1.3.2
+gh release create v1.3.2 nlb-seat-helper.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "Library Seats SG - for NLB v1.3.1" \
+  --title "Library Seats SG - for NLB v1.3.2" \
   --notes-file RELEASE_NOTES.md
 ```
 

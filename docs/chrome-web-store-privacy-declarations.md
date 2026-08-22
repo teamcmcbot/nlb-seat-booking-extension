@@ -1,6 +1,6 @@
 # Chrome Web Store privacy declarations
 
-Status: submission worksheet based on Library Seats SG - for NLB v1.3.1 behavior,
+Status: submission worksheet based on Library Seats SG - for NLB v1.3.2 behavior,
 reviewed 20 August 2026.
 
 This worksheet maps the extension's actual behavior to the Chrome Web Store

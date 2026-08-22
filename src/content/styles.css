@@ -843,6 +843,24 @@
   stroke-width: 4px;
 }
 
+.nlb-seat-helper__seat-preview-layer {
+  fill: transparent;
+  pointer-events: none;
+  stroke: transparent;
+}
+
+.nlb-seat-helper__seat-hotspot.is-preview
+  .nlb-seat-helper__seat-preview-layer--outer {
+  stroke: #fff;
+  stroke-width: 8px;
+}
+
+.nlb-seat-helper__seat-hotspot.is-preview
+  .nlb-seat-helper__seat-preview-layer--inner {
+  stroke: #f59e0b;
+  stroke-width: 4px;
+}
+
 .nlb-seat-helper__favourite-star {
   fill: #08713d;
   font-weight: 800;
@@ -1102,6 +1120,10 @@
   font: inherit;
   text-align: left;
   cursor: pointer;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
 }
 
 .nlb-seat-helper__seat-results button > span {
@@ -1116,6 +1138,13 @@
 
 .nlb-seat-helper__seat-results button.is-favourite > span {
   color: #168a51;
+}
+
+.nlb-seat-helper__seat-results button.is-favourite:hover,
+.nlb-seat-helper__seat-results button.is-favourite:focus-visible {
+  border-color: #65b98a;
+  background: #e2f5e9;
+  box-shadow: 0 0 0 2px rgb(22 138 81 / 12%);
 }
 
 .nlb-seat-helper__seat-results button small {

@@ -1,6 +1,6 @@
 # Chrome Web Store assets
 
-These are the Phase 5 listing assets for Library Seats SG - for NLB. The promo
+These are the v1.3.2 listing assets for Library Seats SG - for NLB. The promo
 tile is wholly original project artwork. The feature screenshots intentionally
 show the extension running on NLB's Seat Booking page, including the runtime
 seat plan, because the combined map-and-availability experience is a core
@@ -16,22 +16,33 @@ packaged, rehosted, or reused in the promo tile.
 | File | Dimensions | Purpose |
 | --- | --- | --- |
 | `small-promo-tile.png` | 440×280 | Required small promotional tile |
-| `store-overview.png` | 1280×800 | Authentic current extension overview with the integrated seat plan and availability timeline |
-| `store-seat-picker.png` | 1280×800 | Authentic current interactive seat picker with seat-number search |
-| `settings-and-privacy.png` | 640×400 | Authentic Settings capture showing the booking default and its explanatory tooltip, cropped before any account profile data |
+| `store-overview.png` | 1280×800 | Introductory overview: automatic launch, library/area/date selection, favourites, and availability refresh |
+| `store-seat-picker.png` | 1280×800 | Enlarged seat picker showing seat lookup and saving a seat to favourites |
+| `booking-flow-01-selection.png` | 1280×800 | Two selected sessions, with combine/separate booking controls visible |
+| `booking-flow-02-confirmation.png` | 1280×800 | Confirmation dialog showing both booking requests before submission |
+| `booking-flow-03-success.png` | 1280×800 | Successful booking status for both sessions |
+| `booking-flow-04-upcoming.png` | 1280×800 | Upcoming bookings showing the 11am–1pm session and lunch break before 2pm–4pm |
+
+Chrome permits up to five listing screenshots. The recommended v1.3.2 upload
+sequence is `store-overview.png`, `store-seat-picker.png`,
+`booking-flow-01-selection.png`, `booking-flow-02-confirmation.png`, and
+`booking-flow-04-upcoming.png`. `booking-flow-03-success.png` is retained as an
+alternate when showing the in-extension success status is more useful than the
+final My Bookings view. `settings-and-privacy.png` remains a historical
+reference rather than a recommended feature screenshot.
 
 The older files under the repository-level `screenshots/` directory are
-historical documentation references. Do not upload them because they use the
-previous product name.
+historical documentation references and should not be uploaded because they
+use the previous product name.
 
-The overview and seat-picker captures were taken while signed out. They show
-Guest favourite seat numbers, but no account label, profile number, raw account
-ID, booking reference, credentials, cookie, or API response. The Settings
-capture was taken from an active session but is cropped above Local data, so it
-does not expose the account label, masked username, profile number, favourites,
-or saved-area status. The publisher must still approve the Guest preference-
-level details in the two feature captures before upload or recapture those
-views from a clean Guest state.
+The six feature screenshots are deterministic composites of authenticated UI
+captures. They preserve the masked account label, `Profile 1`, the date
+23/08/2026, seat names, booking status, and the real extension controls while
+adding explanatory captions, limited background treatment, and the approved
+pointer or focus treatments. Before public upload, recapture the same flow
+from a clean demo or Guest state, or explicitly approve the visible
+masked-profile and booking details. Never publish a raw account identifier,
+booking reference, credential, cookie, or unsanitised account response.
 
 ## Small promo tile provenance
 
@@ -61,7 +72,8 @@ Avoid: white or pale-gray background, clutter, photorealism, extra logos, generi
 - Review assets at 50% size for legibility.
 - Confirm the listing title, screenshots, icon, and promo tile use consistent
   Library Seats SG branding.
-- Confirm the visible Guest favourite-seat numbers are acceptable for
-  publication; otherwise recapture from a clean Guest state.
+- Confirm the visible masked profile, date, seat names, and booking status are
+  acceptable for publication; otherwise recapture from a clean demo or Guest
+  state.
 - Keep NLB seat-plan material confined to authentic feature screenshots and
   out of the icon, promo tile, and any optional marquee image.

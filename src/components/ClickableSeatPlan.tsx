@@ -9,6 +9,7 @@ interface ClickableSeatPlanProps {
   mapPath: string;
   favouriteIds: ReadonlySet<string>;
   focusSeatId?: string;
+  previewSeatId?: string;
   onToggleFavourite: (seat: Seat) => void | Promise<void>;
 }
 
@@ -53,6 +54,7 @@ export function ClickableSeatPlan({
   mapPath,
   favouriteIds,
   focusSeatId,
+  previewSeatId,
   onToggleFavourite,
 }: ClickableSeatPlanProps) {
   const [imageEvidence, setImageEvidence] = useState<SeatPlanImageEvidence>();
@@ -287,6 +289,7 @@ export function ClickableSeatPlan({
           <>
             {resolution.hotspots.map(({ seat, bounds }) => {
               const favourite = favouriteIds.has(seat.id);
+              const preview = previewSeatId === seat.id;
               const action = favourite ? "Remove" : "Add";
               const toggle = () => void onToggleFavourite(seat);
               const cornerRadius =
@@ -304,7 +307,7 @@ export function ClickableSeatPlan({
                   }}
                   className={`nlb-seat-helper__seat-hotspot${
                     favourite ? " is-favourite" : ""
-                  }`}
+                  }${preview ? " is-preview" : ""}`}
                   role="button"
                   tabIndex={0}
                   aria-label={`${action} ${seat.name} ${
@@ -371,6 +374,24 @@ export function ClickableSeatPlan({
                       />
                     </>
                   )}
+                  <rect
+                    className="nlb-seat-helper__seat-preview-layer nlb-seat-helper__seat-preview-layer--outer"
+                    x={bounds.x}
+                    y={bounds.y}
+                    width={bounds.width}
+                    height={bounds.height}
+                    rx={cornerRadius}
+                    vectorEffect="non-scaling-stroke"
+                  />
+                  <rect
+                    className="nlb-seat-helper__seat-preview-layer nlb-seat-helper__seat-preview-layer--inner"
+                    x={bounds.x}
+                    y={bounds.y}
+                    width={bounds.width}
+                    height={bounds.height}
+                    rx={cornerRadius}
+                    vectorEffect="non-scaling-stroke"
+                  />
                 </g>
               );
             })}

@@ -1,3 +1,34 @@
+# Library Seats SG - for NLB v1.3.2
+
+This release refines the interactive seat picker, improves the visibility of
+favourite-seat interactions, and updates reviewed seat-plan annotations across
+the affected library areas.
+
+## Highlights
+
+- Adds a hover-only white-and-green contrast outline for annotated map seats
+  without obscuring seat numbers or leaving borders permanently visible.
+- Keeps favourite stars above selection borders regardless of seat-click order.
+- Links the favourite-seat sidebar to the map: hovering or keyboard-focusing a
+  sidebar seat shows a temporary amber-and-white preview on the matching map
+  hotspot without changing favourites or moving the viewport.
+- Adds a light hover and focus state to favourite-seat buttons in the sidebar.
+- Refines reviewed hotspot positions for the Choa Chu Kang, Harbourfront,
+  Jurong, Punggol, Tampines, Woodlands, and Yishun seat plans.
+- Updates the Chrome Web Store screenshot set with an introductory workspace
+  view, an enlarged seat-picker walkthrough, and the multi-session booking
+  flow covering selection, confirmation, success, and upcoming bookings.
+- Documents a five-image listing sequence for Chrome's screenshot limit while
+  retaining the success-state capture as an approved alternate.
+
+## Validation
+
+- Seat-plan verification passed for all 83 definitions and baselines.
+- Independent annotation tests passed for the affected areas.
+- Full regression suite passed: 41 test files and 279 tests.
+- Typecheck, production build, package validation, and archive integrity checks
+  passed for the 1.3.2 candidate.
+
 # Library Seats SG - for NLB v1.3.1
 
 This patch improves switching between libraries with saved favourite seats

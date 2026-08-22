@@ -168,9 +168,9 @@ and [publisher ownership](https://developer.chrome.com/docs/webstore/share-owner
 | Item | Requirement or recommendation | Current state |
 | --- | --- | --- |
 | Upload ZIP | `manifest.json` at the archive root | Packaging script supports this |
-| Manifest | MV3, accurate name, description, version, icons | Complete; summary is 123 characters |
+| Manifest | MV3, accurate name, description, version, icons | Complete; summary is 108 characters |
 | Store icon | 128×128 PNG in the package | Present and correctly padded |
-| Screenshots | 1–5 at 1280×800 or 640×400 | Three current candidates prepared under `assets/chrome-web-store/`; signed-out Guest favourite-seat details require publisher approval |
+| Screenshots | 1–5 at 1280×800 or 640×400 | Six 1.3.2 feature candidates prepared under `assets/chrome-web-store/`; the recommended upload set uses five, and authenticated masked-profile details require publisher approval |
 | Small promo tile | 440×280 | Prepared under `assets/chrome-web-store/` |
 | Marquee image | 1400×560 | Optional and missing |
 | Summary | Plain text, no more than 132 characters | Draft below |
@@ -204,14 +204,21 @@ receiving closer examination. See the
 Use only sanitised or approved examples. Never show real user IDs, booking
 references, account responses, or dates connected to real bookings.
 
-Suggested screenshot sequence:
+Recommended five-screenshot sequence for v1.3.2:
 
-1. the current extension overview showing the seat plan and favourite-seat
-   availability together;
-2. the interactive seat picker and seat-number search;
-3. booking confirmation before submission;
-4. cancellation confirmation and reason selection; and
-5. privacy, Settings, and local-data controls.
+1. introduce the workspace and automatic launch on an NLB Seat Booking page;
+2. locate seats in the enlarged seat picker and save favourites;
+3. select two non-adjacent sessions in one planning view;
+4. review the two booking requests before submission; and
+5. show the resulting upcoming bookings with the lunch break visible.
+
+Use five individual screenshots rather than a collage. The booking controls and
+timeline labels remain readable, and the sequence explains the product from
+first launch through seat discovery, multi-session planning, confirmation, and
+upcoming bookings. Keep the successful in-extension status capture as an
+alternate because Chrome limits the listing to five screenshots. Keep Settings
+and privacy in the listing description and reviewer instructions rather than
+using one of the limited feature screenshot slots.
 
 Limit NLB maps to authentic screenshots where they are necessary to show the
 actual feature. Do not use an extracted map as a background, decorative motif,
@@ -230,25 +237,30 @@ system.
 
 ### Summary
 
-> Save favourite seats, compare availability across the day, and review NLB bookings or cancellations before submitting them.
+> Find favourite seats, check availability, and book multiple NLB sessions with clear review and confirmation.
 
 ### Description
 
-> Spend less time checking seats and more time studying.
+> Spend less time searching for a seat and more time using the library.
 >
-> Library Seats SG adds a clearer seat-booking workspace to the NLB Seat Booking
-> page. Save the seats you prefer, compare their availability across the day,
-> and review bookings or cancellations before anything is submitted.
+> Library Seats SG opens on the NLB Seat Booking page and adds a clearer
+> workspace for planning your visit. Choose a library, area, and date; use the
+> seat picker to locate seats and save favourites; then check or refresh
+> availability before booking.
 >
 > Key features:
 >
+> - Opens automatically on NLB Seat Booking pages.
+> - Choose a library, area, and date from one workspace.
 > - Save favourite seats separately for each local profile.
-> - Compare seat availability across the selected day.
 > - Find seats by number and, where available, choose them from an interactive
 >   plan.
-> - Select non-overlapping seats and time slots in one planning view.
+> - Check or refresh availability across the selected day.
+> - Select multiple non-overlapping time blocks in one planning view, including
+>   separate sessions with a break.
 > - Review every booking before it is sent to NLB.
-> - View upcoming bookings and cancel eligible bookings with confirmation.
+> - See booking success and upcoming sessions, and cancel eligible bookings
+>   with confirmation.
 > - Respect quota, duration, opening-hour, holiday, and availability
 >   information returned by NLB.
 >
@@ -720,9 +732,11 @@ installation, normal usage, privacy, and contributor entry points.
 - [x] Finalise the 132-character manifest description.
 - [x] Generate one 440×280 small promo tile without text or third-party
   material.
-- [x] Prepare three current screenshots: authentic signed-out 1280×800
-  overview and 200%-zoom seat-picker captures showing the integrated runtime
-  map, plus a 640×400 Settings capture without account profile data.
+- [x] Prepare six current 1280×800 feature screenshots covering the workspace
+  overview, seat picker, multi-session selection, confirmation, success, and
+  upcoming bookings. The supplied captures remain draft material until
+  masked-profile and booking details are approved or recaptured from a clean
+  demo/Guest state; upload five because Chrome limits listing screenshots.
 - [ ] Optionally generate a 1400×560 marquee image.
 - [x] Prepare stable homepage, privacy, and support URLs; verify them from the
   public default branch after merge.
@@ -730,7 +744,7 @@ installation, normal usage, privacy, and contributor entry points.
   and no-purchase declarations.
 - [x] Write reviewer instructions for signed-out behavior and account-gated
   features without sharing a personal account.
-- [x] Package and verify the version 1.3.1 ZIP from the current branch; the
+- [ ] Package and verify the version 1.3.2 ZIP from the release branch; the
   archive root contains `manifest.json`, `content.js`, and `content.css`, and
   `unzip -t` reports no errors.
 - [ ] Submit first to private trusted testers with deferred publishing.
