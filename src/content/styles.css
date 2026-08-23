@@ -2253,7 +2253,7 @@
 
 .nlb-seat-helper__booking-progress-item {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: 7px;
   padding: 7px 8px;
   border-radius: 7px;

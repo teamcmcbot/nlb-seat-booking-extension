@@ -702,6 +702,26 @@ interface BookResponse {
 An HTTP error also fails the booking. When `message` is absent, the extension
 shows a generic message that the seat is no longer available.
 
+NLB may return an ASP.NET problem-details validation response for an HTTP 400,
+for example:
+
+```json
+{
+  "title": "One or more validation errors occurred.",
+  "status": 400,
+  "errors": {
+    "": [
+      "This area is restricted to library patrons aged 21 and above."
+    ]
+  }
+}
+```
+
+The extension extracts non-empty strings from `errors` and displays them in
+the booking progress message. If no usable validation message is returned, it
+falls back to the HTTP status. This is an observed response shape, not an
+official NLB contract.
+
 A successful booking causes `GetAccountInfo` to be fetched again so quota and
 existing-booking state can be refreshed.
 
