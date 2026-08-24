@@ -1903,9 +1903,29 @@ export function SeatAssistant({
                 type="button"
                 key={seat.id}
                 className={selected ? "is-favourite" : ""}
-                onClick={() => {
+                data-nlb-seat-preview-id={seat.id}
+                onClick={(event) => {
+                  const pointerPosition =
+                    event.detail > 0
+                      ? { x: event.clientX, y: event.clientY }
+                      : undefined;
                   onSeatSelected?.(seat);
+                  if (!pointerPosition && selected && !seatSearch.trim()) {
+                    onSeatPreview?.();
+                  }
                   void toggleFavourite(seat);
+                  if (pointerPosition) {
+                    window.requestAnimationFrame(() => {
+                      const hoveredButton = document
+                        .elementFromPoint(pointerPosition.x, pointerPosition.y)
+                        ?.closest<HTMLButtonElement>(
+                          "[data-nlb-seat-preview-id]",
+                        );
+                      onSeatPreview?.(
+                        hoveredButton?.dataset.nlbSeatPreviewId,
+                      );
+                    });
+                  }
                 }}
                 onMouseEnter={() => onSeatPreview?.(seat.id)}
                 onMouseLeave={() => onSeatPreview?.()}

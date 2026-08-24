@@ -58,7 +58,7 @@ steps remain in the repository [`README`](../README.md).
   `GetAccountInfo` response.
 - Excludes `facilityId: 2` discussion rooms and breakout rooms.
 - Remembers the last selected library and area separately for each NLB
-  account in Chrome storage.
+  account in extension-local storage.
 - When switching libraries, automatically selects the first area in that
   library containing a saved favourite seat; libraries without favourites
   keep the explicit area choice.
@@ -75,7 +75,7 @@ steps remain in the repository [`README`](../README.md).
 
 ## Favourite seats and seat plans
 
-- Stores favourite seats per account and area in Chrome storage.
+- Stores favourite seats per account and area in extension-local storage.
 - Resolves active current or future bookings against the catalog and adds any
   missing booked seats to that account's favourites, so booked seats remain
   visible even when they were not selected manually.

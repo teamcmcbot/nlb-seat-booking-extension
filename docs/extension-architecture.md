@@ -8,7 +8,7 @@ For endpoint-level request, response, field, and lifecycle documentation, see
 
 ## Runtime model
 
-Library Seats SG - for NLB is a Manifest V3 content-script extension. Chrome injects its
+Library Seats SG - for NLB is a Manifest V3 content-script extension. Chrome or Firefox injects its
 JavaScript and CSS only on:
 
 ```text
@@ -47,6 +47,10 @@ rendered from the same in-memory blob. The complete clickable layer is
 disabled if the branch, area, map revision, image dimensions, SHA-256, seat
 identity, geometry, or declared coverage does not validate. Unmapped and
 rejected plans remain visible and retain seat-number search as the fallback.
+After verification, the blob-backed image is rendered in an HTML image layer
+with the interactive SVG controls overlaid above it. This avoids Firefox's
+inconsistent rendering of blob URLs inside SVG while keeping the displayed
+bytes identical to the bytes that passed fingerprint validation.
 Hotspots indicate favourite status
 only; they do not represent date-specific availability. Reviewed range and
 hybrid plans carry a `mappingBasis` marker and tell the user that positions
@@ -55,7 +59,7 @@ revision-locked like individually labelled plans. See
 [`seat-plan-annotations.md`](seat-plan-annotations.md) for the annotation and
 review workflow.
 
-The extension has one Chrome permission:
+The extension has one WebExtensions permission:
 
 ```json
 {
@@ -65,6 +69,13 @@ The extension has one Chrome permission:
 
 NLB requests run in the page's signed-in context with
 `credentials: "include"`. No cookie API permission is requested.
+
+Firefox uses the same application bundle through its Chrome-compatible
+WebExtensions namespace. `browser_specific_settings.gecko` supplies the stable
+Firefox ID, Firefox 140 minimum, and Mozilla data-consent declarations; Chrome
+ignores this metadata. Private/incognito operation is disabled in the shared
+manifest because Firefox local extension storage is shared between private and
+normal contexts.
 
 ## Authentication and account switching
 
@@ -86,7 +97,7 @@ NLB's central OIDC logout endpoint with the Seat Booking page as its return
 service. This clears both the application and central sign-in sessions before
 returning to the booking page.
 
-Only one NLB account can be authenticated in a Chrome profile at a time.
+Only one NLB account can be authenticated in a browser profile at a time.
 Favourite seats and the last library/area selection are therefore stored
 under an opaque profile ID derived by HMAC-SHA-256 from the in-memory `userId`
 and an installation-local random secret. This allows users to switch accounts
@@ -164,7 +175,7 @@ flowchart TD
 | `src/services/bookingConflicts.ts` | Detects overlap, resolves bookings to catalog seats, and evaluates cancellation eligibility. |
 | `src/services/bookingPlanner.ts` | Produces separate requests or merges adjacent intervals for the same seat. |
 | `src/services/profileStorage.ts` | Owns the versioned local-storage schema, validation, read-only profile inventory, and narrowly scoped deletion helpers. |
-| `src/services/favourites.ts` | Persists favourite seat identities in Chrome local storage. |
+| `src/services/favourites.ts` | Persists favourite seat identities in extension-local storage. |
 | `src/services/seatPlanAnnotations.ts` | Selects a reviewed area's expected map path, matches exact revisions, and validates annotated hotspots against current catalog seats. |
 | `src/services/seatPlanMaintenance.ts` | Produces sanitized exports and runs optional bounded branch-level metadata discovery with exact-area response parsing. |
 | `src/data/seatPlans/` | Stores reviewed, non-account-specific seat-plan coordinates. |
@@ -522,7 +533,7 @@ returns, but it cannot turn a reference-matrix false value into an available
 cell. The final `Book` response remains authoritative.
 
 The refresh updates quota and booking conflicts in memory. It does not persist
-account data to Chrome storage.
+account data to extension-local storage.
 
 ## Cancellation execution and refresh
 
@@ -552,7 +563,8 @@ twelve seconds.
 
 ## State and persistence
 
-Persisted in `chrome.storage.local`:
+Persisted in extension-local storage through the Chrome-compatible WebExtensions
+API (`chrome.storage.local`):
 
 - an installation-local 256-bit profile-key secret;
 - opaque HMAC-derived profile IDs and their stable display order;
@@ -600,7 +612,7 @@ Settings reads the typed opaque inventory but applies account-aware visibility:
 signed-out users see only Guest, while signed-in users see Guest and only the
 current account. Inactive account labels, favourite counts, and saved-area
 status are not rendered. This reduces casual disclosure on a shared browser;
-the Chrome profile remains the actual local-storage boundary.
+the browser profile remains the actual local-storage boundary.
 
 Settings exposes three distinct deletion scopes:
 
@@ -683,7 +695,8 @@ Seat availability and quota can change between scan and booking.
 - NLB's exact recovery time between the observed post-midnight placeholder and
   a confirmed working matrix after 08:00 SGT remains unknown. The extension
   validates the response rather than hardcoding an overnight cutoff.
-- Unpacked distribution requires Chrome Developer mode.
+- Unpacked Chrome distribution requires Developer mode. A temporary Firefox
+  installation through `about:debugging` lasts only until Firefox exits.
 
 See [`holiday-and-closure-testing.md`](holiday-and-closure-testing.md) and the
 booking lifecycle section of [`nlb-api.md`](nlb-api.md) for investigation

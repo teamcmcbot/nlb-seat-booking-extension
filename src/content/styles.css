@@ -764,7 +764,13 @@
   place-items: center;
 }
 
-.nlb-seat-helper__interactive-map,
+.nlb-seat-helper__interactive-map-base-image,
+.nlb-seat-helper__interactive-map {
+  grid-column: 1;
+  grid-row: 1;
+}
+
+.nlb-seat-helper__interactive-map-base-image,
 .nlb-seat-helper__interactive-map-image {
   display: block;
   flex: 0 0 auto;
@@ -774,7 +780,13 @@
   object-fit: contain;
 }
 
+.nlb-seat-helper__interactive-map-base-image {
+  pointer-events: none;
+}
+
 .nlb-seat-helper__interactive-map {
+  z-index: 1;
+  display: block;
   overflow: visible;
 }
 

@@ -1,7 +1,7 @@
 # Settings and local data
 
 Library Seats SG keeps favourite seats and a small set of preferences in the
-current Chrome profile. Open **Settings** from the gear button in the extension
+current browser profile. Open **Settings** from the gear button in the extension
 header to review or remove that information.
 
 The dialog supports keyboard focus trapping and Escape-to-close behavior. When
@@ -21,8 +21,8 @@ the favourite-seat and booking sections remain reachable.
   another person using the same browser.
 
 Hiding profiles prevents casual disclosure in the interface, but it is not an
-authentication boundary. People sharing one Chrome profile also share its
-extension storage. Use separate Chrome profiles or Chrome Guest mode on a
+authentication boundary. People sharing one browser profile also share its
+extension storage. Use separate browser profiles or a browser guest mode on a
 shared computer.
 
 ## Booking default
@@ -91,7 +91,7 @@ elsewhere, or when recovering from an NLB response error.
 
 ### Clear all local data
 
-Removes all data owned by Library Seats SG from `chrome.storage.local`,
+Removes all data owned by Library Seats SG from extension-local storage,
 including Guest data, every saved account profile, favourite seats, saved
 areas, profile metadata, favourite-sync choices, the default booking mode, and the
 disclosure acknowledgement. It also removes the short-lived pending sign-in
@@ -112,7 +112,7 @@ On a shared or public computer, use this order:
 
 Bookings, quotas, availability results, selected booking or cancellation
 cells, account details, and seat-plan images remain in memory rather than
-`chrome.storage.local`. Refreshing or closing the Seat Booking tab normally
+extension-local storage. Refreshing or closing the Seat Booking tab normally
 discards that temporary state.
 
 See the [Privacy Policy](../PRIVACY.md) for the complete information inventory

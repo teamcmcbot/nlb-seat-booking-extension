@@ -1,7 +1,7 @@
-# Creating a GitHub Release
+# Packaging and releasing Chrome and Firefox builds
 
-GitHub Releases provide a versioned, built ZIP that non-developers can install
-without cloning the repository or running npm.
+The project has one source tree and version, but separate Chrome/GitHub and
+Firefox Add-ons (AMO) artifacts.
 
 ## Before packaging
 
@@ -14,7 +14,7 @@ without cloning the repository or running npm.
 4. Install the locked dependencies with `npm ci`.
 5. Run the regression suite with `npm test`.
 
-## Build the release asset
+## Build the Chrome/GitHub release asset
 
 Run:
 
@@ -51,16 +51,43 @@ NOTICE.txt
 THIRD_PARTY_NOTICES.txt
 ```
 
-## Publish
+## Build the Firefox Add-ons artifacts
 
-For version `1.3.2`:
+Run:
 
 ```bash
-git tag v1.3.2
-git push origin v1.3.2
-gh release create v1.3.2 nlb-seat-helper.zip \
+npm run package:firefox
+npm run package:firefox-source
+unzip -t nlb-seat-helper-firefox.zip
+unzip -t nlb-seat-helper-firefox-source.zip
+unzip -l nlb-seat-helper-firefox.zip
+unzip -l nlb-seat-helper-firefox-source.zip
+```
+
+`nlb-seat-helper-firefox.zip` is the built AMO upload. The Firefox lint wrapper
+fails for every unreviewed error, notice, or warning. The three allowed warnings
+and their rationale are documented in the Firefox publication plan.
+
+`nlb-seat-helper-firefox-source.zip` contains the exact source and locked build
+inputs required by Mozilla reviewers. Extract it into an empty directory and
+follow `AMO_BUILD.md` before each submission. Confirm the rebuilt extension
+files match the intended AMO package; ZIP hashes may differ because archive
+timestamps differ.
+
+The unsigned Firefox package is not a general Firefox install download. AMO
+signs approved packages, so publish the signed AMO listing rather than adding
+the unsigned ZIP to a GitHub release.
+
+## Publish
+
+For version `1.4.0`:
+
+```bash
+git tag v1.4.0
+git push origin v1.4.0
+gh release create v1.4.0 nlb-seat-helper.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "Library Seats SG - for NLB v1.3.2" \
+  --title "Library Seats SG - for NLB v1.4.0" \
   --notes-file RELEASE_NOTES.md
 ```
 
@@ -78,7 +105,12 @@ After publishing:
 4. Confirm the downloaded archive passes `unzip -t`.
 5. Load the extracted directory in Chrome and run a smoke test on the NLB Seat
    Booking page.
+6. Confirm the AMO listing shows the same version, then install Mozilla's signed
+   build and repeat the critical Firefox smoke test.
 
 Do not ask users to download GitHub's automatically generated **Source code**
 ZIP or tarball. Those archives contain the project source, not the built
 extension.
+
+Uploading to AMO, tagging, pushing, and publishing releases are remote-state
+changes and require explicit maintainer authorization.
