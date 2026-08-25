@@ -1,6 +1,8 @@
 node_modules/
 dist/
 nlb-seat-helper.zip
+nlb-seat-helper-firefox.zip
+nlb-seat-helper-firefox-source.zip
 .DS_Store
 .cache/seat-plans/
 seat-plan-work/

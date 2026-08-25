@@ -1,6 +1,6 @@
 # Library Seats SG - for NLB
 
-A free Chrome extension that opens on the
+A free Chrome and Firefox extension that opens on the
 [NLB Seat Booking](https://www.nlb.gov.sg/seatbooking/) website and makes it
 easier to find and manage library seats.
 
@@ -19,6 +19,16 @@ By installing or using the extension, you agree to the [Terms of Use](TERMS.md).
 - Save favourite seats separately for Guest and each NLB account you use.
 - Choose a library, area, and date from the extension workspace.
 - Check or refresh availability without repeatedly opening individual seats.
+- Automatically check availability after reload when the saved library and
+  area still contain favourite seats.
+- Refresh availability after closing the seat picker only when its final
+  favourite-seat set differs from when it opened and still contains a seat.
+- Apply the same change-sensitive refresh when finishing the inline favourite
+  seat manager with **Done**.
+- Automatically check the new selection after changing the library, area, or
+  date when that selected area contains at least one favourite seat.
+- Keep signed-out availability visible while requiring NLB sign-in before
+  hours can be selected or booked.
 - Compare a full day of availability without repeatedly opening individual
   seats.
 - Search by seat number or use a reviewed interactive seat plan where one is
@@ -40,6 +50,13 @@ way to check their preferred places.
 ![Library Seats SG upcoming multi-session bookings](assets/chrome-web-store/booking-flow-04-upcoming.png)
 
 ## Install
+
+### Firefox Add-ons
+
+The public Firefox Add-ons listing is being prepared and is not live yet. Its
+install link will be added after Firefox testing and Mozilla review are
+complete. The first Firefox release supports Firefox Desktop 140 or newer; it
+is not submitted for Firefox for Android.
 
 ### Chrome Web Store
 
@@ -97,13 +114,13 @@ cleanup on a shared or public computer.
 Read the complete [Privacy Policy](PRIVACY.md) for the information handled in
 memory, stored locally, sent to NLB, retention, deletion, and contact details.
 
-The extension requests only Chrome's `storage` permission.
+The extension requests only the WebExtensions `storage` permission.
 
 It does not request cookie permissions or read browser cookies directly.
 Requests use the NLB page's existing signed-in session with
 `credentials: "include"`.
 
-`chrome.storage.local` contains only:
+The browser's extension-local storage contains only:
 
 - an installation-local random secret used to derive opaque account profile
   identifiers;
@@ -127,7 +144,8 @@ memory and are not persisted by the extension.
 
 ## Requirements
 
-- Google Chrome or another Chromium browser that supports Manifest V3.
+- Google Chrome or another Chromium browser that supports Manifest V3, or
+  Firefox Desktop 140 or newer.
 - An NLB account when booking or using account-specific features.
 - Node.js and npm only when building from source.
 
@@ -151,6 +169,10 @@ npm run build      # Typecheck and create a production build
 npm run build:maintenance  # Create a visibly marked maintainer-only audit build
 npm run dev        # Rebuild dist/ whenever source files change
 npm run package    # Build and create nlb-seat-helper.zip
+npm run firefox:lint  # Build and validate the Firefox package
+npm run firefox:run   # Build and start a temporary Firefox profile
+npm run package:firefox  # Create the AMO install ZIP
+npm run package:firefox-source  # Create the AMO reviewer source ZIP
 npm run seat-plans:capture  # Capture a candidate seat-plan baseline
 npm run seat-plans:audit    # Compare a candidate with reviewed evidence
 npm run seat-plans:full-audit  # Capture and generate JSON + HTML reports
@@ -179,6 +201,17 @@ After rebuilding:
 
 1. Click **Reload** for Library Seats SG - for NLB on `chrome://extensions`.
 2. Refresh the NLB Seat Booking tab.
+
+## Load a development build in Firefox
+
+1. Run `npm run build`.
+2. Open `about:debugging#/runtime/this-firefox` in Firefox Desktop.
+3. Select **Load Temporary Add-on**.
+4. Choose `dist/manifest.json` from this project.
+5. Open or refresh `https://www.nlb.gov.sg/seatbooking/`.
+
+After rebuilding, select **Reload** for the temporary extension and refresh
+the NLB tab. Firefox removes temporary extensions when Firefox exits.
 
 Maintainers can follow
 [Creating a GitHub Release](docs/releasing.md) to package and publish a
@@ -232,6 +265,13 @@ versioned download.
 - [Chrome Web Store Submission Sheet](docs/chrome-web-store-submission.md)
   provides the ready-to-paste listing copy, public URLs, reviewer instructions,
   dashboard answers, and submission-time checklist.
+- [Firefox Add-ons Publication Plan](docs/firefox-add-ons-publication.md)
+  records compatibility decisions, packaging, testing, and release boundaries.
+- [Firefox Add-ons Data Declarations](docs/firefox-add-ons-data-declarations.md)
+  maps the manifest declarations to the extension's actual local processing.
+- [Firefox Add-ons Submission Sheet](docs/firefox-add-ons-submission.md)
+  provides ready-to-paste AMO listing copy, reviewer notes, and a submission
+  checklist.
 
 ## Usage
 
@@ -248,6 +288,8 @@ versioned download.
 6. To cancel, select a cancelable purple booking, click **Cancel**, review the
    complete booking, choose a reason, and confirm.
 7. Review the per-request result and automatically refreshed availability.
+   After a booking or cancellation run, use **Go to My Bookings** to open
+   NLB's booking list, or × to dismiss the status.
 
 ## Project structure
 

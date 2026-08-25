@@ -81,10 +81,19 @@ The extension currently:
    availability. If the refreshed selected area has zero entries matching its
    remaining generated timeline, it rejects the observed overnight `01:00`
    placeholder and treats those cells as unknown.
+   On initial load or page refresh, a restored area with valid favourites
+   automatically validates the freshly loaded matrix once; a matching holiday
+   closes the timeline before any fallback search.
 5. Calls `SearchAvailableAreas` once for each generated interval when the
    selected date is tomorrow or another future date, and for today's remaining
    intervals only when the refreshed current-day matrix is unusable. A holiday
-   closure prevents both paths.
+   closure prevents both paths. Closing the seat picker runs this same path
+   only when the final favourite-seat identity set differs from its opening
+   snapshot and still contains a seat; an unchanged or empty final set skips
+   it. The main Favourite seats **Manage** → **Done** flow uses the same
+   comparison and refresh rule.
+   Changing the library, area, or date also runs the path after the resulting
+   selection settles when that area has at least one favourite.
 6. Makes one map-discovery `SearchAvailableAreas` call when the selected area
    has no cached map; that response does not change timeline availability.
    Routine maintenance export makes no availability probe. Optional targeted

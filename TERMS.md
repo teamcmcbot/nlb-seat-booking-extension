@@ -1,6 +1,6 @@
 # Terms of Use for Library Seats SG - for NLB
 
-Effective date: 20 August 2026
+Effective date: 24 August 2026
 
 These Terms of Use ("Terms") apply to Library Seats SG - for NLB ("Library Seats SG",
 "the extension"). By installing or using the extension, you agree to these
@@ -9,7 +9,7 @@ Terms. If you do not agree, do not install or use it.
 These Terms are project guidance for a free, independently maintained
 extension. They do not replace the terms, rules, privacy notices, or booking
 conditions imposed by the National Library Board Singapore (NLB), Google,
-Chrome, or another service you use.
+Mozilla, your browser, or another service you use.
 
 ## 1. Independent project
 
@@ -56,7 +56,7 @@ You must not use Library Seats SG to:
   controls, or other protective measures;
 - access another person's account or information without authority;
 - make deceptive, fraudulent, abusive, excessive, or automated requests;
-- interfere with NLB, Chrome, the Chrome Web Store, or another system;
+- interfere with NLB, a browser, a browser extension store, or another system;
 - resell access to NLB services or misrepresent the extension as official; or
 - violate another person's rights or any applicable law.
 
@@ -141,7 +141,7 @@ for security, legal, policy, abuse, compatibility, or operational reasons.
 
 The Terms may be updated to reflect changes in the extension, law, policy, or
 project operation. Material changes will be disclosed in the extension, the
-Chrome Web Store listing, or the project release notes as appropriate. The
+applicable browser-store listing, or the project release notes as appropriate. The
 effective date at the top records the latest revision.
 
 ## 12. Governing law

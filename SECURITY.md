@@ -26,7 +26,7 @@ other sensitive details in that issue.
 Include, where safe and relevant:
 
 - the installed extension version and installation source;
-- Chrome version and operating system;
+- browser name, browser version, and operating system;
 - the affected NLB Seat Booking route and whether the session was signed in;
 - a clear description of impact and reproducible steps using your own account;
 - the smallest sanitised proof of concept needed to demonstrate the issue;

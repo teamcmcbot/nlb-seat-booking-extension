@@ -97,6 +97,13 @@ Content-Type: application/json
   approximately 600 milliseconds.
 - Future-date timeline calls, current-day zero-match fallback calls, and
   booking-preflight calls run sequentially rather than concurrently.
+- When startup restores a saved area with valid favourites, the initial check
+  reuses the `GetAccountInfo` response that just mounted the extension. It does
+  not make a duplicate account request; an unusable current-day matrix still
+  falls back to sequential exact-interval searches.
+- After a user changes the library, area, or date to a combination with valid
+  favourites, today's automatic refresh fetches `GetAccountInfo` once; a
+  future-date selection uses sequential exact-interval searches.
 - Routine seat-plan audit export refreshes `GetAccountInfo` once and makes no
   `SearchAvailableAreas` calls. Optional selected-library maintenance probes
   run sequentially and associate metadata only by exact returned `areaId`.

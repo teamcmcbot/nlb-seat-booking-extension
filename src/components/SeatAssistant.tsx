@@ -36,8 +36,10 @@ import {
 import {
   copyGuestFavouritesToProfile,
   favouriteIdentity,
+  favouriteSeatSetKey,
   firstAreaWithFavouriteSeat,
   guestFavouritesNeedingCopy,
+  hasFavouriteSeatInArea,
   loadFavouriteSeats,
   saveFavouriteSeats,
 } from "../services/favourites";
@@ -384,6 +386,10 @@ export function SeatAssistant({
   const [date, setDate] = useState(todayValue);
   const [favourites, setFavourites] = useState<FavouriteSeat[]>([]);
   const [storageReady, setStorageReady] = useState(false);
+  const [
+    automaticAvailabilityCheckMode,
+    setAutomaticAvailabilityCheckMode,
+  ] = useState<"loaded" | "refresh" | null>(null);
   const [managing, setManaging] = useState(false);
   const [seatSearch, setSeatSearch] = useState("");
   const [now, setNow] = useState(() => new Date());
@@ -424,20 +430,45 @@ export function SeatAssistant({
   const scanController = useRef<AbortController>();
   const mapRequests = useRef(new Set<string>());
   const mapTriggerRef = useRef<HTMLButtonElement>(null);
+  const mapFavouriteSnapshot = useRef("");
+  const manageFavouriteSnapshot = useRef("");
   const currentLocalDate = localDateValue(now);
   const previousLocalDate = useRef(currentLocalDate);
 
   function closeMapPicker() {
+    const currentSnapshot = favouriteSeatSetKey(favouriteSeats);
+    const favouritesChanged = currentSnapshot !== mapFavouriteSnapshot.current;
     setMapExpanded(false);
     setMapFocusSeatId("");
     setMapPreviewSeatId("");
+    mapFavouriteSnapshot.current = currentSnapshot;
+    if (favouriteSeats.length > 0 && favouritesChanged) {
+      void checkAvailability();
+    }
     window.requestAnimationFrame(() => mapTriggerRef.current?.focus());
   }
 
   function openMapPicker() {
+    mapFavouriteSnapshot.current = favouriteSeatSetKey(favouriteSeats);
     setMapFocusSeatId("");
     setMapPreviewSeatId("");
     setMapExpanded(true);
+  }
+
+  function openSeatManager() {
+    manageFavouriteSnapshot.current = favouriteSeatSetKey(favouriteSeats);
+    setManaging(true);
+  }
+
+  function closeSeatManager() {
+    const currentSnapshot = favouriteSeatSetKey(favouriteSeats);
+    const favouritesChanged =
+      currentSnapshot !== manageFavouriteSnapshot.current;
+    manageFavouriteSnapshot.current = currentSnapshot;
+    setManaging(false);
+    if (favouriteSeats.length > 0 && favouritesChanged) {
+      void checkAvailability();
+    }
   }
 
   useEffect(() => {
@@ -717,8 +748,16 @@ export function SeatAssistant({
           const nextAreaId =
             storedArea?.id ??
             firstAreaWithFavouriteSeat(storedBranch, storedFavourites);
+          const nextArea = storedBranch.areas.find(
+            (item) => item.id === nextAreaId,
+          );
           setBranchId(storedBranch.id);
           setAreaId(nextAreaId);
+          setAutomaticAvailabilityCheckMode(
+            hasFavouriteSeatInArea(nextArea, storedFavourites)
+              ? "loaded"
+              : null,
+          );
 
           if (nextAreaId !== lastSelection.areaId) {
             void saveLastSeatSelection(profileUserId, {
@@ -750,6 +789,9 @@ export function SeatAssistant({
       .then(() => {
         if (active) {
           setFavourites(next);
+          if (hasFavouriteSeatInArea(area, next)) {
+            setAutomaticAvailabilityCheckMode("loaded");
+          }
           setAutomaticFavouriteMessage(
             `${additions.length} booked seat${
               additions.length === 1 ? " was" : "s were"
@@ -766,6 +808,7 @@ export function SeatAssistant({
       active = false;
     };
   }, [
+    area,
     bookingFavouriteState.favourites,
     favourites,
     profileUserId,
@@ -812,6 +855,9 @@ export function SeatAssistant({
           await saveGuestCopyDecision(profileUserId, "copied", guestKeys);
           if (active) {
             setFavourites(next);
+            if (hasFavouriteSeatInArea(area, next)) {
+              setAutomaticAvailabilityCheckMode("loaded");
+            }
             setFavouriteSyncError("");
             setAutomaticFavouriteMessage(
               `${favouritesToSync.length} signed-out favourite seat${
@@ -843,6 +889,7 @@ export function SeatAssistant({
       active = false;
     };
   }, [
+    area,
     bookingFavouriteState.favourites,
     favourites,
     profileUserId,
@@ -999,6 +1046,13 @@ export function SeatAssistant({
   ]);
 
   useEffect(() => {
+    // Favourite edits in either management UI are transactional. Keep the
+    // existing timeline until its Done/close handler compares the final seat
+    // set with the opening snapshot and decides whether to refresh.
+    if (mapExpanded || managing) {
+      return;
+    }
+
     scanController.current?.abort();
     setScan(
       referenceMatrix
@@ -1248,7 +1302,32 @@ export function SeatAssistant({
     );
   }
 
+  useEffect(() => {
+    if (
+      !automaticAvailabilityCheckMode ||
+      !storageReady ||
+      !area ||
+      !date ||
+      !hasSelectedDate ||
+      favouriteSeats.length === 0 ||
+      slots.length === 0
+    ) {
+      return;
+    }
+
+    const mode = automaticAvailabilityCheckMode;
+    setAutomaticAvailabilityCheckMode(null);
+    void checkAvailability(
+      mode === "loaded" ? { catalog, session } : undefined,
+    );
+  }, [automaticAvailabilityCheckMode, scanContextKey, storageReady]);
+
   function toggleSelectedSlot(seat: Seat, slot: HourSlot) {
+    if (!session) {
+      setSelectionMessage("Sign in to NLB before selecting hours to book.");
+      return;
+    }
+
     if (selectedCancellationKeys.size > 0) {
       setSelectionMessage(
         "Clear the selected purple booking before selecting available hours.",
@@ -1903,9 +1982,29 @@ export function SeatAssistant({
                 type="button"
                 key={seat.id}
                 className={selected ? "is-favourite" : ""}
-                onClick={() => {
+                data-nlb-seat-preview-id={seat.id}
+                onClick={(event) => {
+                  const pointerPosition =
+                    event.detail > 0
+                      ? { x: event.clientX, y: event.clientY }
+                      : undefined;
                   onSeatSelected?.(seat);
+                  if (!pointerPosition && selected && !seatSearch.trim()) {
+                    onSeatPreview?.();
+                  }
                   void toggleFavourite(seat);
+                  if (pointerPosition) {
+                    window.requestAnimationFrame(() => {
+                      const hoveredButton = document
+                        .elementFromPoint(pointerPosition.x, pointerPosition.y)
+                        ?.closest<HTMLButtonElement>(
+                          "[data-nlb-seat-preview-id]",
+                        );
+                      onSeatPreview?.(
+                        hoveredButton?.dataset.nlbSeatPreviewId,
+                      );
+                    });
+                  }
                 }}
                 onMouseEnter={() => onSeatPreview?.(seat.id)}
                 onMouseLeave={() => onSeatPreview?.()}
@@ -1951,8 +2050,16 @@ export function SeatAssistant({
                 nextBranch,
                 favourites,
               );
+              const nextArea = nextBranch?.areas.find(
+                (item) => item.id === nextAreaId,
+              );
               setBranchId(nextBranchId);
               setAreaId(nextAreaId);
+              setAutomaticAvailabilityCheckMode(
+                hasFavouriteSeatInArea(nextArea, favourites)
+                  ? "refresh"
+                  : null,
+              );
               setManaging(false);
               void saveLastSeatSelection(profileUserId, {
                 branchId: nextBranchId,
@@ -1976,7 +2083,15 @@ export function SeatAssistant({
             disabled={!branch}
             onChange={(event) => {
               const nextAreaId = event.target.value;
+              const nextArea = branch?.areas.find(
+                (item) => item.id === nextAreaId,
+              );
               setAreaId(nextAreaId);
+              setAutomaticAvailabilityCheckMode(
+                hasFavouriteSeatInArea(nextArea, favourites)
+                  ? "refresh"
+                  : null,
+              );
               setManaging(false);
               void saveLastSeatSelection(profileUserId, {
                 branchId,
@@ -2006,6 +2121,9 @@ export function SeatAssistant({
               const nextDate = event.target.value;
               if (dateRange?.selectableDates.includes(nextDate)) {
                 setDate(nextDate);
+                setAutomaticAvailabilityCheckMode(
+                  favouriteSeats.length > 0 ? "refresh" : null,
+                );
               }
             }}
           />
@@ -2041,7 +2159,7 @@ export function SeatAssistant({
                   </small>
                 </strong>
               ) : (
-                <strong>Unavailable</strong>
+                <strong>{session ? "Unavailable" : "Sign in to book"}</strong>
               )}
             </div>
           ) : null}
@@ -2127,7 +2245,7 @@ export function SeatAssistant({
               <button
                 type="button"
                 className="nlb-seat-helper__text-button"
-                onClick={() => setManaging((current) => !current)}
+                onClick={managing ? closeSeatManager : openSeatManager}
               >
                 {managing ? "Done" : "Manage"}
               </button>
@@ -2159,7 +2277,7 @@ export function SeatAssistant({
           ) : areaFavourites.length === 0 ? (
             <div className="nlb-seat-helper__empty nlb-seat-helper__empty--card">
               <p>No favourites configured for this area.</p>
-              <button type="button" onClick={() => setManaging(true)}>
+              <button type="button" onClick={openSeatManager}>
                 Choose favourite seats
               </button>
             </div>
@@ -2350,7 +2468,9 @@ export function SeatAssistant({
                                     : available === undefined
                                       ? "checking"
                                       : available
-                                        ? selected
+                                        ? !session
+                                          ? "available — sign in to book"
+                                          : selected
                                           ? "selected"
                                           : "available — click to select"
                                         : "unavailable"
@@ -2380,7 +2500,7 @@ export function SeatAssistant({
                                     toggleCancellationBooking(bookedBooking)
                                   }
                                 />
-                              ) : available && !conflictingBooking ? (
+                              ) : available && !conflictingBooking && session ? (
                                 <button
                                   type="button"
                                   key={slot.key}
@@ -2467,7 +2587,9 @@ export function SeatAssistant({
                               ? `${formatQuotaMinutes(
                                   selectedMinutes,
                                 )} selected`
-                              : "Select available hours or a booking"}
+                              : session
+                                ? "Select available hours or a booking"
+                                : "Sign in to book available hours"}
                         </strong>
                         <span>
                           {cancellationMode
@@ -2476,7 +2598,9 @@ export function SeatAssistant({
                                   selectedCancellationMinutes,
                                 )} of booked time will be cancelled.`
                               : "Cancellation reasons are unavailable. Refresh the account before continuing."
-                            : "Click green boxes to book or cancelable purple boxes to cancel."}
+                            : session
+                              ? "Click green boxes to book or cancelable purple boxes to cancel."
+                              : "Availability is visible while signed out. Sign in to select hours and book."}
                         </span>
                       </div>
                       <button
@@ -2559,12 +2683,27 @@ export function SeatAssistant({
                       <div className="nlb-seat-helper__booking-progress-header">
                         <strong>Booking status</strong>
                         {!bookingRunning && (
-                          <button
-                            type="button"
-                            onClick={() => setBookingProgress([])}
-                          >
-                            Dismiss
-                          </button>
+                          <div className="nlb-seat-helper__booking-progress-actions">
+                            <button
+                              type="button"
+                              className="nlb-seat-helper__my-bookings"
+                              onClick={() =>
+                                window.location.assign(
+                                  "https://www.nlb.gov.sg/seatbooking/mybookings",
+                                )
+                              }
+                            >
+                              Go to My Bookings
+                            </button>
+                            <button
+                              type="button"
+                              className="nlb-seat-helper__booking-progress-dismiss"
+                              onClick={() => setBookingProgress([])}
+                              aria-label="Dismiss booking status"
+                            >
+                              <span aria-hidden="true">×</span>
+                            </button>
+                          </div>
                         )}
                       </div>
                       {bookingProgress.map((item) => (
@@ -2601,12 +2740,27 @@ export function SeatAssistant({
                       <div className="nlb-seat-helper__booking-progress-header">
                         <strong>Cancellation status</strong>
                         {!cancellationRunning && (
-                          <button
-                            type="button"
-                            onClick={() => setCancellationProgress([])}
-                          >
-                            Dismiss
-                          </button>
+                          <div className="nlb-seat-helper__booking-progress-actions">
+                            <button
+                              type="button"
+                              className="nlb-seat-helper__my-bookings"
+                              onClick={() =>
+                                window.location.assign(
+                                  "https://www.nlb.gov.sg/seatbooking/mybookings",
+                                )
+                              }
+                            >
+                              Go to My Bookings
+                            </button>
+                            <button
+                              type="button"
+                              className="nlb-seat-helper__booking-progress-dismiss"
+                              onClick={() => setCancellationProgress([])}
+                              aria-label="Dismiss cancellation status"
+                            >
+                              <span aria-hidden="true">×</span>
+                            </button>
+                          </div>
                         )}
                       </div>
                       {cancellationProgress.map((item) => (

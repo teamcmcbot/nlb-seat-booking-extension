@@ -1,9 +1,9 @@
 # Privacy Policy for Library Seats SG - for NLB
 
-Effective date: 20 August 2026
+Effective date: 24 August 2026
 
 Library Seats SG - for NLB ("Library Seats SG", "the extension") is a free,
-independent Chrome extension maintained by the Library Seats SG project. It
+independent Chrome and Firefox extension maintained by the Library Seats SG project. It
 works only on the National Library Board Singapore (NLB) Seat Booking website.
 
 Library Seats SG is not affiliated with, endorsed by, sponsored by, or supported
@@ -21,12 +21,12 @@ developer receives that information.
   tracking.
 - The developer does not receive users' NLB account information, bookings,
   favourites, browsing activity, or extension usage data.
-- The extension does not ask for an NLB password, request Chrome cookie
+- The extension does not ask for an NLB password, request browser cookie
   permission, or read browser cookies directly.
 - The extension uses the NLB session already active in the Seat Booking tab.
-  Chrome attaches that session to same-origin NLB requests.
+  The browser attaches that session to same-origin NLB requests.
 - Favourite seats, saved areas, and pseudonymous profile preferences are kept
-  in `chrome.storage.local` on the user's device.
+  in the browser's extension-local storage on the user's device.
 - Account, booking, quota, catalog, and availability information is processed
   in memory and is not persistently stored by the extension.
 - Booking and cancellation requests are sent only to NLB after the user
@@ -50,7 +50,7 @@ bookings, validate requested actions, and reconcile results from NLB.
 
 The complete NLB account identifier is used transiently in memory. It is
 combined with a random installation-local secret to derive a pseudonymous
-profile identifier. The complete identifier is not written to Chrome storage
+profile identifier. The complete identifier is not written to extension storage
 or rendered in the page by the extension. The interface may show a masked
 version that preserves the first and last character and replaces the middle
 characters with asterisks.
@@ -74,7 +74,7 @@ out an action the user confirmed.
 
 Library Seats SG does not collect an NLB password or authentication token and does
 not read cookies directly. Requests to NLB use `credentials: "include"`, which
-allows Chrome to attach the existing same-origin NLB session automatically.
+allows the browser to attach the existing same-origin NLB session automatically.
 
 When the user starts sign-in, the extension stores a timestamp-only pending
 sign-in marker in the NLB page's `sessionStorage`. It contains no account
@@ -84,8 +84,8 @@ the page session ends.
 
 ## Information stored on the device
 
-Library Seats SG uses the Chrome `storage` permission only for
-`chrome.storage.local`. It may store:
+Library Seats SG uses the WebExtensions `storage` permission only for local
+extension storage. It may store:
 
 - a random 256-bit installation-local secret used to derive pseudonymous
   profile identifiers;
@@ -102,10 +102,10 @@ Library Seats SG uses the Chrome `storage` permission only for
 
 This local information is not sent to the developer, an analytics provider,
 an advertising provider, or any other third party by extension code. It is
-not stored using Chrome's synced-storage service.
+not stored using a browser's synced-storage service.
 
 Account details, bookings, quotas, availability results, and seat-plan images
-are not written to `chrome.storage.local` by the extension. Chrome, the NLB
+are not written to extension-local storage by the extension. The browser, the NLB
 website, or the browser cache may independently retain information under their
 own settings and policies.
 
@@ -151,8 +151,8 @@ Information held only in memory normally disappears when the Seat Booking tab
 is refreshed or closed. The pending sign-in marker expires after five minutes
 and also ends with the page session.
 
-Information in `chrome.storage.local` remains until the user removes it, the
-extension is uninstalled, or Chrome clears the extension's storage.
+Information in extension-local storage remains until the user removes it, the
+extension is uninstalled, or the browser clears the extension's storage.
 
 The extension's Settings screen provides separately confirmed controls to:
 
@@ -163,26 +163,26 @@ The extension's Settings screen provides separately confirmed controls to:
 
 Settings shows only Guest while signed out. While signed in, it shows Guest and
 the current account; other saved account profiles and their preference counts
-remain hidden. People sharing one Chrome profile still share its extension
-storage, so separate Chrome profiles or Chrome Guest mode should be used on a
-shared computer.
+remain hidden. People sharing one browser profile still share its extension
+storage, so separate browser profiles or a browser guest mode should be used
+on a shared computer.
 
 Clearing extension data does not sign the user out of NLB, cancel a booking,
 or delete information held by NLB. Users can also remove all extension-local
-data by uninstalling Library Seats SG through Chrome.
+data by uninstalling Library Seats SG through the browser.
 
 On a shared or public computer, sign out of NLB first and then use **Clear all
 local data**. Clearing while an NLB account remains signed in can cause a new
 empty local profile to be created when the extension refreshes that session.
 
-An unpacked/manual installation and a Chrome Web Store installation are
-separate Chrome extension installations. Their local favourites and settings
-do not automatically transfer between them.
+Each unpacked, Chrome Web Store, and Firefox Add-ons installation has separate
+extension storage. Local favourites and settings do not automatically transfer
+between installations or browsers.
 
 ## Security
 
 Library Seats SG limits its content script to
-`https://www.nlb.gov.sg/seatbooking/*`, requests only Chrome's `storage`
+`https://www.nlb.gov.sg/seatbooking/*`, requests only the browser's `storage`
 permission, and packages all executable code with the extension. It does not
 load remote executable code.
 
@@ -203,20 +203,34 @@ its disclosed, user-facing seat-booking purpose. It does not use or transfer
 user information for personalised advertising, unrelated purposes, or sale to
 third parties.
 
+## Firefox data collection declarations
+
+The Firefox manifest declares `authenticationInfo`, `websiteActivity`, and
+`websiteContent` as required data categories. These declarations describe the
+NLB session state and NLB Seat Booking information processed locally to provide
+the extension's features. They do not mean that this information is collected
+by or sent to the developer. The extension has no optional data collection and
+no technical or interaction telemetry.
+
+Firefox private browsing is disabled for the extension. This prevents NLB
+session activity from a private window from being combined with preferences in
+the normal profile's extension-local storage.
+
 ## NLB and browser services
 
 NLB controls its accounts, authentication, availability, bookings,
 cancellations, website, APIs, and records. Information held by NLB is governed
-by NLB's own terms and privacy practices. Chrome and the Chrome Web Store may
-process installation or browser information independently under Google's
-policies. This policy covers only information handled by Library Seats SG code.
+by NLB's own terms and privacy practices. Chrome, Firefox, the Chrome Web Store,
+and Firefox Add-ons may process installation or browser information independently
+under Google or Mozilla policies. This policy covers only information handled
+by Library Seats SG code.
 
 ## Changes to this policy
 
 This policy will be updated when the extension's information-handling
 practices change. Material changes will be disclosed in the extension or its
-Chrome Web Store listing before or when the changed practice takes effect, as
-required. The effective date at the top records the latest revision.
+applicable browser-store listing before or when the changed practice takes
+effect, as required. The effective date at the top records the latest revision.
 
 ## Contact
 
