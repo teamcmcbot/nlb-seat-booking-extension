@@ -19,6 +19,16 @@ By installing or using the extension, you agree to the [Terms of Use](TERMS.md).
 - Save favourite seats separately for Guest and each NLB account you use.
 - Choose a library, area, and date from the extension workspace.
 - Check or refresh availability without repeatedly opening individual seats.
+- Automatically check availability after reload when the saved library and
+  area still contain favourite seats.
+- Refresh availability after closing the seat picker only when its final
+  favourite-seat set differs from when it opened and still contains a seat.
+- Apply the same change-sensitive refresh when finishing the inline favourite
+  seat manager with **Done**.
+- Automatically check the new selection after changing the library, area, or
+  date when that selected area contains at least one favourite seat.
+- Keep signed-out availability visible while requiring NLB sign-in before
+  hours can be selected or booked.
 - Compare a full day of availability without repeatedly opening individual
   seats.
 - Search by seat number or use a reviewed interactive seat plan where one is
@@ -278,6 +288,8 @@ versioned download.
 6. To cancel, select a cancelable purple booking, click **Cancel**, review the
    complete booking, choose a reason, and confirm.
 7. Review the per-request result and automatically refreshed availability.
+   After a booking or cancellation run, use **Go to My Bookings** to open
+   NLB's booking list, or × to dismiss the status.
 
 ## Project structure
 

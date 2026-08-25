@@ -2251,6 +2251,15 @@
   font-size: 11px;
 }
 
+.nlb-seat-helper__booking-progress-actions {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+}
+
+.nlb-seat-helper__booking-progress-actions button,
 .nlb-seat-helper__booking-progress-header > button {
   padding: 3px 7px;
   border: 1px solid #cbdad2;
@@ -2261,6 +2270,21 @@
   font-size: 9px;
   font-weight: 700;
   cursor: pointer;
+}
+
+.nlb-seat-helper__booking-progress-actions button.nlb-seat-helper__my-bookings {
+  border-color: #7eb99a;
+  background: #e9f6ee;
+  color: #176c48;
+}
+
+.nlb-seat-helper__booking-progress-actions
+  button.nlb-seat-helper__booking-progress-dismiss {
+  width: 24px;
+  padding-right: 3px;
+  padding-left: 3px;
+  font-size: 14px;
+  line-height: 1;
 }
 
 .nlb-seat-helper__booking-progress-item {

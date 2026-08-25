@@ -269,15 +269,13 @@ export function ClickableSeatPlan({
       className="nlb-seat-helper__interactive-map-canvas"
       style={{ width: `${canvasWidth}px`, height: `${canvasHeight}px` }}
     >
-      {verifiedImageUrl && (
-        <img
-          className="nlb-seat-helper__interactive-map-base-image"
-          src={verifiedImageUrl}
-          alt=""
-          aria-hidden="true"
-          style={{ width: `${renderedWidth}px`, height: `${renderedHeight}px` }}
-        />
-      )}
+      <img
+        className="nlb-seat-helper__interactive-map-base-image"
+        src={verifiedImageUrl ?? imageUrl}
+        alt=""
+        aria-hidden="true"
+        style={{ width: `${renderedWidth}px`, height: `${renderedHeight}px` }}
+      />
       <svg
         className="nlb-seat-helper__interactive-map"
         style={{ width: `${renderedWidth}px`, height: `${renderedHeight}px` }}

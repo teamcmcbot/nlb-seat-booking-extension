@@ -104,9 +104,12 @@ After publishing:
 3. Download `nlb-seat-helper.zip` from **Assets**.
 4. Confirm the downloaded archive passes `unzip -t`.
 5. Load the extracted directory in Chrome and run a smoke test on the NLB Seat
-   Booking page.
+   Booking page, including automatic availability triggers, unchanged and
+   changed favourite snapshots, signed-out view-only cells, and both completed
+   status action headers.
 6. Confirm the AMO listing shows the same version, then install Mozilla's signed
-   build and repeat the critical Firefox smoke test.
+   build and repeat the critical Firefox smoke test, including immediate map
+   rendering on the first picker opening.
 
 Do not ask users to download GitHub's automatically generated **Source code**
 ZIP or tarball. Those archives contain the project source, not the built

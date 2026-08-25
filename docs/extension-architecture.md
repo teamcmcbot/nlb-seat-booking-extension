@@ -39,6 +39,21 @@ map hotspot without changing favourite state or moving the viewport. Direct
 map hover remains a separate green/white contrast treatment. The timeline's
 expandable **Legend** explains the availability and booking colors.
 
+Opening the picker snapshots the current area's valid favourite-seat identity
+set. Every exit—**Done**, close button, outside click, or Escape—uses the same
+close handler and compares the final set with that snapshot. It runs the normal
+availability check/refresh only when the set changed and still contains at
+least one favourite. Identity comparison is order-independent, so intermediate
+adds and removals that restore the opening set skip the request; an empty final
+set also skips it. Favourite-driven timeline resets are deferred while the
+picker is open, so restoring the opening set also preserves the availability
+matrix that was visible before the picker opened.
+
+The inline Favourite seats **Manage** flow owns a separate snapshot and uses
+the same order-independent comparison on **Done**. Timeline resets are also
+deferred while this manager is open. A changed non-empty final set refreshes;
+an unchanged final set preserves the existing matrix.
+
 Verified seat-plan definitions can add interactive hotspots over an exact map
 revision. Definitions use source-image coordinates and resolve each annotated
 seat name to exactly one current catalog seat before calling the normal
@@ -47,10 +62,12 @@ rendered from the same in-memory blob. The complete clickable layer is
 disabled if the branch, area, map revision, image dimensions, SHA-256, seat
 identity, geometry, or declared coverage does not validate. Unmapped and
 rejected plans remain visible and retain seat-number search as the fallback.
-After verification, the blob-backed image is rendered in an HTML image layer
-with the interactive SVG controls overlaid above it. This avoids Firefox's
-inconsistent rendering of blob URLs inside SVG while keeping the displayed
-bytes identical to the bytes that passed fingerprint validation.
+The HTML image layer first uses NLB's normal map URL so the plan remains visible
+while its bytes are fetched, hashed, and decoded. After verification it switches
+to the blob backed by those exact bytes, with the interactive SVG controls
+overlaid above it. Hotspots remain disabled until verification succeeds. This
+avoids both Firefox's inconsistent rendering of blob URLs inside SVG and a
+blank canvas during a slow or interrupted verification fetch.
 Hotspots indicate favourite status
 only; they do not represent date-specific availability. Reviewed range and
 hybrid plans carry a `mappingBasis` marker and tell the user that positions
@@ -116,6 +133,12 @@ opt-out. The flow is one-way and additive: removing a seat from Guest does not
 remove it from an account, and removing it from an account does not remove the
 Guest copy.
 
+Signed-out timelines are view-only. Available cells remain green but render as
+non-interactive elements, the quota banner prompts the user to sign in, and a
+defensive selection guard rejects any programmatic attempt before quota or
+conflict validation. The missing-quota message is reserved for a signed-in
+session whose NLB response genuinely lacks quota information.
+
 The header and Settings identify the current account with an in-memory masked
 identifier, such as **Signed in as A*******Z**, and present its stable neutral
 **Profile 1** order label as a separate badge. Masking retains only the first
@@ -128,6 +151,20 @@ the first area, in NLB catalog order, within that library that contains a
 saved favourite seat still present in the catalog. The same fallback runs
 when the user changes libraries. A library with no valid favourite seat keeps
 the explicit **Choose a specific area** state.
+
+After storage restoration, the assistant launches one initial availability
+check only when the resolved saved area contains a favourite seat that still
+exists in the fresh catalog. Today's check reuses the `GetAccountInfo` response
+that mounted the assistant instead of making a duplicate account request. A
+usable current-day matrix remains authoritative; an unusable matrix falls back
+to sequential exact-interval searches. If date-range correction selects a
+future date, the same trigger runs the normal date-specific interval scan.
+
+User changes to library, area, or date use the same deferred trigger. The
+assistant first commits the complete new selection, resets availability for
+that context, and then checks only if the resulting area contains a valid
+favourite. This prevents a branch change from checking the previous area and
+avoids requests for incomplete selections.
 
 ## End-to-end flow
 
@@ -349,6 +386,17 @@ No library/area range is hardcoded.
 
 ## Availability scan
 
+The initial timeline source is the freshly loaded `GetAccountInfo` response.
+After a page load or refresh restores a valid saved library, area, and
+favourite, the assistant automatically applies the same validation as the
+visible **Check** action. It does not persist availability or carry a matrix
+across page loads.
+
+Changing the library, area, or date also invokes this validation after the new
+selection settles, provided the resulting selected area has favourites. A
+today selection fetches a fresh account matrix; a future selection runs the
+date-specific interval scan.
+
 For today, availability initializes immediately from each catalog seat's
 `hasAvailableSlots` matrix returned by `GetAccountInfo`. Pressing **Refresh**
 fetches `GetAccountInfo` once and replaces the current-day matrix. An
@@ -400,6 +448,12 @@ be overridden. A zero-match overnight matrix supplies no negative evidence, so
 the flow continues to the existing exact selected-block preflight. A missing
 area or selected seat still fails closed. `bookings/Book` remains final
 authority.
+
+After a booking or cancellation run completes, its status header presents **Go
+to My Bookings** followed by ×. The navigation uses the same-origin
+`/seatbooking/mybookings` route. This is a normal page navigation, so NLB
+reloads the route and the content script mounts there using the same startup
+restoration and availability rules.
 
 The local clock is checked every 30 seconds. When the Singapore calendar date
 changes, the assistant aborts scans, clears availability and selections from

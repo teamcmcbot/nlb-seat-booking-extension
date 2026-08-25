@@ -66,10 +66,24 @@ availability for today and a future date, seat-plan display, booking review,
 cancellation review when an existing cancelable booking is available, route
 changes, reload handling, and console/network errors.
 
+For version 1.4.0, explicitly verify that:
+
+- restored favourites trigger one initial availability check;
+- changing library, area, or date triggers a check only when the resulting
+  area has favourites;
+- the seat plan is visible immediately on the first picker opening in Firefox;
+- picker close and inline **Manage** → **Done** refresh only for a changed,
+  non-empty final favourite set, while remove-and-restore preserves the
+  existing timeline without a request;
+- signed-out green cells remain view-only; and
+- completed booking and cancellation status both show **Go to My Bookings**
+  followed by an accessible × dismissal control.
+
 Chrome receives a focused regression test of installation, signed-out and
 signed-in rendering, storage restoration, availability, booking review, route
-changes, and confirmation that private/incognito use is unavailable. Do not
-make or cancel a real booking solely for testing.
+changes, the version 1.4.0 behaviors above, and confirmation that
+private/incognito use is unavailable. Do not make or cancel a real booking
+solely for testing.
 
 Store screenshots must be checked in Firefox before submission. Existing
 privacy-safe 1280×800 captures may be reused only if the Firefox rendering

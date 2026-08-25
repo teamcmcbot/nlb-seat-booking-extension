@@ -1,7 +1,7 @@
 # Feature reference
 
 This document records the detailed user-visible capabilities and safeguards in
-Library Seats SG - for NLB v1.3.2. The shorter project overview and normal usage
+Library Seats SG - for NLB v1.4.0. The shorter project overview and normal usage
 steps remain in the repository [`README`](../README.md).
 
 ## Account and quota
@@ -16,6 +16,9 @@ steps remain in the repository [`README`](../README.md).
   Seat Booking page.
 - Keeps catalog and availability features accessible while signed out, using
   a permanent Guest profile that is separate from signed-in accounts.
+- Keeps signed-out green availability view-only and labels the booking area
+  with a sign-in requirement instead of treating absent account quota as an
+  error.
 - Shows the in-memory masked account identifier in a distinct monospace style,
   for example **Signed in as A*******Z**, with the stable **Profile 1** label
   presented as a separate badge so account switchers can verify the active
@@ -103,6 +106,14 @@ steps remain in the repository [`README`](../README.md).
   clickable; selecting a seat from the sidebar centers it in the map.
 - Uses a high-contrast Done button and scales the favourite star to each seat
   hotspot so markers remain consistent across differently sized maps.
+- Snapshots the selected seat identities when the picker opens. **Done**, ×,
+  outside click, and Escape refresh availability only when the final set is
+  different and still contains at least one seat; changing seats and then
+  restoring the exact opening set does not refresh or clear the previously
+  displayed availability.
+- Uses the same snapshot behavior for the main Favourite seats **Manage**
+  interface: **Done** refreshes a changed, non-empty final set and preserves
+  availability when the final set is unchanged.
 - Adds 2,080 verified clickable hotspots across all 83 inventoried plans,
   including range-order mappings for the two plans without individual labels.
 - Verifies the exact rendered image bytes against a reviewed SHA-256 and falls
@@ -125,6 +136,13 @@ steps remain in the repository [`README`](../README.md).
 
 ## Availability
 
+- On initial load or page refresh, automatically checks availability once when
+  the restored library and area still contain at least one valid favourite
+  seat. It uses the freshly loaded account matrix for today and the normal
+  exact-interval scanner when date-specific checks are required.
+- Automatically checks the resulting selection after the library, area, or
+  date changes when that area contains at least one favourite seat. Changes
+  that leave no specific area or no favourites do not make a request.
 - Shows today's favourite-seat availability immediately from the
   `hasAvailableSlots` matrix returned by `GetAccountInfo`.
 - Overrides every current-day matrix value to closed when the selected branch
@@ -178,6 +196,9 @@ steps remain in the repository [`README`](../README.md).
 - Lets users dismiss completed booking status manually and automatically
   clears an entirely successful run after 12 seconds. Failed results remain
   visible.
+- Adds **Go to My Bookings** followed by an accessible × dismissal control to
+  both completed Booking Status and Cancellation Status. Navigation opens
+  NLB's `/seatbooking/mybookings` page.
 - Refreshes the displayed availability after booking, including rerunning
   date-specific interval checks for a future date.
 

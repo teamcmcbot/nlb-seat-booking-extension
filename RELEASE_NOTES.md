@@ -16,9 +16,28 @@ application codebase and version for Chrome and Firefox.
   reproducible AMO reviewer source package with build instructions.
 - Renders the verified seat-plan image as an HTML layer beneath the SVG seat
   controls, avoiding Firefox's failure to display its blob URL inside SVG.
+- Shows NLB's normal map image immediately while fingerprint verification is
+  pending, preventing a slow or interrupted Firefox verification fetch from
+  leaving the picker blank. Seat hotspots remain disabled until verification
+  succeeds.
 - Re-evaluates the sidebar seat beneath the pointer after a favourite is
   removed: the orange preview follows the next shifted seat, or clears when
   the removed seat was the final list item.
+- Automatically checks availability after load or page refresh when the
+  restored library and area still contain valid favourite seats, reusing the
+  fresh account response for today's authoritative matrix.
+- Snapshots favourite-seat identities when the picker opens and refreshes on
+  **Done**, ×, outside click, or Escape only when the final set changed and
+  still contains at least one seat. Intermediate edits that restore the exact
+  opening set do not cause a request or clear the existing timeline.
+- Applies the same snapshot comparison and timeline preservation to the main
+  Favourite seats **Manage** → **Done** flow.
+- Automatically checks availability after a library, area, or date change
+  settles on an area containing at least one favourite seat.
+- Adds **Go to My Bookings** followed by × to both completed Booking Status and
+  Cancellation Status controls.
+- Makes signed-out green availability view-only and replaces the misleading
+  missing-quota selection error with a clear sign-in requirement.
 - Documents Firefox testing, privacy declarations, listing copy, reviewer
   instructions, and the separate Chrome and Firefox publication workflows.
 - Surfaces NLB's booking-validation message when a booking request is rejected,
@@ -26,7 +45,7 @@ application codebase and version for Chrome and Firefox.
 
 ## Validation
 
-- Full regression suite passed: 42 test files and 281 tests.
+- Full regression suite passed: 42 test files and 286 tests.
 - Typecheck, production builds, Chrome packaging, Firefox strict lint, and all
   archive integrity checks passed.
 - The AMO reviewer source archive rebuilt an extracted Firefox package whose
@@ -36,6 +55,9 @@ application codebase and version for Chrome and Firefox.
   inherited through Mozilla's current `web-ext`/`addons-linter` toolchain.
 - Live Chrome and Firefox smoke testing passed for the seat picker, favourite
   persistence, availability refresh/check, booking, and cancellation flows.
+- Cross-browser smoke testing of automatic availability triggers, picker
+  snapshot comparison, and the new booking/cancellation status navigation
+  remains pending.
 
 # Library Seats SG - for NLB v1.3.2
 

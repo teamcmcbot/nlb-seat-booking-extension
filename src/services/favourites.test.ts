@@ -2,8 +2,24 @@ import { describe, expect, it } from "vitest";
 import type { FavouriteSeat } from "../models/catalog";
 import {
   firstAreaWithFavouriteSeat,
+  favouriteSeatSetKey,
   guestFavouritesNeedingCopy,
+  hasFavouriteSeatInArea,
 } from "./favourites";
+
+describe("favouriteSeatSetKey", () => {
+  it("treats the same seat identities in a different order as unchanged", () => {
+    expect(favouriteSeatSetKey([{ id: "S378" }, { id: "S377" }])).toBe(
+      favouriteSeatSetKey([{ id: "S377" }, { id: "S378" }]),
+    );
+  });
+
+  it("detects a changed final seat set after intermediate edits", () => {
+    expect(favouriteSeatSetKey([{ id: "S377" }, { id: "S379" }])).not.toBe(
+      favouriteSeatSetKey([{ id: "S377" }, { id: "S378" }]),
+    );
+  });
+});
 
 function favourite(
   branchId: string,
@@ -60,6 +76,39 @@ describe("firstAreaWithFavouriteSeat", () => {
         favourite("library-2", "area-2a", "seat-4"),
       ]),
     ).toBe("");
+  });
+});
+
+describe("hasFavouriteSeatInArea", () => {
+  const area = {
+    id: "area-2a",
+    branchId: "library-2",
+    seats: [{ id: "seat-4" }],
+  };
+
+  it("recognizes a restorable favourite in the selected area", () => {
+    expect(
+      hasFavouriteSeatInArea(area, [
+        favourite("library-2", "area-2a", "seat-4"),
+      ]),
+    ).toBe(true);
+  });
+
+  it("ignores favourites for another area or a stale seat", () => {
+    expect(
+      hasFavouriteSeatInArea(area, [
+        favourite("library-2", "area-2b", "seat-4"),
+        favourite("library-2", "area-2a", "missing-seat"),
+      ]),
+    ).toBe(false);
+  });
+
+  it("returns false when no selected area was restored", () => {
+    expect(
+      hasFavouriteSeatInArea(undefined, [
+        favourite("library-2", "area-2a", "seat-4"),
+      ]),
+    ).toBe(false);
   });
 });
 

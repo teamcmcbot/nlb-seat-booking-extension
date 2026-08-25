@@ -52,6 +52,36 @@ export function favouriteIdentity(favourite: FavouriteSeat) {
   return `${favourite.branchId}:${favourite.areaId}:${favourite.seatId}`;
 }
 
+export function favouriteSeatSetKey(seats: Array<{ id: string }>) {
+  return seats
+    .map((seat) => seat.id)
+    .sort()
+    .join("|");
+}
+
+export function hasFavouriteSeatInArea(
+  area:
+    | {
+        id: string;
+        branchId: string;
+        seats: Array<{ id: string }>;
+      }
+    | undefined,
+  favourites: FavouriteSeat[],
+) {
+  if (!area) {
+    return false;
+  }
+
+  const seatIds = new Set(area.seats.map((seat) => seat.id));
+  return favourites.some(
+    (favourite) =>
+      favourite.branchId === area.branchId &&
+      favourite.areaId === area.id &&
+      seatIds.has(favourite.seatId),
+  );
+}
+
 export function guestFavouritesNeedingCopy(
   guestFavourites: FavouriteSeat[],
   profileFavourites: FavouriteSeat[],
