@@ -40,6 +40,9 @@
 
 .nlb-seat-helper__panel.is-workspace {
   display: flex;
+  height: min(900px, calc(100vh - 24px));
+  height: min(900px, calc(100dvh - 24px));
+  min-height: 0;
   flex-direction: column;
   overflow: hidden;
 }
@@ -371,6 +374,7 @@
   min-height: 0;
   flex: 1 1 auto;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__assistant > * {
@@ -524,6 +528,21 @@
   width: 100%;
   max-height: 125px;
   object-fit: contain;
+}
+
+.nlb-seat-helper__area-map--placeholder {
+  display: grid;
+  min-height: 125px;
+  place-items: center;
+  padding: 16px;
+  background:
+    linear-gradient(135deg, rgb(226 233 229 / 70%) 25%, transparent 25%) 0 0 /
+      16px 16px,
+    linear-gradient(315deg, rgb(226 233 229 / 70%) 25%, #f5f7f6 25%) 0 0 /
+      16px 16px;
+  color: #7b8982;
+  font-size: 10px;
+  text-align: center;
 }
 
 .nlb-seat-helper__area-map button > span {
@@ -1434,6 +1453,8 @@
   bottom: -1px;
   margin-top: 7px;
   padding: 9px;
+  max-height: clamp(84px, 20vh, 150px);
+  overflow-y: auto;
   border: 1px solid #dde7e2;
   border-radius: 10px;
   background: #f8faf9;
@@ -2386,6 +2407,13 @@
 }
 
 @media (max-height: 700px) {
+  .nlb-seat-helper__panel.is-workspace {
+    height: calc(100vh - 24px);
+    height: calc(100dvh - 24px);
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+  }
+
   .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__assistant {
     overflow-y: auto;
     overscroll-behavior: contain;
@@ -2408,6 +2436,7 @@
 
   .nlb-seat-helper__booking-selection {
     position: static;
+    max-height: clamp(84px, 24vh, 150px);
   }
 }
 

@@ -60,7 +60,7 @@ characters with asterisks.
 The extension handles choices made in its interface, including:
 
 - favourite seats;
-- the last selected library and area;
+- the last selected library and the last area within each library;
 - dates, seats, and time slots selected for review;
 - booking and cancellation confirmations and an NLB cancellation reason;
 - Guest-favourite copy preferences; and
@@ -93,7 +93,8 @@ extension storage. It may store:
   the last active local profile;
 - Guest and per-profile favourite-seat records, including NLB library, area,
   and seat identifiers, codes, and names;
-- the last selected library and area for Guest and each profile;
+- the last selected library and the last area within each library for Guest
+  and each profile;
 - each profile's signed-out favourite sync decision and the favourite identities
   already acknowledged by that decision;
 - the installation's default adjacent-hour booking mode;

@@ -128,6 +128,24 @@ describe("opaque account profiles", () => {
     expect(values).not.toHaveProperty("lastSeatSelection");
   });
 
+  it("stores and restores the last area separately for each library", async () => {
+    installChromeStorage();
+    const selection = {
+      branchId: "10",
+      areaId: "20",
+      lastAreaByBranch: {
+        "10": "20",
+        "11": "21",
+      },
+    };
+
+    await saveLastSeatSelection(SIGNED_OUT_PROFILE_ID, selection);
+
+    expect(await loadLastSeatSelection(SIGNED_OUT_PROFILE_ID)).toEqual(
+      selection,
+    );
+  });
+
   it("migrates legacy Guest data without silently moving it into an account", async () => {
     const { values } = installChromeStorage(storageFixtures.freshSignedOut);
     const rawUserId = "sanitized-user-1";

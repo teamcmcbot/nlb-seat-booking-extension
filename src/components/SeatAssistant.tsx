@@ -37,7 +37,6 @@ import {
   copyGuestFavouritesToProfile,
   favouriteIdentity,
   favouriteSeatSetKey,
-  firstAreaWithFavouriteSeat,
   guestFavouritesNeedingCopy,
   hasFavouriteSeatInArea,
   loadFavouriteSeats,
@@ -383,6 +382,9 @@ export function SeatAssistant({
 }: SeatAssistantProps) {
   const [branchId, setBranchId] = useState("");
   const [areaId, setAreaId] = useState("");
+  const [lastAreaByBranch, setLastAreaByBranch] = useState<
+    Record<string, string>
+  >({});
   const [date, setDate] = useState(todayValue);
   const [favourites, setFavourites] = useState<FavouriteSeat[]>([]);
   const [storageReady, setStorageReady] = useState(false);
@@ -745,12 +747,24 @@ export function SeatAssistant({
         );
 
         if (storedBranch) {
-          const nextAreaId =
-            storedArea?.id ??
-            firstAreaWithFavouriteSeat(storedBranch, storedFavourites);
+          const storedAreaByBranch = lastSelection.lastAreaByBranch ?? {};
+          const rememberedAreaId =
+            storedAreaByBranch[storedBranch.id] ??
+            (storedBranch.id === lastSelection.branchId
+              ? storedArea?.id
+              : undefined);
+          const nextAreaId = storedBranch.areas.some(
+            (item) => item.id === rememberedAreaId,
+          )
+            ? rememberedAreaId ?? ""
+            : storedBranch.areas[0]?.id ?? "";
           const nextArea = storedBranch.areas.find(
             (item) => item.id === nextAreaId,
           );
+          const nextAreaByBranch = nextAreaId
+            ? { ...storedAreaByBranch, [storedBranch.id]: nextAreaId }
+            : storedAreaByBranch;
+          setLastAreaByBranch(nextAreaByBranch);
           setBranchId(storedBranch.id);
           setAreaId(nextAreaId);
           setAutomaticAvailabilityCheckMode(
@@ -759,10 +773,15 @@ export function SeatAssistant({
               : null,
           );
 
-          if (nextAreaId !== lastSelection.areaId) {
+          if (
+            nextAreaId !== lastSelection.areaId ||
+            JSON.stringify(nextAreaByBranch) !==
+              JSON.stringify(lastSelection.lastAreaByBranch ?? {})
+          ) {
             void saveLastSeatSelection(profileUserId, {
               branchId: storedBranch.id,
               areaId: nextAreaId,
+              lastAreaByBranch: nextAreaByBranch,
             });
           }
         }
@@ -2046,15 +2065,23 @@ export function SeatAssistant({
               const nextBranch = catalog.branches.find(
                 (item) => item.id === nextBranchId,
               );
-              const nextAreaId = firstAreaWithFavouriteSeat(
-                nextBranch,
-                favourites,
-              );
+              const rememberedAreaId = nextBranch
+                ? lastAreaByBranch[nextBranch.id]
+                : undefined;
+              const nextAreaId = nextBranch?.areas.some(
+                (item) => item.id === rememberedAreaId,
+              )
+                ? rememberedAreaId ?? ""
+                : nextBranch?.areas[0]?.id ?? "";
               const nextArea = nextBranch?.areas.find(
                 (item) => item.id === nextAreaId,
               );
+              const nextAreaByBranch = nextAreaId
+                ? { ...lastAreaByBranch, [nextBranchId]: nextAreaId }
+                : lastAreaByBranch;
               setBranchId(nextBranchId);
               setAreaId(nextAreaId);
+              setLastAreaByBranch(nextAreaByBranch);
               setAutomaticAvailabilityCheckMode(
                 hasFavouriteSeatInArea(nextArea, favourites)
                   ? "refresh"
@@ -2064,6 +2091,7 @@ export function SeatAssistant({
               void saveLastSeatSelection(profileUserId, {
                 branchId: nextBranchId,
                 areaId: nextAreaId,
+                lastAreaByBranch: nextAreaByBranch,
               });
             }}
           >
@@ -2087,6 +2115,10 @@ export function SeatAssistant({
                 (item) => item.id === nextAreaId,
               );
               setAreaId(nextAreaId);
+              const nextAreaByBranch = nextAreaId
+                ? { ...lastAreaByBranch, [branchId]: nextAreaId }
+                : lastAreaByBranch;
+              setLastAreaByBranch(nextAreaByBranch);
               setAutomaticAvailabilityCheckMode(
                 hasFavouriteSeatInArea(nextArea, favourites)
                   ? "refresh"
@@ -2096,6 +2128,7 @@ export function SeatAssistant({
               void saveLastSeatSelection(profileUserId, {
                 branchId,
                 areaId: nextAreaId,
+                lastAreaByBranch: nextAreaByBranch,
               });
             }}
           >
@@ -2131,9 +2164,32 @@ export function SeatAssistant({
       </div>
 
       {!area && (
-        <p className="nlb-seat-helper__empty">
-          Choose a library and a specific area to manage favourite seats.
-        </p>
+        <>
+          <p className="nlb-seat-helper__empty">
+            Choose a library and a specific area to manage favourite seats.
+          </p>
+
+          <section className="nlb-seat-helper__map-section">
+            <strong>Seat plan</strong>
+            <div
+              className="nlb-seat-helper__area-map nlb-seat-helper__area-map--placeholder"
+              role="img"
+              aria-label="Seat plan preview unavailable until a library and area are selected"
+            >
+              <span>Select a library and area to view the seat plan.</span>
+            </div>
+          </section>
+
+          <div className="nlb-seat-helper__section-heading">
+            <div>
+              <strong>Favourite seats</strong>
+              <span>Choose an area to manage favourite seats.</span>
+            </div>
+          </div>
+          <div className="nlb-seat-helper__empty nlb-seat-helper__empty--card">
+            <p>Favourite seats will appear here after you select an area.</p>
+          </div>
+        </>
       )}
 
       {area && (

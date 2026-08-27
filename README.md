@@ -127,7 +127,8 @@ The browser's extension-local storage contains only:
 - the storage schema version, opaque local profile identifiers, their stable
   display order, and the last active local profile;
 - favourite seat selections for each account;
-- the last selected library and area for each account;
+- the last selected library and the last area within each library for each
+  account;
 - each account's Guest-favourites copy decision and acknowledged Guest
   favourite identities;
 - the installation's default adjacent-hour booking mode; and

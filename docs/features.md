@@ -60,11 +60,10 @@ steps remain in the repository [`README`](../README.md).
 - Extracts the current library, area, seat, and booking rules from NLB's
   `GetAccountInfo` response.
 - Excludes `facilityId: 2` discussion rooms and breakout rooms.
-- Remembers the last selected library and area separately for each NLB
-  account in extension-local storage.
-- When switching libraries, automatically selects the first area in that
-  library containing a saved favourite seat; libraries without favourites
-  keep the explicit area choice.
+- Remembers the last selected library and the last area within each library
+  separately for each NLB account in extension-local storage.
+- When switching libraries, restores that library's last area; if none is
+  stored, it selects the first area in NLB catalog order.
 - Respects NLB's configured advance-booking days and release time.
 - Treats each validated `settings.holidays` range as inclusive full local
   calendar days, except for branches listed in `excludedBranches`.
@@ -86,9 +85,10 @@ steps remain in the repository [`README`](../README.md).
 - Keeps the seat plan visible while favourite seats are browsed or managed.
 - Prioritizes seats booked by the user and available seats after a scan, while
   keeping rows stationary as timeline cells are selected.
-- Grows to fit short favourite lists, uses up to the remaining browser height
-  for longer lists, and scrolls only that list when more seats are available
-  than can fit.
+- Keeps the expanded workspace at the available browser height, grows short
+  lists naturally, and makes longer favourite lists the primary scroll region.
+  On short viewports, the workspace itself scrolls while the booking summary
+  stays usable without covering the favourite seats.
 - Displays the reviewed `-sp` map for an annotated branch and area. For an
   unreviewed area, it uses only `areaMapUrls` attached to that exact area in
   the NLB response.
