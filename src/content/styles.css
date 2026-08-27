@@ -1237,20 +1237,58 @@
   color: #914d44;
 }
 
+.nlb-seat-helper__favourite-scroll {
+  position: relative;
+  max-height: 260px;
+  min-height: 0;
+  margin-top: 8px;
+}
+
 .nlb-seat-helper__favourite-list {
   display: grid;
   align-content: start;
-  max-height: 260px;
   gap: 5px;
-  margin-top: 8px;
+  max-height: 260px;
   overflow-y: auto;
-  padding-right: 3px;
+  padding-right: 10px;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  scrollbar-width: none;
+}
+
+.nlb-seat-helper__favourite-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.nlb-seat-helper__favourite-scrollbar {
+  position: absolute;
+  z-index: 1;
+  top: 2px;
+  right: 2px;
+  bottom: 2px;
+  width: 6px;
+  border-radius: 999px;
+  background: #edf3f0;
+  pointer-events: none;
+}
+
+.nlb-seat-helper__favourite-scrollbar span {
+  display: block;
+  width: 100%;
+  min-height: 28px;
+  border-radius: 999px;
+  background: #8aa397;
+  transition: transform 80ms linear;
 }
 
 .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__favourite-list {
   min-height: 0;
+  max-height: none;
+  height: 100%;
+}
+
+.nlb-seat-helper__panel.is-workspace .nlb-seat-helper__favourite-scroll {
   max-height: none;
   flex: 1 1 auto;
 }
@@ -2432,6 +2470,12 @@
 
   .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__favourite-list {
     max-height: 260px;
+    height: auto;
+  }
+
+  .nlb-seat-helper__panel.is-workspace .nlb-seat-helper__favourite-scroll {
+    max-height: 260px;
+    flex: 0 0 auto;
   }
 
   .nlb-seat-helper__booking-selection {

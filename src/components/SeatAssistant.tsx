@@ -432,8 +432,14 @@ export function SeatAssistant({
   const scanController = useRef<AbortController>();
   const mapRequests = useRef(new Set<string>());
   const mapTriggerRef = useRef<HTMLButtonElement>(null);
+  const favouriteListRef = useRef<HTMLDivElement>(null);
   const mapFavouriteSnapshot = useRef("");
   const manageFavouriteSnapshot = useRef("");
+  const [favouriteScrollbar, setFavouriteScrollbar] = useState({
+    visible: false,
+    thumbHeight: 0,
+    thumbOffset: 0,
+  });
   const currentLocalDate = localDateValue(now);
   const previousLocalDate = useRef(currentLocalDate);
 
@@ -726,6 +732,68 @@ export function SeatAssistant({
     slots.map((slot) => slot.key).join(","),
     referenceMatrixKey,
   ].join("|");
+
+  function updateFavouriteScrollbar() {
+    const element = favouriteListRef.current;
+    if (!element) {
+      setFavouriteScrollbar({
+        visible: false,
+        thumbHeight: 0,
+        thumbOffset: 0,
+      });
+      return;
+    }
+
+    const viewportHeight = element.clientHeight;
+    const scrollHeight = element.scrollHeight;
+    const maxScrollTop = Math.max(0, scrollHeight - viewportHeight);
+    if (viewportHeight === 0 || maxScrollTop === 0) {
+      setFavouriteScrollbar({
+        visible: false,
+        thumbHeight: 0,
+        thumbOffset: 0,
+      });
+      return;
+    }
+
+    const trackHeight = Math.max(0, viewportHeight - 4);
+    const thumbHeight = Math.max(
+      28,
+      Math.min(trackHeight, (trackHeight * viewportHeight) / scrollHeight),
+    );
+    const thumbOffset =
+      ((element.scrollTop / maxScrollTop) * (trackHeight - thumbHeight)) || 0;
+    setFavouriteScrollbar({
+      visible: true,
+      thumbHeight,
+      thumbOffset,
+    });
+  }
+
+  useEffect(() => {
+    const element = favouriteListRef.current;
+    if (!element) {
+      setFavouriteScrollbar({
+        visible: false,
+        thumbHeight: 0,
+        thumbOffset: 0,
+      });
+      return undefined;
+    }
+
+    const frame = window.requestAnimationFrame(updateFavouriteScrollbar);
+    if (typeof ResizeObserver === "undefined") {
+      return () => window.cancelAnimationFrame(frame);
+    }
+
+    const observer = new ResizeObserver(updateFavouriteScrollbar);
+    observer.observe(element);
+    Array.from(element.children).forEach((child) => observer.observe(child));
+    return () => {
+      window.cancelAnimationFrame(frame);
+      observer.disconnect();
+    };
+  }, [areaId, orderedFavouriteSeats.length, scan.status, slots.length]);
 
   useEffect(() => {
     Promise.all([
@@ -2368,8 +2436,13 @@ export function SeatAssistant({
                       {scan.message}
                     </p>
                   )}
-                  <div className="nlb-seat-helper__favourite-list">
-                    {orderedFavouriteSeats.map((seat) => {
+                  <div className="nlb-seat-helper__favourite-scroll">
+                    <div
+                      ref={favouriteListRef}
+                      className="nlb-seat-helper__favourite-list"
+                      onScroll={updateFavouriteScrollbar}
+                    >
+                      {orderedFavouriteSeats.map((seat) => {
                       const seatAvailability = scan.availability[seat.id] ?? {};
                       const knownSlots = slots.filter(
                         (slot) => seatAvailability[slot.key] !== undefined,
@@ -2408,8 +2481,8 @@ export function SeatAssistant({
                           }).length
                         : 0;
 
-                      return (
-                        <article key={seat.id}>
+                        return (
+                          <article key={seat.id}>
                           <div className="nlb-seat-helper__seat-title">
                             <strong>★ {seat.name}</strong>
                             <span
@@ -2592,9 +2665,23 @@ export function SeatAssistant({
                               </small>
                             ))}
                           </div>
-                        </article>
-                      );
-                    })}
+                          </article>
+                        );
+                      })}
+                    </div>
+                    {favouriteScrollbar.visible && (
+                      <div
+                        className="nlb-seat-helper__favourite-scrollbar"
+                        aria-hidden="true"
+                      >
+                        <span
+                          style={{
+                            height: `${favouriteScrollbar.thumbHeight}px`,
+                            transform: `translateY(${favouriteScrollbar.thumbOffset}px)`,
+                          }}
+                        />
+                      </div>
+                    )}
                   </div>
                   <details
                     className="nlb-seat-helper__timeline-legend"
