@@ -2401,7 +2401,7 @@ export function SeatAssistant({
           ) : areaFavourites.length === 0 ? (
             <div className="nlb-seat-helper__empty nlb-seat-helper__empty--card">
               <p>No favourites configured for this area.</p>
-              <button type="button" onClick={openSeatManager}>
+              <button type="button" onClick={openMapPicker}>
                 Choose favourite seats
               </button>
             </div>

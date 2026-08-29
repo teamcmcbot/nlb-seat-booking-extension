@@ -1,3 +1,26 @@
+# Library Seats SG - for NLB v1.4.1
+
+This patch improves the responsive booking workspace and makes long favourite
+seat lists easier to navigate.
+
+## Highlights
+
+- Keeps the workspace at the available browser height while allowing short
+  viewports to scroll without hiding the favourite seats behind booking
+  controls.
+- Shows Seat plan and Favourite seats placeholders before a library area is
+  selected.
+- Remembers the last selected area separately for each library and falls back
+  to the first catalog area when no remembered area is available.
+- Adds a persistent visual scrollbar indicator for overflowing favourite-seat
+  lists, including Chrome on macOS where native scrollbars may auto-hide.
+- Makes the empty-area **Choose favourite seats** action open the seat picker
+  directly.
+
+## Validation
+
+- Full regression suite, typecheck, and production build passed.
+
 # Library Seats SG - for NLB v1.4.0
 
 This release adds Firefox Desktop distribution support while keeping one shared
