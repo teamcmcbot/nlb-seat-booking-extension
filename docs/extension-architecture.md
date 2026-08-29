@@ -21,9 +21,17 @@ It does not replace or modify NLB's own booking controls.
 The expanded workspace uses the available browser height. It keeps the
 selected-date quota, seat plan, favourite timelines, and booking action
 together; longer favourite lists become the primary scroll region so the map
-remains available while seats are browsed or managed. On short viewports, the
-workspace itself becomes scrollable and the booking summary returns to normal
-flow so it does not consume the visible favourite-seat area.
+remains available while seats are browsed or managed. A fixed-height
+post-favourites region is reserved from the initial area render. Its action row
+does not move when booking hours, cancellations, validation messages, or
+progress results change; variable details scroll inside that reserved region
+instead of reducing the visible favourite-seat area. On short viewports, the
+workspace itself can scroll while the favourite list and post-favourites
+region keep their independent height and overflow boundaries.
+The timeline Legend remains immediately below the favourite list in its own
+fixed row. Activating it opens a dismissible popover upward over the end of the
+favourite list, so the legend does not resize either region or cover the
+booking action. Outside click and Escape dismiss the popover.
 
 Clicking the seat-plan preview opens a temporary full-screen seat picker. It
 keeps the enlarged NLB plan beside the existing searchable favourite-seat
@@ -690,9 +698,12 @@ shared-computer cleanup sequence are documented in [`settings.md`](settings.md).
 
 The **Booking default** setting stores either `combine` or `separate` for the
 installation. Missing or malformed values fail safely to `combine`. Each new
-`SeatAssistant` instance loads that preference into its adjacent-hour radio
-selection; changing the option in the booking panel affects only that booking
-selection and does not rewrite the saved default.
+`SeatAssistant` instance loads that preference into its compact
+**Book each hour separately** toggle; changing the toggle in the booking panel
+affects only that booking selection and does not rewrite the saved default.
+The adjacent information control opens a non-layout popover on hover, focus,
+or click; a clicked popover remains until outside click or Escape dismisses
+it.
 
 Kept only in memory:
 

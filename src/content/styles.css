@@ -1426,24 +1426,58 @@
 }
 
 .nlb-seat-helper__timeline-legend {
-  margin-top: 6px;
   color: #67746e;
   font-size: 9px;
 }
 
-.nlb-seat-helper__timeline-legend summary {
-  width: max-content;
+.nlb-seat-helper__timeline-legend-row {
+  position: relative;
+  z-index: 3;
+  height: 20px;
+  flex: 0 0 20px;
+  margin-top: 5px;
+}
+
+.nlb-seat-helper__timeline-legend-trigger {
+  display: inline-flex;
+  height: 20px;
+  align-items: center;
+  gap: 3px;
+  padding: 0;
+  border: 0;
+  background: transparent;
   color: #52675d;
+  font: inherit;
   font-size: 9px;
   font-weight: 700;
   cursor: pointer;
 }
 
-.nlb-seat-helper__timeline-legend > div {
+.nlb-seat-helper__timeline-legend-trigger:focus-visible {
+  border-radius: 3px;
+  outline: 2px solid #2f8060;
+  outline-offset: 2px;
+}
+
+.nlb-seat-helper__timeline-legend-popover {
+  position: absolute;
+  right: 0;
+  bottom: 22px;
+  left: 0;
+  max-height: min(120px, 25dvh);
+  overflow-y: auto;
+  padding: 7px 8px;
+  border: 1px solid #d9e4de;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 7px 18px rgb(24 37 31 / 14%);
+  overscroll-behavior: contain;
+}
+
+.nlb-seat-helper__timeline-legend-popover > div {
   display: flex;
   flex-wrap: wrap;
   gap: 5px 10px;
-  margin-top: 5px;
 }
 
 .nlb-seat-helper__timeline-legend span {
@@ -1485,22 +1519,50 @@
   background: #cbd2ce;
 }
 
-.nlb-seat-helper__booking-selection {
-  position: sticky;
-  z-index: 2;
-  bottom: -1px;
+.nlb-seat-helper__post-favourites {
+  display: flex;
+  height: clamp(92px, 15dvh, 138px);
+  min-height: 0;
+  flex: 0 0 clamp(92px, 15dvh, 138px);
+  flex-direction: column;
   margin-top: 7px;
-  padding: 9px;
-  max-height: clamp(84px, 20vh, 150px);
-  overflow-y: auto;
+  overflow: hidden;
   border: 1px solid #dde7e2;
   border-radius: 10px;
-  background: #f8faf9;
+  background: #f5f8f6;
   box-shadow: 0 -5px 12px rgb(24 37 31 / 5%);
 }
 
-.nlb-seat-helper__panel.is-workspace .nlb-seat-helper__booking-selection {
+.nlb-seat-helper__booking-selection {
   flex: 0 0 auto;
+  padding: 8px 9px;
+  border-bottom: 1px solid #e1e9e5;
+  background: #f8faf9;
+}
+
+.nlb-seat-helper__post-favourites-details {
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 6px 9px 8px;
+  overscroll-behavior: contain;
+  scrollbar-color: #8aa397 #e8efeb;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+}
+
+.nlb-seat-helper__post-favourites-details::-webkit-scrollbar {
+  width: 6px;
+}
+
+.nlb-seat-helper__post-favourites-details::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: #e8efeb;
+}
+
+.nlb-seat-helper__post-favourites-details::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: #8aa397;
 }
 
 .nlb-seat-helper__booking-selection-header {
@@ -1512,6 +1574,7 @@
 
 .nlb-seat-helper__booking-selection-header > div {
   min-width: 0;
+  overflow: hidden;
 }
 
 .nlb-seat-helper__booking-selection-header strong,
@@ -1520,15 +1583,21 @@
 }
 
 .nlb-seat-helper__booking-selection-header strong {
+  overflow: hidden;
   color: #263b31;
   font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nlb-seat-helper__booking-selection-header span {
+  overflow: hidden;
   margin-top: 2px;
   color: #7c8982;
   font-size: 9px;
   line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .nlb-seat-helper__booking-selection-header > button {
@@ -1558,7 +1627,7 @@
 }
 
 .nlb-seat-helper__selection-warning {
-  margin: 9px 0 0;
+  margin: 0 0 6px;
   padding: 7px 8px;
   border-radius: 7px;
   background: #fff0ed;
@@ -1566,58 +1635,171 @@
   font-size: 10px;
 }
 
-.nlb-seat-helper__booking-mode {
-  display: grid;
-  gap: 6px;
-  margin: 11px 0 0;
-  padding: 0;
-  border: 0;
-}
-
-.nlb-seat-helper__booking-mode legend {
-  margin-bottom: 6px;
-  color: #68776f;
-  font-size: 9px;
-  font-weight: 650;
-}
-
-.nlb-seat-helper__booking-mode label {
+.nlb-seat-helper__booking-mode-compact {
   display: flex;
-  align-items: flex-start;
-  gap: 7px;
-  padding: 7px 8px;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 5px 8px;
+  padding: 5px 6px;
   border: 1px solid #dce5e0;
-  border-radius: 8px;
+  border-radius: 7px;
   background: white;
+}
+
+.nlb-seat-helper__booking-mode-toggle {
+  display: inline-flex;
+  min-width: 0;
+  align-items: center;
+  gap: 6px;
+  color: #33483e;
+  font-size: 9px;
+  font-weight: 700;
   cursor: pointer;
 }
 
-.nlb-seat-helper__booking-mode input {
-  margin: 2px 0 0;
-  accent-color: #176c48;
+.nlb-seat-helper__booking-mode-toggle input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
 }
 
-.nlb-seat-helper__booking-mode span,
-.nlb-seat-helper__booking-mode strong,
-.nlb-seat-helper__booking-mode small {
+.nlb-seat-helper__booking-mode-track {
+  position: relative;
+  display: block;
+  width: 26px;
+  height: 15px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  background: #c8d3cd;
+  transition: background 120ms ease;
+}
+
+.nlb-seat-helper__booking-mode-track i {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: white;
+  box-shadow: 0 1px 2px rgb(24 37 31 / 25%);
+  transition: transform 120ms ease;
+}
+
+.nlb-seat-helper__booking-mode-toggle
+  input:checked
+  + .nlb-seat-helper__booking-mode-track {
+  background: #287753;
+}
+
+.nlb-seat-helper__booking-mode-toggle
+  input:checked
+  + .nlb-seat-helper__booking-mode-track
+  i {
+  transform: translateX(11px);
+}
+
+.nlb-seat-helper__booking-mode-toggle
+  input:focus-visible
+  + .nlb-seat-helper__booking-mode-track {
+  outline: 2px solid #2f8060;
+  outline-offset: 2px;
+}
+
+.nlb-seat-helper__booking-mode-help {
+  flex: 0 0 auto;
+  color: #6f7e76;
+  font-size: 9px;
+}
+
+.nlb-seat-helper__booking-mode-help > button {
+  display: grid;
+  width: 18px;
+  height: 18px;
+  place-items: center;
+  padding: 0;
+  border: 1px solid #bfcfc6;
+  border-radius: 50%;
+  background: #fff;
+  color: #496157;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.nlb-seat-helper__booking-mode-help > button:hover,
+.nlb-seat-helper__booking-mode-help > button[aria-expanded="true"] {
+  border-color: #6fa88c;
+  background: #eaf5ef;
+  color: #176c48;
+}
+
+.nlb-seat-helper__booking-mode-help > button:focus-visible {
+  outline: 2px solid #2f8060;
+  outline-offset: 2px;
+}
+
+.nlb-seat-helper__booking-mode-help-popover {
+  position: fixed;
+  z-index: 24;
+  width: min(270px, calc(100vw - 24px));
+  padding: 8px 9px;
+  border: 1px solid #bfd2c8;
+  border-radius: 8px;
+  background: #fff;
+  color: #53675d;
+  box-shadow: 0 8px 22px rgb(24 37 31 / 20%);
+  font-size: 9px;
+  pointer-events: none;
+}
+
+.nlb-seat-helper__booking-mode-help-popover.is-pinned {
+  pointer-events: auto;
+}
+
+.nlb-seat-helper__booking-mode-help-popover strong,
+.nlb-seat-helper__booking-mode-help-popover p,
+.nlb-seat-helper__booking-mode-help-popover small {
   display: block;
 }
 
-.nlb-seat-helper__booking-mode strong {
-  color: #33483e;
+.nlb-seat-helper__booking-mode-help-popover strong {
+  color: #263b31;
   font-size: 10px;
 }
 
-.nlb-seat-helper__booking-mode small {
-  margin-top: 1px;
-  color: #84918b;
+.nlb-seat-helper__booking-mode-help-popover p {
+  margin: 3px 0 0;
+  line-height: 1.35;
+}
+
+.nlb-seat-helper__booking-mode-help-popover small {
+  margin-top: 4px;
+  color: #7c8982;
   font-size: 8px;
+}
+
+.nlb-seat-helper__booking-plan-details {
+  margin-top: 5px;
+  color: #52675d;
+  font-size: 9px;
+}
+
+.nlb-seat-helper__booking-plan-details summary {
+  width: max-content;
+  font-weight: 700;
+  cursor: pointer;
 }
 
 .nlb-seat-helper__booking-plan {
   display: grid;
   gap: 4px;
-  margin-top: 9px;
+  margin-top: 5px;
 }
 
 .nlb-seat-helper__booking-plan > div {
@@ -2289,8 +2471,8 @@
 .nlb-seat-helper__booking-progress {
   display: grid;
   gap: 5px;
-  margin-top: 11px;
-  padding-top: 10px;
+  margin-top: 6px;
+  padding-top: 6px;
   border-top: 1px solid #e2e9e5;
 }
 
@@ -2478,10 +2660,6 @@
     flex: 0 0 auto;
   }
 
-  .nlb-seat-helper__booking-selection {
-    position: static;
-    max-height: clamp(84px, 24vh, 150px);
-  }
 }
 
 @media (max-width: 480px) {

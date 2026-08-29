@@ -35,6 +35,8 @@ By installing or using the extension, you agree to the [Terms of Use](TERMS.md).
   available.
 - Plan multiple non-overlapping seats and time blocks—including separate
   sessions with a break—in one view.
+- Keep the favourite-seat list stable while booking options, validation
+  messages, and request results scroll inside a reserved action area.
 - Review every booking or cancellation before anything is sent to NLB.
 
 Library Seats SG is designed for students, working adults, senior citizens, and
@@ -284,8 +286,8 @@ versioned download.
    NLB's refreshed matrix is unusable, the extension explains that it is
    checking the remaining intervals individually. For a future date, click
    **Check** to run the same date-specific interval searches.
-5. To book, select green intervals, choose the adjacent-hour mode, click
-   **Book**, and confirm the request summary.
+5. To book, select green intervals, optionally toggle **Book each hour
+   separately**, click **Book**, and confirm the request summary.
 6. To cancel, select a cancelable purple booking, click **Cancel**, review the
    complete booking, choose a reason, and confirm.
 7. Review the per-request result and automatically refreshed availability.

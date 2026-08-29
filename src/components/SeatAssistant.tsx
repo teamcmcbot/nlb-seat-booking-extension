@@ -398,6 +398,13 @@ export function SeatAssistant({
   const [mapExpanded, setMapExpanded] = useState(false);
   const [mapFocusSeatId, setMapFocusSeatId] = useState("");
   const [mapPreviewSeatId, setMapPreviewSeatId] = useState("");
+  const [legendOpen, setLegendOpen] = useState(false);
+  const [bookingModeHelpPinned, setBookingModeHelpPinned] = useState(false);
+  const [bookingModeHelpHovered, setBookingModeHelpHovered] = useState(false);
+  const [bookingModeHelpPosition, setBookingModeHelpPosition] = useState({
+    top: 0,
+    left: 0,
+  });
   const [loadingMapKey, setLoadingMapKey] = useState("");
   const [discoveredMaps, setDiscoveredMaps] = useState<
     Record<string, string[]>
@@ -433,6 +440,10 @@ export function SeatAssistant({
   const mapRequests = useRef(new Set<string>());
   const mapTriggerRef = useRef<HTMLButtonElement>(null);
   const favouriteListRef = useRef<HTMLDivElement>(null);
+  const legendRef = useRef<HTMLDivElement>(null);
+  const legendTriggerRef = useRef<HTMLButtonElement>(null);
+  const bookingModeHelpRef = useRef<HTMLDivElement>(null);
+  const bookingModeHelpTriggerRef = useRef<HTMLButtonElement>(null);
   const mapFavouriteSnapshot = useRef("");
   const manageFavouriteSnapshot = useRef("");
   const [favouriteScrollbar, setFavouriteScrollbar] = useState({
@@ -479,6 +490,23 @@ export function SeatAssistant({
     }
   }
 
+  function positionBookingModeHelp() {
+    const trigger = bookingModeHelpTriggerRef.current;
+    if (!trigger) {
+      return;
+    }
+
+    const triggerRect = trigger.getBoundingClientRect();
+    const popoverWidth = Math.min(270, window.innerWidth - 24);
+    setBookingModeHelpPosition({
+      top: Math.max(
+        12,
+        Math.min(triggerRect.top - 5, window.innerHeight - 84),
+      ),
+      left: Math.max(12, triggerRect.left - popoverWidth - 8),
+    });
+  }
+
   useEffect(() => {
     let active = true;
     loadDefaultBookingMode()
@@ -512,6 +540,81 @@ export function SeatAssistant({
     document.addEventListener("keydown", closeReviewOnEscape);
     return () => document.removeEventListener("keydown", closeReviewOnEscape);
   }, [reviewingBooking, reviewingCancellation]);
+
+  useEffect(() => {
+    if (!legendOpen) {
+      return undefined;
+    }
+
+    const closeLegendOnOutsidePointer = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !legendRef.current?.contains(event.target)
+      ) {
+        setLegendOpen(false);
+      }
+    };
+    const closeLegendOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setLegendOpen(false);
+        window.requestAnimationFrame(() => legendTriggerRef.current?.focus());
+      }
+    };
+
+    document.addEventListener("pointerdown", closeLegendOnOutsidePointer);
+    document.addEventListener("keydown", closeLegendOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeLegendOnOutsidePointer);
+      document.removeEventListener("keydown", closeLegendOnEscape);
+    };
+  }, [legendOpen]);
+
+  useEffect(() => {
+    if (!bookingModeHelpPinned && !bookingModeHelpHovered) {
+      return undefined;
+    }
+
+    const closeHelpOnOutsidePointer = (event: PointerEvent) => {
+      if (
+        event.target instanceof Node &&
+        !bookingModeHelpTriggerRef.current?.contains(event.target) &&
+        !bookingModeHelpRef.current?.contains(event.target)
+      ) {
+        setBookingModeHelpPinned(false);
+        setBookingModeHelpHovered(false);
+      }
+    };
+    const closeHelpOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setBookingModeHelpPinned(false);
+        setBookingModeHelpHovered(false);
+        window.requestAnimationFrame(() =>
+          bookingModeHelpTriggerRef.current?.focus(),
+        );
+      }
+    };
+    const closeHelpOnViewportChange = () => {
+      setBookingModeHelpPinned(false);
+      setBookingModeHelpHovered(false);
+    };
+
+    document.addEventListener("pointerdown", closeHelpOnOutsidePointer);
+    document.addEventListener("keydown", closeHelpOnEscape);
+    document.addEventListener("scroll", closeHelpOnViewportChange, true);
+    window.addEventListener("resize", closeHelpOnViewportChange);
+    return () => {
+      document.removeEventListener("pointerdown", closeHelpOnOutsidePointer);
+      document.removeEventListener("keydown", closeHelpOnEscape);
+      document.removeEventListener("scroll", closeHelpOnViewportChange, true);
+      window.removeEventListener("resize", closeHelpOnViewportChange);
+    };
+  }, [bookingModeHelpHovered, bookingModeHelpPinned]);
+
+  useEffect(() => {
+    setLegendOpen(false);
+    setBookingModeHelpPinned(false);
+    setBookingModeHelpHovered(false);
+  }, [areaId, branchId, managing]);
 
   useEffect(() => {
     const allBookingsSucceeded =
@@ -677,6 +780,37 @@ export function SeatAssistant({
       ),
     [area?.maxBookingMinutes, bookSeparately, selectedSeatSlots],
   );
+  const selectedSeatCount = new Set(
+    selectedSeatSlots.map((slot) => slot.seatId),
+  ).size;
+  const bookingWorkspaceAvailable = Boolean(
+    area && !managing && areaFavourites.length > 0 && slots.length > 0,
+  );
+  const bookingModeHelpVisible =
+    bookingModeHelpPinned || bookingModeHelpHovered;
+  const finishedBookingCount = bookingProgress.filter(
+    (item) => item.status === "booked" || item.status === "failed",
+  ).length;
+  const finishedCancellationCount = cancellationProgress.filter(
+    (item) =>
+      item.status === "cancelled" ||
+      item.status === "failed" ||
+      item.status === "uncertain",
+  ).length;
+  useEffect(() => {
+    if (
+      !bookingWorkspaceAvailable ||
+      cancellationMode ||
+      selectedSeatSlots.length === 0
+    ) {
+      setBookingModeHelpPinned(false);
+      setBookingModeHelpHovered(false);
+    }
+  }, [
+    bookingWorkspaceAvailable,
+    cancellationMode,
+    selectedSeatSlots.length,
+  ]);
   const selectedQuotaTone = selectedHoliday
     ? "empty"
     : !selectedDateQuota
@@ -2683,44 +2817,77 @@ export function SeatAssistant({
                       </div>
                     )}
                   </div>
-                  <details
-                    className="nlb-seat-helper__timeline-legend"
-                    aria-label="Timeline legend"
-                  >
-                    <summary>Legend</summary>
-                    <div>
-                      <span>
-                        <i className="is-free" />
-                        Available
-                      </span>
-                      <span>
-                        <i className="is-mine" />
-                        Booked by you
-                      </span>
-                      <span>
-                        <i className="is-cancel-selected" />
-                        Selected to cancel
-                      </span>
-                      <span>
-                        <i className="is-conflict" />
-                        Blocked by your booking
-                      </span>
-                      <span>
-                        <i className="is-busy" />
-                        Unavailable
-                      </span>
-                      <span>
-                        <i className="is-closed" />
-                        Library closed
-                      </span>
-                    </div>
-                  </details>
+                </>
+              )}
+            </>
+          )}
 
-                  <section className="nlb-seat-helper__booking-selection">
-                    <div className="nlb-seat-helper__booking-selection-header">
-                      <div>
-                        <strong>
-                          {cancellationMode
+          {bookingWorkspaceAvailable && (
+            <div
+              ref={legendRef}
+              className="nlb-seat-helper__timeline-legend-row"
+            >
+              <button
+                ref={legendTriggerRef}
+                type="button"
+                className="nlb-seat-helper__timeline-legend-trigger"
+                aria-expanded={legendOpen}
+                aria-controls="nlb-seat-helper-timeline-legend"
+                onClick={() => setLegendOpen((current) => !current)}
+              >
+                <span aria-hidden="true">{legendOpen ? "▾" : "▸"}</span>
+                Legend
+              </button>
+              {legendOpen && (
+                <div
+                  id="nlb-seat-helper-timeline-legend"
+                  className="nlb-seat-helper__timeline-legend-popover nlb-seat-helper__timeline-legend"
+                  role="region"
+                  aria-label="Timeline legend"
+                >
+                  <div>
+                    <span>
+                      <i className="is-free" />
+                      Available
+                    </span>
+                    <span>
+                      <i className="is-mine" />
+                      Booked by you
+                    </span>
+                    <span>
+                      <i className="is-cancel-selected" />
+                      Selected to cancel
+                    </span>
+                    <span>
+                      <i className="is-conflict" />
+                      Blocked by your booking
+                    </span>
+                    <span>
+                      <i className="is-busy" />
+                      Unavailable
+                    </span>
+                    <span>
+                      <i className="is-closed" />
+                      Library closed
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="nlb-seat-helper__post-favourites">
+            <section className="nlb-seat-helper__booking-selection">
+              <div className="nlb-seat-helper__booking-selection-header">
+                <div>
+                  <strong>
+                    {managing
+                      ? "Managing favourite seats"
+                      : areaFavourites.length === 0
+                        ? "Choose favourite seats to start"
+                        : slots.length === 0
+                          ? "Booking is unavailable for this date"
+                          : cancellationMode
                             ? `${selectedCancellationBookings.length} booking${
                                 selectedCancellationBookings.length === 1
                                   ? ""
@@ -2733,207 +2900,286 @@ export function SeatAssistant({
                               : session
                                 ? "Select available hours or a booking"
                                 : "Sign in to book available hours"}
-                        </strong>
-                        <span>
-                          {cancellationMode
+                  </strong>
+                  <span>
+                    {managing
+                      ? "Choose or remove seats, then select Done."
+                      : areaFavourites.length === 0
+                        ? "Add at least one favourite to check availability."
+                        : slots.length === 0
+                          ? "No selectable hours are available."
+                          : cancellationMode
                             ? cancellationReasonCode
                               ? `${formatQuotaMinutes(
                                   selectedCancellationMinutes,
                                 )} of booked time will be cancelled.`
                               : "Cancellation reasons are unavailable. Refresh the account before continuing."
-                            : session
-                              ? "Click green boxes to book or cancelable purple boxes to cancel."
-                              : "Availability is visible while signed out. Sign in to select hours and book."}
+                            : selectedMinutes > 0
+                              ? `${selectedSeatCount} seat${
+                                  selectedSeatCount === 1 ? "" : "s"
+                                } · ${bookingPlan.length} booking request${
+                                  bookingPlan.length === 1 ? "" : "s"
+                                }`
+                              : session
+                                ? "Click green hours to book or purple bookings to cancel."
+                                : "Availability is visible while signed out. Sign in to book."}
+                  </span>
+                </div>
+                {bookingWorkspaceAvailable && (
+                  <button
+                    type="button"
+                    className={cancellationMode ? "is-cancel-action" : ""}
+                    disabled={
+                      cancellationMode
+                        ? selectedCancellationBookings.length === 0 ||
+                          !cancellationReasonCode ||
+                          cancellationRunning ||
+                          bookingRunning
+                        : selectedSeatSlots.length === 0 ||
+                          !selectedDateQuota ||
+                          bookingRunning ||
+                          cancellationRunning
+                    }
+                    onClick={() =>
+                      cancellationMode
+                        ? setReviewingCancellation(true)
+                        : setReviewingBooking(true)
+                    }
+                  >
+                    {cancellationMode ? "Cancel" : "Book"}
+                  </button>
+                )}
+              </div>
+            </section>
+
+            <div className="nlb-seat-helper__post-favourites-details">
+              {selectionMessage && !managing && (
+                <p className="nlb-seat-helper__selection-warning">
+                  {selectionMessage}
+                </p>
+              )}
+
+              {bookingWorkspaceAvailable &&
+                !cancellationMode &&
+                selectedSeatSlots.length > 0 && (
+                  <>
+                    <div className="nlb-seat-helper__booking-mode-compact">
+                      <label className="nlb-seat-helper__booking-mode-toggle">
+                        <input
+                          type="checkbox"
+                          checked={bookSeparately}
+                          onChange={(event) =>
+                            setBookSeparately(event.target.checked)
+                          }
+                        />
+                        <span
+                          className="nlb-seat-helper__booking-mode-track"
+                          aria-hidden="true"
+                        >
+                          <i />
                         </span>
+                        <span>Book each hour separately</span>
+                      </label>
+                      <div className="nlb-seat-helper__booking-mode-help">
+                        <button
+                          ref={bookingModeHelpTriggerRef}
+                          type="button"
+                          aria-label="About booking each hour separately"
+                          aria-expanded={bookingModeHelpVisible}
+                          aria-controls="nlb-seat-helper-booking-mode-help"
+                          onMouseEnter={() => {
+                            positionBookingModeHelp();
+                            setBookingModeHelpHovered(true);
+                          }}
+                          onMouseLeave={() =>
+                            setBookingModeHelpHovered(false)
+                          }
+                          onFocus={() => {
+                            positionBookingModeHelp();
+                            setBookingModeHelpHovered(true);
+                          }}
+                          onBlur={() => {
+                            if (!bookingModeHelpPinned) {
+                              setBookingModeHelpHovered(false);
+                            }
+                          }}
+                          onClick={() => {
+                            positionBookingModeHelp();
+                            setBookingModeHelpPinned((current) => {
+                              if (current) {
+                                setBookingModeHelpHovered(false);
+                              }
+                              return !current;
+                            });
+                          }}
+                        >
+                          i
+                        </button>
                       </div>
-                      <button
-                        type="button"
-                        className={cancellationMode ? "is-cancel-action" : ""}
-                        disabled={
-                          cancellationMode
-                            ? selectedCancellationBookings.length === 0 ||
-                              !cancellationReasonCode ||
-                              cancellationRunning ||
-                              bookingRunning
-                            : selectedSeatSlots.length === 0 ||
-                              !selectedDateQuota ||
-                              bookingRunning ||
-                              cancellationRunning
-                        }
-                        onClick={() =>
-                          cancellationMode
-                            ? setReviewingCancellation(true)
-                            : setReviewingBooking(true)
-                        }
-                      >
-                        {cancellationMode ? "Cancel" : "Book"}
-                      </button>
                     </div>
 
-                    {selectionMessage && (
-                      <p className="nlb-seat-helper__selection-warning">
-                        {selectionMessage}
+                    <details className="nlb-seat-helper__booking-plan-details">
+                      <summary>
+                        Review {bookingPlan.length} booking request
+                        {bookingPlan.length === 1 ? "" : "s"}
+                      </summary>
+                      <div className="nlb-seat-helper__booking-plan">
+                        {bookingPlan.map((booking) => (
+                          <div key={booking.id}>
+                            <strong>{booking.seatName}</strong>
+                            <span>{bookingPeriod(booking)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </details>
+                  </>
+                )}
+
+              {bookingProgress.length > 0 && (
+                <section
+                  className="nlb-seat-helper__booking-progress"
+                  aria-live="polite"
+                >
+                  <div className="nlb-seat-helper__booking-progress-header">
+                    <strong>
+                      Booking status · {finishedBookingCount}/
+                      {bookingProgress.length} finished
+                    </strong>
+                    {!bookingRunning && (
+                      <div className="nlb-seat-helper__booking-progress-actions">
+                        <button
+                          type="button"
+                          className="nlb-seat-helper__my-bookings"
+                          onClick={() =>
+                            window.location.assign(
+                              "https://www.nlb.gov.sg/seatbooking/mybookings",
+                            )
+                          }
+                        >
+                          Go to My Bookings
+                        </button>
+                        <button
+                          type="button"
+                          className="nlb-seat-helper__booking-progress-dismiss"
+                          onClick={() => setBookingProgress([])}
+                          aria-label="Dismiss booking status"
+                        >
+                          <span aria-hidden="true">×</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {bookingProgress.map((item) => (
+                    <div
+                      key={item.booking.id}
+                      className={`nlb-seat-helper__booking-progress-item is-${item.status}`}
+                    >
+                      <span aria-hidden="true">
+                        {item.status === "pending" && "○"}
+                        {item.status === "booking" && "…"}
+                        {item.status === "booked" && "✓"}
+                        {item.status === "failed" && "!"}
+                      </span>
+                      <p>
+                        {item.message ??
+                          `${item.booking.seatName}: ${bookingPeriod(
+                            item.booking,
+                          )} ${
+                            item.status === "booking"
+                              ? "booking…"
+                              : "waiting"
+                          }`}
                       </p>
-                    )}
-
-                    {!cancellationMode && selectedSeatSlots.length > 0 && (
-                      <>
-                        <fieldset className="nlb-seat-helper__booking-mode">
-                          <legend>How should adjacent hours be booked?</legend>
-                          <label>
-                            <input
-                              type="radio"
-                              name="nlb-booking-mode"
-                              checked={!bookSeparately}
-                              onChange={() => setBookSeparately(false)}
-                            />
-                            <span>
-                              <strong>Combine adjacent hours</strong>
-                              <small>Fewer booking requests</small>
-                            </span>
-                          </label>
-                          <label>
-                            <input
-                              type="radio"
-                              name="nlb-booking-mode"
-                              checked={bookSeparately}
-                              onChange={() => setBookSeparately(true)}
-                            />
-                            <span>
-                              <strong>Book each hour separately</strong>
-                              <small>Independent hourly reservations</small>
-                            </span>
-                          </label>
-                        </fieldset>
-
-                        <div className="nlb-seat-helper__booking-plan">
-                          {bookingPlan.map((booking) => (
-                            <div key={booking.id}>
-                              <strong>{booking.seatName}</strong>
-                              <span>{bookingPeriod(booking)}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </>
-                    )}
-                  </section>
-
-                  {bookingProgress.length > 0 && (
-                    <section
-                      className="nlb-seat-helper__booking-progress"
-                      aria-live="polite"
-                    >
-                      <div className="nlb-seat-helper__booking-progress-header">
-                        <strong>Booking status</strong>
-                        {!bookingRunning && (
-                          <div className="nlb-seat-helper__booking-progress-actions">
-                            <button
-                              type="button"
-                              className="nlb-seat-helper__my-bookings"
-                              onClick={() =>
-                                window.location.assign(
-                                  "https://www.nlb.gov.sg/seatbooking/mybookings",
-                                )
-                              }
-                            >
-                              Go to My Bookings
-                            </button>
-                            <button
-                              type="button"
-                              className="nlb-seat-helper__booking-progress-dismiss"
-                              onClick={() => setBookingProgress([])}
-                              aria-label="Dismiss booking status"
-                            >
-                              <span aria-hidden="true">×</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      {bookingProgress.map((item) => (
-                        <div
-                          key={item.booking.id}
-                          className={`nlb-seat-helper__booking-progress-item is-${item.status}`}
-                        >
-                          <span aria-hidden="true">
-                            {item.status === "pending" && "○"}
-                            {item.status === "booking" && "…"}
-                            {item.status === "booked" && "✓"}
-                            {item.status === "failed" && "!"}
-                          </span>
-                          <p>
-                            {item.message ??
-                              `${item.booking.seatName}: ${bookingPeriod(
-                                item.booking,
-                              )} ${
-                                item.status === "booking"
-                                  ? "booking…"
-                                  : "waiting"
-                              }`}
-                          </p>
-                        </div>
-                      ))}
-                    </section>
-                  )}
-
-                  {cancellationProgress.length > 0 && (
-                    <section
-                      className="nlb-seat-helper__booking-progress nlb-seat-helper__cancellation-progress"
-                      aria-live="polite"
-                    >
-                      <div className="nlb-seat-helper__booking-progress-header">
-                        <strong>Cancellation status</strong>
-                        {!cancellationRunning && (
-                          <div className="nlb-seat-helper__booking-progress-actions">
-                            <button
-                              type="button"
-                              className="nlb-seat-helper__my-bookings"
-                              onClick={() =>
-                                window.location.assign(
-                                  "https://www.nlb.gov.sg/seatbooking/mybookings",
-                                )
-                              }
-                            >
-                              Go to My Bookings
-                            </button>
-                            <button
-                              type="button"
-                              className="nlb-seat-helper__booking-progress-dismiss"
-                              onClick={() => setCancellationProgress([])}
-                              aria-label="Dismiss cancellation status"
-                            >
-                              <span aria-hidden="true">×</span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                      {cancellationProgress.map((item) => (
-                        <div
-                          key={existingBookingKey(item.booking)}
-                          className={`nlb-seat-helper__booking-progress-item is-${item.status}`}
-                        >
-                          <span aria-hidden="true">
-                            {item.status === "pending" && "○"}
-                            {item.status === "cancelling" && "…"}
-                            {item.status === "cancelled" && "✓"}
-                            {item.status === "failed" && "!"}
-                            {item.status === "uncertain" && "?"}
-                          </span>
-                          <p>
-                            {item.message ??
-                              `${item.booking.seat}: ${existingBookingPeriod(
-                                item.booking,
-                              )}`}
-                          </p>
-                        </div>
-                      ))}
-                    </section>
-                  )}
-                </>
+                    </div>
+                  ))}
+                </section>
               )}
-            </>
-          )}
+
+              {cancellationProgress.length > 0 && (
+                <section
+                  className="nlb-seat-helper__booking-progress nlb-seat-helper__cancellation-progress"
+                  aria-live="polite"
+                >
+                  <div className="nlb-seat-helper__booking-progress-header">
+                    <strong>
+                      Cancellation status · {finishedCancellationCount}/
+                      {cancellationProgress.length} finished
+                    </strong>
+                    {!cancellationRunning && (
+                      <div className="nlb-seat-helper__booking-progress-actions">
+                        <button
+                          type="button"
+                          className="nlb-seat-helper__my-bookings"
+                          onClick={() =>
+                            window.location.assign(
+                              "https://www.nlb.gov.sg/seatbooking/mybookings",
+                            )
+                          }
+                        >
+                          Go to My Bookings
+                        </button>
+                        <button
+                          type="button"
+                          className="nlb-seat-helper__booking-progress-dismiss"
+                          onClick={() => setCancellationProgress([])}
+                          aria-label="Dismiss cancellation status"
+                        >
+                          <span aria-hidden="true">×</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  {cancellationProgress.map((item) => (
+                    <div
+                      key={existingBookingKey(item.booking)}
+                      className={`nlb-seat-helper__booking-progress-item is-${item.status}`}
+                    >
+                      <span aria-hidden="true">
+                        {item.status === "pending" && "○"}
+                        {item.status === "cancelling" && "…"}
+                        {item.status === "cancelled" && "✓"}
+                        {item.status === "failed" && "!"}
+                        {item.status === "uncertain" && "?"}
+                      </span>
+                      <p>
+                        {item.message ??
+                          `${item.booking.seat}: ${existingBookingPeriod(
+                            item.booking,
+                          )}`}
+                      </p>
+                    </div>
+                  ))}
+                </section>
+              )}
+
+            </div>
+          </div>
         </>
       )}
+
+      {bookingModeHelpVisible &&
+        createPortal(
+          <div
+            ref={bookingModeHelpRef}
+            id="nlb-seat-helper-booking-mode-help"
+            className={`nlb-seat-helper__booking-mode-help-popover${
+              bookingModeHelpPinned ? " is-pinned" : ""
+            }`}
+            role={bookingModeHelpPinned ? "dialog" : "tooltip"}
+            aria-label="Book each hour separately"
+            style={bookingModeHelpPosition}
+          >
+            <strong>Book each hour separately</strong>
+            <p>
+              Creates one booking request per selected hour. Leave this off to
+              combine adjacent hours for the same seat.
+            </p>
+            {bookingModeHelpPinned && (
+              <small>Click elsewhere or press Escape to dismiss.</small>
+            )}
+          </div>,
+          document.getElementById("nlb-seat-helper-root")!,
+        )}
 
       {reviewingBooking &&
         bookingPlan.length > 0 &&

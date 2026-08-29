@@ -14,6 +14,11 @@ seat lists easier to navigate.
   to the first catalog area when no remembered area is available.
 - Adds a persistent visual scrollbar indicator for overflowing favourite-seat
   lists, including Chrome on macOS where native scrollbars may auto-hide.
+- Reserves a fixed post-favourites action area so selecting hours,
+  cancellations, or status results no longer changes the visible height of the
+  favourite-seat list. Detailed booking content scrolls inside that area.
+- Replaces the two large adjacent-hour booking choices with a compact
+  per-booking toggle and collapsible explanation and review.
 - Makes the empty-area **Choose favourite seats** action open the seat picker
   directly.
 
