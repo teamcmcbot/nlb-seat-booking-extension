@@ -19,6 +19,8 @@ seat lists easier to navigate.
   favourite-seat list. Detailed booking content scrolls inside that area.
 - Replaces the two large adjacent-hour booking choices with a compact
   per-booking toggle and collapsible explanation and review.
+- Collapses a completed library, area, and date selection into an editable
+  summary while retaining the normal native date input in edit mode.
 - Makes the empty-area **Choose favourite seats** action open the seat picker
   directly.
 

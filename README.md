@@ -107,6 +107,11 @@ See the [complete feature reference](docs/features.md) for account profiles,
 Settings, favourite seats, seat plans, availability, booking safeguards, and
 cancellation behavior.
 
+After a valid library, area, and date have been selected, choose **Done** to
+collapse those controls into a compact summary with the selected date and
+remaining quota in its footer. Select the summary's **Edit** action whenever
+you need to restore the normal dropdowns and native date input.
+
 See [Settings and local data](docs/settings.md) for a plain-language
 explanation of every reset and deletion action, profile visibility, and safe
 cleanup on a shared or public computer.

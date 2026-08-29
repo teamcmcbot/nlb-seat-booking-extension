@@ -161,6 +161,13 @@ if it has no remembered area or that area no longer exists, it selects the
 first area in NLB catalog order. A saved selection from the older single-area
 format remains valid and is used as the remembered area for its library.
 
+When the restored library, area, and date are all valid, the assistant renders
+them as a compact summary whose footer contains the selected-date quota.
+**Edit** restores the existing selects and native date input without changing
+their selection or persistence behavior; **Done** returns to the summary after
+the selection is complete. An incomplete initial selection always keeps the
+editor visible.
+
 After storage restoration, the assistant launches one initial availability
 check only when the resolved saved area contains a favourite seat that still
 exists in the fresh catalog. Today's check reuses the `GetAccountInfo` response

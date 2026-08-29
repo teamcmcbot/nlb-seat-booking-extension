@@ -382,6 +382,7 @@ export function SeatAssistant({
 }: SeatAssistantProps) {
   const [branchId, setBranchId] = useState("");
   const [areaId, setAreaId] = useState("");
+  const [selectionEditing, setSelectionEditing] = useState(false);
   const [lastAreaByBranch, setLastAreaByBranch] = useState<
     Record<string, string>
   >({});
@@ -702,6 +703,12 @@ export function SeatAssistant({
   const hasSelectedDate = Boolean(
     date && dateRange?.selectableDates.includes(date),
   );
+  const hasCompleteSelection = Boolean(branch && area && hasSelectedDate);
+  const showSelectionEditor = selectionEditing || !hasCompleteSelection;
+  const selectedBranchName = branch?.name ?? "";
+  const selectedAreaName = area
+    ? `${area.name}${area.floor ? ` — ${area.floor}` : ""}`
+    : "";
   const referenceEvidence = useMemo(
     () =>
       currentDayReferenceEvidence(area, favouriteSeats, slots, date, now),
@@ -2247,6 +2254,31 @@ export function SeatAssistant({
     );
   }
 
+  const dateQuota =
+    area && hasSelectedDate ? (
+      <div
+        className={`nlb-seat-helper__date-quota is-${selectedQuotaTone}`}
+      >
+        <span>
+          {selectedDateLabel(date, now)} · {formatSelectedDate(date)}
+        </span>
+        {selectedHoliday ? (
+          <strong>Closed</strong>
+        ) : selectedDateQuota ? (
+          <strong>
+            {formatQuotaMinutes(selectedDateQuota.remainingQuotaInMinutes)}{" "}
+            remaining
+            <small>
+              {" "}
+              of {formatQuotaMinutes(selectedDateQuota.quotaInMinutes)}
+            </small>
+          </strong>
+        ) : (
+          <strong>{session ? "Unavailable" : "Sign in to book"}</strong>
+        )}
+      </div>
+    ) : null;
+
   return (
     <section className="nlb-seat-helper__assistant">
       {__SEAT_PLAN_MAINTENANCE__ && (
@@ -2257,113 +2289,156 @@ export function SeatAssistant({
           onAccountRefresh={onAccountRefresh}
         />
       )}
-      <div className="nlb-seat-helper__fields">
-        <label>
-          <span>Library</span>
-          <select
-            value={branchId}
-            onChange={(event) => {
-              const nextBranchId = event.target.value;
-              const nextBranch = catalog.branches.find(
-                (item) => item.id === nextBranchId,
-              );
-              const rememberedAreaId = nextBranch
-                ? lastAreaByBranch[nextBranch.id]
-                : undefined;
-              const nextAreaId = nextBranch?.areas.some(
-                (item) => item.id === rememberedAreaId,
-              )
-                ? rememberedAreaId ?? ""
-                : nextBranch?.areas[0]?.id ?? "";
-              const nextArea = nextBranch?.areas.find(
-                (item) => item.id === nextAreaId,
-              );
-              const nextAreaByBranch = nextAreaId
-                ? { ...lastAreaByBranch, [nextBranchId]: nextAreaId }
-                : lastAreaByBranch;
-              setBranchId(nextBranchId);
-              setAreaId(nextAreaId);
-              setLastAreaByBranch(nextAreaByBranch);
-              setAutomaticAvailabilityCheckMode(
-                hasFavouriteSeatInArea(nextArea, favourites)
-                  ? "refresh"
-                  : null,
-              );
-              setManaging(false);
-              void saveLastSeatSelection(profileUserId, {
-                branchId: nextBranchId,
-                areaId: nextAreaId,
-                lastAreaByBranch: nextAreaByBranch,
-              });
-            }}
-          >
-            <option value="">Choose a library</option>
-            {catalog.branches.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-              </option>
-            ))}
-          </select>
-        </label>
+      {showSelectionEditor ? (
+        <div className="nlb-seat-helper__selection-editor">
+          <div className="nlb-seat-helper__selection-editor-header">
+            <span>Library</span>
+            <div className="nlb-seat-helper__selection-editor-actions">
+              <button
+                type="button"
+                disabled={!hasCompleteSelection}
+                onClick={() => setSelectionEditing(false)}
+              >
+                Done
+              </button>
+            </div>
+          </div>
+          <div className="nlb-seat-helper__fields">
+            <div className="nlb-seat-helper__selection-library-field">
+              <select
+                aria-label="Library"
+                value={branchId}
+                onChange={(event) => {
+                  setSelectionEditing(true);
+                  const nextBranchId = event.target.value;
+                  const nextBranch = catalog.branches.find(
+                    (item) => item.id === nextBranchId,
+                  );
+                  const rememberedAreaId = nextBranch
+                    ? lastAreaByBranch[nextBranch.id]
+                    : undefined;
+                  const nextAreaId = nextBranch?.areas.some(
+                    (item) => item.id === rememberedAreaId,
+                  )
+                    ? rememberedAreaId ?? ""
+                    : nextBranch?.areas[0]?.id ?? "";
+                  const nextArea = nextBranch?.areas.find(
+                    (item) => item.id === nextAreaId,
+                  );
+                  const nextAreaByBranch = nextAreaId
+                    ? { ...lastAreaByBranch, [nextBranchId]: nextAreaId }
+                    : lastAreaByBranch;
+                  setBranchId(nextBranchId);
+                  setAreaId(nextAreaId);
+                  setLastAreaByBranch(nextAreaByBranch);
+                  setAutomaticAvailabilityCheckMode(
+                    hasFavouriteSeatInArea(nextArea, favourites)
+                      ? "refresh"
+                      : null,
+                  );
+                  setManaging(false);
+                  void saveLastSeatSelection(profileUserId, {
+                    branchId: nextBranchId,
+                    areaId: nextAreaId,
+                    lastAreaByBranch: nextAreaByBranch,
+                  });
+                }}
+              >
+                <option value="">Choose a library</option>
+                {catalog.branches.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        <label>
-          <span>Area</span>
-          <select
-            value={areaId}
-            disabled={!branch}
-            onChange={(event) => {
-              const nextAreaId = event.target.value;
-              const nextArea = branch?.areas.find(
-                (item) => item.id === nextAreaId,
-              );
-              setAreaId(nextAreaId);
-              const nextAreaByBranch = nextAreaId
-                ? { ...lastAreaByBranch, [branchId]: nextAreaId }
-                : lastAreaByBranch;
-              setLastAreaByBranch(nextAreaByBranch);
-              setAutomaticAvailabilityCheckMode(
-                hasFavouriteSeatInArea(nextArea, favourites)
-                  ? "refresh"
-                  : null,
-              );
-              setManaging(false);
-              void saveLastSeatSelection(profileUserId, {
-                branchId,
-                areaId: nextAreaId,
-                lastAreaByBranch: nextAreaByBranch,
-              });
-            }}
-          >
-            <option value="">Choose a specific area</option>
-            {branch?.areas.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.name}
-                {item.floor ? ` — ${item.floor}` : ""}
-              </option>
-            ))}
-          </select>
-        </label>
+            <label>
+              <span>Area</span>
+              <select
+                value={areaId}
+                disabled={!branch}
+                onChange={(event) => {
+                  setSelectionEditing(true);
+                  const nextAreaId = event.target.value;
+                  const nextArea = branch?.areas.find(
+                    (item) => item.id === nextAreaId,
+                  );
+                  setAreaId(nextAreaId);
+                  const nextAreaByBranch = nextAreaId
+                    ? { ...lastAreaByBranch, [branchId]: nextAreaId }
+                    : lastAreaByBranch;
+                  setLastAreaByBranch(nextAreaByBranch);
+                  setAutomaticAvailabilityCheckMode(
+                    hasFavouriteSeatInArea(nextArea, favourites)
+                      ? "refresh"
+                      : null,
+                  );
+                  setManaging(false);
+                  void saveLastSeatSelection(profileUserId, {
+                    branchId,
+                    areaId: nextAreaId,
+                    lastAreaByBranch: nextAreaByBranch,
+                  });
+                }}
+              >
+                <option value="">Choose a specific area</option>
+                {branch?.areas.map((item) => (
+                  <option key={item.id} value={item.id}>
+                    {item.name}
+                    {item.floor ? ` — ${item.floor}` : ""}
+                  </option>
+                ))}
+              </select>
+            </label>
 
-        <label>
-          <span>Date</span>
-          <input
-            type="date"
-            min={dateRange?.min}
-            max={dateRange?.max}
-            value={hasSelectedDate ? date : ""}
-            disabled={!dateRange?.hasDates}
-            onChange={(event) => {
-              const nextDate = event.target.value;
-              if (dateRange?.selectableDates.includes(nextDate)) {
-                setDate(nextDate);
-                setAutomaticAvailabilityCheckMode(
-                  favouriteSeats.length > 0 ? "refresh" : null,
-                );
-              }
-            }}
-          />
-        </label>
-      </div>
+            <label>
+              <span>Date</span>
+              <input
+                type="date"
+                min={dateRange?.min}
+                max={dateRange?.max}
+                value={hasSelectedDate ? date : ""}
+                disabled={!dateRange?.hasDates}
+                onChange={(event) => {
+                  setSelectionEditing(true);
+                  const nextDate = event.target.value;
+                  if (dateRange?.selectableDates.includes(nextDate)) {
+                    setDate(nextDate);
+                    setAutomaticAvailabilityCheckMode(
+                      favouriteSeats.length > 0 ? "refresh" : null,
+                    );
+                  }
+                }}
+              />
+            </label>
+          </div>
+        </div>
+      ) : (
+        <div className="nlb-seat-helper__selection-summary">
+          <button
+            type="button"
+            className="nlb-seat-helper__selection-summary-main"
+            aria-label="Edit library, area, and date"
+            onClick={() => setSelectionEditing(true)}
+          >
+            <span className="nlb-seat-helper__selection-summary-field">
+              <small>Library</small>
+              <strong title={selectedBranchName}>{selectedBranchName}</strong>
+            </span>
+            <span className="nlb-seat-helper__selection-summary-field">
+              <small>Area</small>
+              <strong title={selectedAreaName}>{selectedAreaName}</strong>
+            </span>
+            <span className="nlb-seat-helper__selection-summary-edit">
+              Edit
+            </span>
+          </button>
+          {dateQuota}
+        </div>
+      )}
+
+      {showSelectionEditor ? dateQuota : null}
 
       {!area && (
         <>
@@ -2396,32 +2471,6 @@ export function SeatAssistant({
 
       {area && (
         <>
-          {hasSelectedDate ? (
-            <div
-              className={`nlb-seat-helper__date-quota is-${selectedQuotaTone}`}
-            >
-              <span>
-                {selectedDateLabel(date, now)} · {formatSelectedDate(date)}
-              </span>
-              {selectedHoliday ? (
-                <strong>Closed</strong>
-              ) : selectedDateQuota ? (
-                <strong>
-                  {formatQuotaMinutes(
-                    selectedDateQuota.remainingQuotaInMinutes,
-                  )}{" "}
-                  remaining
-                  <small>
-                    {" "}
-                    of {formatQuotaMinutes(selectedDateQuota.quotaInMinutes)}
-                  </small>
-                </strong>
-              ) : (
-                <strong>{session ? "Unavailable" : "Sign in to book"}</strong>
-              )}
-            </div>
-          ) : null}
-
           {automaticFavouriteMessage && (
             <p className="nlb-seat-helper__notice">
               {automaticFavouriteMessage}
