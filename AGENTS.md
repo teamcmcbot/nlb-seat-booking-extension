@@ -74,9 +74,13 @@ NLB's APIs are unofficial and reverse-engineered. Preserve these safety rules:
   account support” means preserving separate local profiles across account
   switches, not simultaneous authenticated sessions.
 
-Never commit raw account responses, credentials, booking references, user IDs,
-cookies, or other personal data. Sanitize fixtures before adding them under
-`docs/examples/`.
+Never commit raw account or API responses, credentials, booking references,
+user IDs, cookies, or other unredacted personal data. A product screenshot is
+not raw account data: explicitly approved screenshots may retain feature data
+such as library, area, date, seat, and time when the UI already masks account
+identity and no credentials, cookies, full user IDs, booking reference
+numbers, or other sensitive identifiers are visible. Sanitize fixtures before
+adding them under `docs/examples/`.
 
 ## Documentation guidelines
 
@@ -253,8 +257,10 @@ git commit -m "<concise change summary>"
 git push -u origin <branch-name>
 ```
 
-Review the staged diff before committing. Do not include secrets, captured
-personal data, generated build output, or unrelated user changes.
+Review the staged diff before committing. Do not include secrets, unredacted
+captured personal data, generated build output, or unrelated user changes.
+Explicitly approved UI-masked product screenshots may be included when they
+pass the screenshot privacy check above.
 
 ### 8. Review and merge to `main`
 
