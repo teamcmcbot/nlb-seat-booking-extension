@@ -3,7 +3,7 @@
 ## Product fields
 
 - Name: **Library Seats SG - for NLB**
-- Version: **1.4.0**
+- Version: **1.4.1**
 - Permanent ID: **library-seats-sg@teamcmcbot.github.io**
 - Platform: **Firefox Desktop only**
 - Minimum Firefox: **140**
@@ -67,10 +67,11 @@ source archive as reviewer source.
 
 ## Pre-submission checklist
 
-- Confirm package, lockfile, and manifest all say 1.4.0.
+- Confirm package, lockfile, and manifest all say 1.4.1.
 - Run the complete automated validation documented in `docs/releasing.md`.
 - Complete and record the Firefox and Chrome smoke tests.
-- Verify every screenshot against Firefox and remove personal information.
+- Verify every screenshot against Firefox, remove personal information, and
+  reject Chrome-native date-picker captures or superseded booking controls.
 - Confirm desktop-only targeting, category, licence, privacy URL, and support
   URL in the live AMO form.
 - Confirm the three required data categories and no optional telemetry.

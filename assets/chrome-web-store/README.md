@@ -1,10 +1,18 @@
 # Chrome Web Store assets
 
-These are the v1.3.2 listing assets for Library Seats SG - for NLB. The promo
+These are the listing assets for Library Seats SG - for NLB. The promo
 tile is wholly original project artwork. The feature screenshots intentionally
 show the extension running on NLB's Seat Booking page, including the runtime
 seat plan, because the combined map-and-availability experience is a core
 product feature.
+
+The current workspace and booking-flow PNGs are the reviewed 1.4.1 listing
+set. The workspace overview and four booking-flow images were recaptured,
+edited, and approved individually after the compact selection summary and
+fixed post-favourites region were implemented. `store-seat-picker.png` is
+intentionally unchanged because the relevant seat-picker UI did not change.
+Raw booking-flow captures and dated pre-recapture backups are retained in the
+repository for traceability.
 
 The screenshot decision is a conscious, limited-use risk position rather than
 a conclusion that NLB has licensed its maps for promotional reproduction. NLB
@@ -18,12 +26,12 @@ packaged, rehosted, or reused in the promo tile.
 | `small-promo-tile.png` | 440×280 | Required small promotional tile |
 | `store-overview.png` | 1280×800 | Introductory overview: automatic launch, library/area/date selection, favourites, and availability refresh |
 | `store-seat-picker.png` | 1280×800 | Enlarged seat picker showing seat lookup and saving a seat to favourites |
-| `booking-flow-01-selection.png` | 1280×800 | Two selected sessions, with combine/separate booking controls visible |
+| `booking-flow-01-selection.png` | 1280×800 | Two selected sessions, with the fixed booking action region and compact booking-mode control visible |
 | `booking-flow-02-confirmation.png` | 1280×800 | Confirmation dialog showing both booking requests before submission |
 | `booking-flow-03-success.png` | 1280×800 | Successful booking status for both sessions |
 | `booking-flow-04-upcoming.png` | 1280×800 | Upcoming bookings showing the 11am–1pm session and lunch break before 2pm–4pm |
 
-Chrome permits up to five listing screenshots. The recommended v1.3.2 upload
+Chrome permits up to five listing screenshots. The recommended v1.4.1 upload
 sequence is `store-overview.png`, `store-seat-picker.png`,
 `booking-flow-01-selection.png`, `booking-flow-02-confirmation.png`, and
 `booking-flow-04-upcoming.png`. `booking-flow-03-success.png` is retained as an
@@ -36,13 +44,13 @@ historical documentation references and should not be uploaded because they
 use the previous product name.
 
 The six feature screenshots are deterministic composites of authenticated UI
-captures. They preserve the masked account label, `Profile 1`, the date
-23/08/2026, seat names, booking status, and the real extension controls while
+captures. They preserve the approved masked account label, feature-specific
+library, area, date, seat, booking-status, and real extension controls while
 adding explanatory captions, limited background treatment, and the approved
-pointer or focus treatments. Before public upload, recapture the same flow
-from a clean demo or Guest state, or explicitly approve the visible
-masked-profile and booking details. Never publish a raw account identifier,
-booking reference, credential, cookie, or unsanitised account response.
+pointer or focus treatments. Before public upload, confirm that the approved
+masked-profile and booking details remain acceptable. Never publish a raw
+account identifier, booking reference, credential, cookie, or unsanitised
+account response.
 
 ## Small promo tile provenance
 

@@ -1,3 +1,43 @@
+# Library Seats SG - for NLB v1.4.1
+
+This patch improves the responsive booking workspace and makes long favourite
+seat lists easier to navigate.
+
+## Highlights
+
+- Keeps the workspace at the available browser height while allowing short
+  viewports to scroll without hiding the favourite seats behind booking
+  controls.
+- Shows Seat plan and Favourite seats placeholders before a library area is
+  selected.
+- Remembers the last selected area separately for each library and falls back
+  to the first catalog area when no remembered area is available.
+- Adds a persistent visual scrollbar indicator for overflowing favourite-seat
+  lists, including Chrome on macOS where native scrollbars may auto-hide.
+- Reserves a fixed post-favourites action area so selecting hours,
+  cancellations, or status results no longer changes the visible height of the
+  favourite-seat list. Detailed booking content scrolls inside that area.
+- Replaces the two large adjacent-hour booking choices with a compact
+  per-booking toggle and collapsible explanation and review.
+- Collapses a completed library, area, and date selection into an editable
+  summary while retaining the normal native date input in edit mode.
+- Makes the empty-area **Choose favourite seats** action open the seat picker
+  directly.
+
+## Validation
+
+- Full regression suite passed: 42 test files and 287 tests.
+- Typecheck, Chrome and Firefox production packaging, Firefox strict lint, and
+  all three archive-integrity checks passed.
+- The AMO reviewer-source archive rebuilt an extracted Firefox package whose
+  files were byte-for-byte identical to the release candidate.
+- Runtime dependency audit passed with zero known vulnerabilities. The full
+  development audit reports the documented `image-size` advisories inherited
+  through Mozilla's `addons-linter` and `web-ext`; those build tools are not
+  included in the extension package.
+- Live Chrome and Firefox 1.4.1 smoke testing and refreshed store screenshots
+  remain required before publication.
+
 # Library Seats SG - for NLB v1.4.0
 
 This release adds Firefox Desktop distribution support while keeping one shared

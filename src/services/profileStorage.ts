@@ -37,6 +37,7 @@ export interface GuestCopyState {
 export interface LastSeatSelection {
   branchId: string;
   areaId: string;
+  lastAreaByBranch?: Record<string, string>;
 }
 
 export interface StoredProfileSummary {
@@ -95,9 +96,19 @@ export function isLastSeatSelection(
   }
 
   const record = value as Record<string, unknown>;
+  const lastAreaByBranch = record.lastAreaByBranch;
+  const validLastAreaByBranch =
+    lastAreaByBranch === undefined ||
+    (Boolean(lastAreaByBranch) &&
+      typeof lastAreaByBranch === "object" &&
+      !Array.isArray(lastAreaByBranch) &&
+      Object.values(lastAreaByBranch as Record<string, unknown>).every(
+        (areaId) => typeof areaId === "string",
+      ));
   return (
     typeof record.branchId === "string" &&
-    typeof record.areaId === "string"
+    typeof record.areaId === "string" &&
+    validLastAreaByBranch
   );
 }
 

@@ -18,11 +18,20 @@ https://www.nlb.gov.sg/seatbooking/*
 The React application renders an independent floating panel over the NLB page.
 It does not replace or modify NLB's own booking controls.
 
-The compact panel keeps the selected-date quota, seat plan, favourite
-timelines, and booking action visible together. Short lists keep the panel at
-its natural content height. Longer favourite lists expand up to the browser
-height that remains after the fixed controls, then become the primary scroll
-region so the map remains available while seats are browsed or managed.
+The expanded workspace uses the available browser height. It keeps the
+selected-date quota, seat plan, favourite timelines, and booking action
+together; longer favourite lists become the primary scroll region so the map
+remains available while seats are browsed or managed. A fixed-height
+post-favourites region is reserved from the initial area render. Its action row
+does not move when booking hours, cancellations, validation messages, or
+progress results change; variable details scroll inside that reserved region
+instead of reducing the visible favourite-seat area. On short viewports, the
+workspace itself can scroll while the favourite list and post-favourites
+region keep their independent height and overflow boundaries.
+The timeline Legend remains immediately below the favourite list in its own
+fixed row. Activating it opens a dismissible popover upward over the end of the
+favourite list, so the legend does not resize either region or cover the
+booking action. Outside click and Escape dismiss the popover.
 
 Clicking the seat-plan preview opens a temporary full-screen seat picker. It
 keeps the enlarged NLB plan beside the existing searchable favourite-seat
@@ -146,11 +155,18 @@ and last character and replaces every middle character with `*`; the complete
 raw NLB user ID is not inserted into rendered markup or persisted.
 
 The saved library and area are restored when both still exist in the current
-catalog. If the saved area is empty or no longer exists, the extension selects
-the first area, in NLB catalog order, within that library that contains a
-saved favourite seat still present in the catalog. The same fallback runs
-when the user changes libraries. A library with no valid favourite seat keeps
-the explicit **Choose a specific area** state.
+catalog. The selection record also keeps the last area for each library. When
+switching libraries, the extension restores that library's remembered area;
+if it has no remembered area or that area no longer exists, it selects the
+first area in NLB catalog order. A saved selection from the older single-area
+format remains valid and is used as the remembered area for its library.
+
+When the restored library, area, and date are all valid, the assistant renders
+them as a compact summary whose footer contains the selected-date quota.
+**Edit** restores the existing selects and native date input without changing
+their selection or persistence behavior; **Done** returns to the summary after
+the selection is complete. An incomplete initial selection always keeps the
+editor visible.
 
 After storage restoration, the assistant launches one initial availability
 check only when the resolved saved area contains a favourite seat that still
@@ -623,7 +639,8 @@ API (`chrome.storage.local`):
 - an installation-local 256-bit profile-key secret;
 - opaque HMAC-derived profile IDs and their stable display order;
 - favourite seats for each account;
-- the last selected branch and area for each account;
+- the last selected branch and the last area within each library for each
+  account;
 - the signed-out favourite sync choice for each account; and
 - the installation-wide default adjacent-hour booking mode; and
 - the privacy/session disclosure acknowledgement.
@@ -688,9 +705,12 @@ shared-computer cleanup sequence are documented in [`settings.md`](settings.md).
 
 The **Booking default** setting stores either `combine` or `separate` for the
 installation. Missing or malformed values fail safely to `combine`. Each new
-`SeatAssistant` instance loads that preference into its adjacent-hour radio
-selection; changing the option in the booking panel affects only that booking
-selection and does not rewrite the saved default.
+`SeatAssistant` instance loads that preference into its compact
+**Book each hour separately** toggle; changing the toggle in the booking panel
+affects only that booking selection and does not rewrite the saved default.
+The adjacent information control opens a non-layout popover on hover, focus,
+or click; a clicked popover remains until outside click or Escape dismisses
+it.
 
 Kept only in memory:
 

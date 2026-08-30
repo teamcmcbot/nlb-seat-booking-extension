@@ -1,6 +1,6 @@
 # Firefox Add-ons data declarations
 
-This worksheet maps version 1.4.0 to Mozilla's built-in data-consent manifest
+This worksheet maps version 1.4.1 to Mozilla's built-in data-consent manifest
 categories. It must be re-reviewed if NLB integration, persistence, analytics,
 or network destinations change.
 

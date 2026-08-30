@@ -20,6 +20,14 @@ avoiding misleading visual edits.
   account masking, and layout must not be redrawn or invented.
 - Use deterministic compositing or browser-based rendering for existing UI.
   Do not use generative image editing to alter application screenshots.
+- Treat approved product screenshots as listing assets, not raw account data.
+  A signed-in UI capture may retain feature-specific details such as library,
+  area, date, seat, and time when the UI already masks the account identity
+  and the capture contains no credentials, cookies, full user IDs, booking
+  reference numbers, or other sensitive identifiers. Do not redact away the
+  feature being demonstrated merely because the screenshot came from a live
+  session; record the privacy review and obtain explicit user approval before
+  committing it.
 - Do not commit, push, or publish screenshots unless the user explicitly asks.
 
 ## Canvas and output quality

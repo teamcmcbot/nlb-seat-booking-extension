@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "Library Seats SG - for NLB",
   "description": "Find favourite seats, check availability, and book multiple NLB sessions with clear review and confirmation.",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "homepage_url": "https://github.com/teamcmcbot/nlb-seat-booking-extension",
   "incognito": "not_allowed",
   "permissions": ["storage"],

@@ -170,7 +170,7 @@ and [publisher ownership](https://developer.chrome.com/docs/webstore/share-owner
 | Upload ZIP | `manifest.json` at the archive root | Packaging script supports this |
 | Manifest | MV3, accurate name, description, version, icons | Complete; summary is 108 characters |
 | Store icon | 128×128 PNG in the package | Present and correctly padded |
-| Screenshots | 1–5 at 1280×800 or 640×400 | Six 1.3.2 feature candidates prepared under `assets/chrome-web-store/`; the recommended upload set uses five, and authenticated masked-profile details require publisher approval |
+| Screenshots | 1–5 at 1280×800 or 640×400 | Six reviewed 1.4.1 feature candidates are stored under `assets/chrome-web-store/`; upload the recommended five after final privacy and dashboard review |
 | Small promo tile | 440×280 | Prepared under `assets/chrome-web-store/` |
 | Marquee image | 1400×560 | Optional and missing |
 | Summary | Plain text, no more than 132 characters | Draft below |
@@ -204,7 +204,7 @@ receiving closer examination. See the
 Use only sanitised or approved examples. Never show real user IDs, booking
 references, account responses, or dates connected to real bookings.
 
-Recommended five-screenshot sequence for v1.3.2:
+Recommended five-screenshot sequence for v1.4.1:
 
 1. introduce the workspace and automatic launch on an NLB Seat Booking page;
 2. locate seats in the enlarged seat picker and save favourites;

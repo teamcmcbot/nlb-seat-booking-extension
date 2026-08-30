@@ -1,6 +1,6 @@
 # Chrome Web Store submission sheet
 
-Status: ready-to-paste draft for Library Seats SG - for NLB v1.3.2, reviewed
+Status: ready-to-paste draft for Library Seats SG - for NLB v1.4.1, reviewed
 20 August 2026. Recheck the dashboard labels and the exact uploaded ZIP at
 submission time.
 
@@ -195,6 +195,9 @@ Safety and network behavior:
   recommended screenshots: `store-overview.png`, `store-seat-picker.png`,
   `booking-flow-01-selection.png`, `booking-flow-02-confirmation.png`, and
   `booking-flow-04-upcoming.png` from `assets/chrome-web-store/`.
+- [ ] Confirm the 1.4.1 workspace captures show the compact selection summary,
+  fixed post-favourites action region, and current compact booking-mode UI;
+  reject any capture that still shows the superseded large radio cards.
 - [ ] Keep `booking-flow-03-success.png` as an approved alternate because the
   Chrome Web Store listing accepts at most five screenshots.
 - [ ] Approve or recapture the visible masked profile, booking date, seat
