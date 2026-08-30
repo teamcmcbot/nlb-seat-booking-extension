@@ -6,11 +6,13 @@ show the extension running on NLB's Seat Booking page, including the runtime
 seat plan, because the combined map-and-availability experience is a core
 product feature.
 
-The current workspace and booking-flow PNGs predate the final 1.4.1 compact
-selection summary and fixed post-favourites region. Do not upload them as the
-1.4.1 set until each replacement has been planned, captured, edited, and
-visually approved individually. The existing files remain the working baseline
-until authentic replacement captures are available.
+The current workspace and booking-flow PNGs are the reviewed 1.4.1 listing
+set. The workspace overview and four booking-flow images were recaptured,
+edited, and approved individually after the compact selection summary and
+fixed post-favourites region were implemented. `store-seat-picker.png` is
+intentionally unchanged because the relevant seat-picker UI did not change.
+Raw booking-flow captures and dated pre-recapture backups are retained in the
+repository for traceability.
 
 The screenshot decision is a conscious, limited-use risk position rather than
 a conclusion that NLB has licensed its maps for promotional reproduction. NLB
@@ -42,13 +44,13 @@ historical documentation references and should not be uploaded because they
 use the previous product name.
 
 The six feature screenshots are deterministic composites of authenticated UI
-captures. They preserve the masked account label, `Profile 1`, the date
-23/08/2026, seat names, booking status, and the real extension controls while
+captures. They preserve the approved masked account label, feature-specific
+library, area, date, seat, booking-status, and real extension controls while
 adding explanatory captions, limited background treatment, and the approved
-pointer or focus treatments. Before public upload, recapture the same flow
-from a clean demo or Guest state, or explicitly approve the visible
-masked-profile and booking details. Never publish a raw account identifier,
-booking reference, credential, cookie, or unsanitised account response.
+pointer or focus treatments. Before public upload, confirm that the approved
+masked-profile and booking details remain acceptable. Never publish a raw
+account identifier, booking reference, credential, cookie, or unsanitised
+account response.
 
 ## Small promo tile provenance
 

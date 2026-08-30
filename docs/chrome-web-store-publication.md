@@ -170,7 +170,7 @@ and [publisher ownership](https://developer.chrome.com/docs/webstore/share-owner
 | Upload ZIP | `manifest.json` at the archive root | Packaging script supports this |
 | Manifest | MV3, accurate name, description, version, icons | Complete; summary is 108 characters |
 | Store icon | 128×128 PNG in the package | Present and correctly padded |
-| Screenshots | 1–5 at 1280×800 or 640×400 | Six feature candidates are stored under `assets/chrome-web-store/`; recapture the workspace and booking-flow images for 1.4.1, then upload the recommended five after privacy review |
+| Screenshots | 1–5 at 1280×800 or 640×400 | Six reviewed 1.4.1 feature candidates are stored under `assets/chrome-web-store/`; upload the recommended five after final privacy and dashboard review |
 | Small promo tile | 440×280 | Prepared under `assets/chrome-web-store/` |
 | Marquee image | 1400×560 | Optional and missing |
 | Summary | Plain text, no more than 132 characters | Draft below |
