@@ -1,10 +1,16 @@
 # Chrome Web Store assets
 
-These are the v1.3.2 listing assets for Library Seats SG - for NLB. The promo
+These are the listing assets for Library Seats SG - for NLB. The promo
 tile is wholly original project artwork. The feature screenshots intentionally
 show the extension running on NLB's Seat Booking page, including the runtime
 seat plan, because the combined map-and-availability experience is a core
 product feature.
+
+The current workspace and booking-flow PNGs predate the final 1.4.1 compact
+selection summary and fixed post-favourites region. Do not upload them as the
+1.4.1 set until each replacement has been planned, captured, edited, and
+visually approved individually. The existing files remain the working baseline
+until authentic replacement captures are available.
 
 The screenshot decision is a conscious, limited-use risk position rather than
 a conclusion that NLB has licensed its maps for promotional reproduction. NLB
@@ -18,12 +24,12 @@ packaged, rehosted, or reused in the promo tile.
 | `small-promo-tile.png` | 440×280 | Required small promotional tile |
 | `store-overview.png` | 1280×800 | Introductory overview: automatic launch, library/area/date selection, favourites, and availability refresh |
 | `store-seat-picker.png` | 1280×800 | Enlarged seat picker showing seat lookup and saving a seat to favourites |
-| `booking-flow-01-selection.png` | 1280×800 | Two selected sessions, with combine/separate booking controls visible |
+| `booking-flow-01-selection.png` | 1280×800 | Two selected sessions, with the fixed booking action region and compact booking-mode control visible |
 | `booking-flow-02-confirmation.png` | 1280×800 | Confirmation dialog showing both booking requests before submission |
 | `booking-flow-03-success.png` | 1280×800 | Successful booking status for both sessions |
 | `booking-flow-04-upcoming.png` | 1280×800 | Upcoming bookings showing the 11am–1pm session and lunch break before 2pm–4pm |
 
-Chrome permits up to five listing screenshots. The recommended v1.3.2 upload
+Chrome permits up to five listing screenshots. The recommended v1.4.1 upload
 sequence is `store-overview.png`, `store-seat-picker.png`,
 `booking-flow-01-selection.png`, `booking-flow-02-confirmation.png`, and
 `booking-flow-04-upcoming.png`. `booking-flow-03-success.png` is retained as an

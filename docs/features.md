@@ -1,7 +1,7 @@
 # Feature reference
 
 This document records the detailed user-visible capabilities and safeguards in
-Library Seats SG - for NLB v1.4.0. The shorter project overview and normal usage
+Library Seats SG - for NLB v1.4.1. The shorter project overview and normal usage
 steps remain in the repository [`README`](../README.md).
 
 ## Account and quota
@@ -57,6 +57,9 @@ steps remain in the repository [`README`](../README.md).
 
 - Lets users choose the library, area, and date from the extension workspace
   before reviewing seat availability.
+- Collapses a complete library, area, and date into an editable summary with
+  the selected-date quota in its footer. **Edit** restores the normal controls
+  and native date input; **Done** returns to the compact view.
 - Extracts the current library, area, seat, and booking rules from NLB's
   `GetAccountInfo` response.
 - Excludes `facilityId: 2` discussion rooms and breakout rooms.
@@ -89,6 +92,13 @@ steps remain in the repository [`README`](../README.md).
   lists naturally, and makes longer favourite lists the primary scroll region.
   On short viewports, the workspace itself scrolls while the booking summary
   stays usable without covering the favourite seats.
+- Keeps a visible scrollbar indicator beside an overflowing favourite list,
+  including where Chrome or macOS would normally hide the native scrollbar.
+- Reserves a fixed post-favourites action region so booking, cancellation,
+  errors, and status details do not change the favourite list's visible
+  height. Variable details scroll inside that region.
+- Places the timeline Legend immediately after Favourite seats and opens its
+  explanation as a dismissible popover that does not consume layout height.
 - Displays the reviewed `-sp` map for an annotated branch and area. For an
   unreviewed area, it uses only `areaMapUrls` attached to that exact area in
   the NLB response.

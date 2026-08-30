@@ -85,9 +85,23 @@ changes, the version 1.4.0 behaviors above, and confirmation that
 private/incognito use is unavailable. Do not make or cancel a real booking
 solely for testing.
 
-Store screenshots must be checked in Firefox before submission. Existing
-privacy-safe 1280×800 captures may be reused only if the Firefox rendering
-matches; recapture any image with a browser-specific discrepancy.
+For version 1.4.1, verify in both Firefox and Chrome that:
+
+- a restored complete library, area, and date appears in the compact summary,
+  including the selected-date quota footer;
+- **Edit** restores the normal selects and native date input, and **Done**
+  returns to the compact summary without changing the saved selection;
+- overflowing favourite-seat lists keep a visible scrollbar indicator;
+- selecting booking or cancellation cells does not resize the favourite list,
+  because variable details scroll inside the reserved post-favourites region;
+- the Legend and booking-mode explanations open as non-layout popovers and do
+  not cover the primary Book or Cancel action; and
+- the empty-area **Choose favourite seats** action opens the seat picker.
+
+Store screenshots must be captured or checked in Firefox before submission.
+Use clean Firefox-native images and describe their meaning in the AMO listing
+text; do not reuse a Chrome-native date-picker capture or a caption-heavy
+Chrome composite when Firefox renders the state differently.
 
 ## Publication boundary
 

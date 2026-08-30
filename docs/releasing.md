@@ -80,14 +80,14 @@ the unsigned ZIP to a GitHub release.
 
 ## Publish
 
-For version `1.4.0`:
+For version `1.4.1`:
 
 ```bash
-git tag v1.4.0
-git push origin v1.4.0
-gh release create v1.4.0 nlb-seat-helper.zip \
+git tag v1.4.1
+git push origin v1.4.1
+gh release create v1.4.1 nlb-seat-helper.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "Library Seats SG - for NLB v1.4.0" \
+  --title "Library Seats SG - for NLB v1.4.1" \
   --notes-file RELEASE_NOTES.md
 ```
 

@@ -26,7 +26,17 @@ seat lists easier to navigate.
 
 ## Validation
 
-- Full regression suite, typecheck, and production build passed.
+- Full regression suite passed: 42 test files and 287 tests.
+- Typecheck, Chrome and Firefox production packaging, Firefox strict lint, and
+  all three archive-integrity checks passed.
+- The AMO reviewer-source archive rebuilt an extracted Firefox package whose
+  files were byte-for-byte identical to the release candidate.
+- Runtime dependency audit passed with zero known vulnerabilities. The full
+  development audit reports the documented `image-size` advisories inherited
+  through Mozilla's `addons-linter` and `web-ext`; those build tools are not
+  included in the extension package.
+- Live Chrome and Firefox 1.4.1 smoke testing and refreshed store screenshots
+  remain required before publication.
 
 # Library Seats SG - for NLB v1.4.0
 
