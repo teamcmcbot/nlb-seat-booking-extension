@@ -74,9 +74,10 @@ follow `AMO_BUILD.md` before each submission. Confirm the rebuilt extension
 files match the intended AMO package; ZIP hashes may differ because archive
 timestamps differ.
 
-The unsigned Firefox package is not a general Firefox install download. AMO
-signs approved packages, so publish the signed AMO listing rather than adding
-the unsigned ZIP to a GitHub release.
+The Firefox package is the unsigned AMO submission artifact, not a replacement
+for Mozilla's signed AMO distribution. Attach both Firefox artifacts to the
+GitHub release for reproducibility, while directing users to the signed AMO
+listing for normal Firefox installation.
 
 ## Publish
 
@@ -85,15 +86,22 @@ For version `1.4.1`:
 ```bash
 git tag v1.4.1
 git push origin v1.4.1
-gh release create v1.4.1 nlb-seat-helper.zip \
+gh release create v1.4.1 \
+  nlb-seat-helper.zip \
+  nlb-seat-helper-firefox.zip \
+  nlb-seat-helper-firefox-source.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
   --title "Library Seats SG - for NLB v1.4.1" \
-  --notes-file RELEASE_NOTES.md
+  --notes-file /tmp/release-notes-v1.4.1.md
 ```
 
-Use a stable asset name, `nlb-seat-helper.zip`, for every release. GitHub
-allows the same asset name on different releases, and it gives users a clear
-choice that is distinct from GitHub's automatic source archives.
+`RELEASE_NOTES.md` is the cumulative repository changelog. Create a
+version-specific notes file containing only the current release section and
+pass that file to `gh release create` or `gh release edit`; individual GitHub
+release pages should not repeat earlier versions' notes. Use stable asset
+names for all three packages. GitHub allows the same names on different
+releases, and they remain distinct from GitHub's automatically generated
+source archives.
 
 ## Verify
 
@@ -101,8 +109,9 @@ After publishing:
 
 1. Open the public release page.
 2. Confirm the release is marked **Latest**.
-3. Download `nlb-seat-helper.zip` from **Assets**.
-4. Confirm the downloaded archive passes `unzip -t`.
+3. Download `nlb-seat-helper.zip`, `nlb-seat-helper-firefox.zip`, and
+   `nlb-seat-helper-firefox-source.zip` from **Assets**.
+4. Confirm each downloaded archive passes `unzip -t`.
 5. Load the extracted directory in Chrome and run a smoke test on the NLB Seat
    Booking page, including automatic availability triggers, unchanged and
    changed favourite snapshots, signed-out view-only cells, and both completed

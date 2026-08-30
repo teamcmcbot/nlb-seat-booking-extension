@@ -210,11 +210,15 @@ For release-bound work, also run:
 npm run package
 unzip -t nlb-seat-helper.zip
 unzip -l nlb-seat-helper.zip
+npm run package:firefox
+npm run package:firefox-source
+unzip -t nlb-seat-helper-firefox.zip
+unzip -t nlb-seat-helper-firefox-source.zip
 ```
 
 Confirm the archive root contains `manifest.json`, `content.js`, and
-`content.css`. `dist/` and `nlb-seat-helper.zip` are generated and ignored;
-do not commit them.
+`content.css` in every built extension package. `dist/` and all generated ZIPs
+are ignored; do not commit them.
 
 ### 6. Test locally with the user
 
@@ -287,11 +291,16 @@ git pull --ff-only
 npm ci
 npm run package
 unzip -t nlb-seat-helper.zip
+npm run package:firefox
+npm run package:firefox-source
+unzip -t nlb-seat-helper-firefox.zip
+unzip -t nlb-seat-helper-firefox-source.zip
 ```
 
 Follow `docs/releasing.md` to create and push the version tag and publish the
-GitHub release with `nlb-seat-helper.zip` as the release asset. Do not upload
-GitHub's generated source archive as the installable extension.
+GitHub release with `nlb-seat-helper.zip`, `nlb-seat-helper-firefox.zip`, and
+`nlb-seat-helper-firefox-source.zip` as release assets. Do not upload GitHub's
+generated source archive as the installable extension.
 
 Tagging, pushing, merging, and publishing a release change remote state. Do
 not perform those actions unless the user has explicitly authorized them.
@@ -299,7 +308,8 @@ not perform those actions unless the user has explicitly authorized them.
 ### 10. Verify the published release
 
 - Confirm the GitHub release is marked as the latest release.
-- Download the published ZIP and run `unzip -t` on that downloaded asset.
+- Download all three published ZIPs and run `unzip -t` on each downloaded
+  asset.
 - Confirm the archive version matches the Git tag and release title.
 - Load the downloaded artifact as an unpacked extension and repeat the critical
   smoke test.
