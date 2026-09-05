@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 2,
+  "lastReviewed": "2026-09-01",
+  "sources": [
+    {
+      "id": "nlb-locations",
+      "title": "NLB Our Libraries and Locations",
+      "authority": "official NLB directory",
+      "url": "https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations",
+      "note": "Re-check the live branch result and opening-hours details at audit time; the directory is dynamic and this repository does not treat it as a self-updating feed."
+    },
+    {
+      "id": "branch-inventory",
+      "title": "Repository branch inventory",
+      "authority": "maintainer-reviewed repository record",
+      "url": "docs/branch-inventory.md",
+      "note": "Contains dated operational notes and the evidence limitations recorded by maintainers."
+    },
+    {
+      "id": "nlb-chatbot-2026-09-01",
+      "title": "NLB chatbot response recorded 1 September 2026",
+      "authority": "user-reported chatbot response",
+      "note": "Point-in-time evidence supplied by the maintainer; re-check against a dated official branch page or response before accepting lifecycle changes."
+    }
+  ],
+  "branches": [
+    {
+      "branchName": "Orchard Library",
+      "aliases": ["library@orchard"],
+      "status": "closed-for-renovation",
+      "notice": "Reported closed until the second half of 2026.",
+      "expectedReopenWindow": "second half of 2026",
+      "expectedCatalogState": "unknown",
+      "evidenceLevel": "user-reported",
+      "recommendedDisposition": "investigate",
+      "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01"]
+    },
+    {
+      "branchName": "Cheng San Library",
+      "aliases": ["Cheng San Public Library"],
+      "status": "closed-for-renovation",
+      "notice": "Reported closed until the first half of 2027.",
+      "expectedReopenWindow": "first half of 2027",
+      "expectedCatalogState": "unknown",
+      "evidenceLevel": "user-reported",
+      "recommendedDisposition": "investigate",
+      "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01"]
+    },
+    {
+      "branchName": "Marine Parade Library",
+      "aliases": ["Marine Parade Public Library"],
+      "status": "closed-for-renovation",
+      "notice": "Reported closed until mid-2027.",
+      "expectedReopenWindow": "mid-2027",
+      "expectedCatalogState": "unknown",
+      "evidenceLevel": "user-reported",
+      "recommendedDisposition": "investigate",
+      "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01"]
+    },
+    {
+      "branchId": "25",
+      "branchName": "Queenstown Library",
+      "aliases": ["Queenstown Public Library"],
+      "status": "closed-for-renovation",
+      "notice": "Reported closed from 31 August 2026 until late 2028.",
+      "effectiveFrom": "2026-08-31",
+      "expectedReopenWindow": "late 2028",
+      "expectedCatalogState": "absent",
+      "evidenceLevel": "user-reported",
+      "recommendedDisposition": "retired",
+      "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01"]
+    },
+    {
+      "branchName": "Ang Mo Kio Library",
+      "aliases": ["Ang Mo Kio Public Library"],
+      "status": "closed-for-renovation",
+      "notice": "Reported closed from 1 August 2026 with a planned reopening on 20 November 2026 at AMK Hub.",
+      "effectiveFrom": "2026-08-01",
+      "expectedReopenDate": "2026-11-20",
+      "plannedLocation": "AMK Hub",
+      "expectedCatalogState": "unknown",
+      "evidenceLevel": "user-reported",
+      "recommendedDisposition": "investigate",
+      "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01"]
+    }
+  ]
+}

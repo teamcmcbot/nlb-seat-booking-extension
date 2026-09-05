@@ -1,11 +1,45 @@
 # Holiday and Early-Closure Testing
 
-Status: full-day closure handling implemented; partial-day and exception live
-testing still required.
+Status: full-day closure handling implemented; partial-day, exception, and
+planned-revamp live testing still required.
 
 This document records the extension's current behavior, holiday-related fields
 observed in NLB's current web client, and the tests still required for
-partial-day closures and area-specific exceptions.
+partial-day closures, area-specific exceptions, and planned branch closures.
+
+## Known planned closures and revamps
+
+The following point-in-time notices were supplied from the NLB chatbot on
+1 September 2026. They are operational evidence to verify, not a captured
+`GetAccountInfo` holiday record or a reviewed seat-plan baseline:
+
+| Library | Reported closure or reopening notice |
+| --- | --- |
+| Orchard Library | Closed until the second half of 2026 |
+| Cheng San Library | Closed until the first half of 2027 |
+| Marine Parade Library | Closed until mid-2027 |
+| Queenstown Library | Closed from 31 August 2026 until late 2028 |
+| Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub |
+
+Re-check these notices against NLB's [Our Libraries and Locations](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations) page before
+using them as current operational truth. The public directory is the preferred
+source for branch opening information, while the chatbot wording remains
+user-reported and currently undated beyond the report date above.
+
+The extension does not automatically consume this table. A validated NLB
+closure signal or separately reviewed implementation is required before planned
+revamp dates can affect runtime availability.
+
+The reviewed seat-plan baseline currently contains Queenstown only among these
+five libraries: two areas and 50 annotated seats. The other four libraries do
+not currently have reviewed seat-plan definitions. A branch's presence in the
+Seat Booking catalog is not proof that it is open or bookable, and a planned
+closure must not by itself remove a baseline or alter seat geometry.
+
+NLB branch pages also commonly state that libraries close at 5.00pm on the
+eves of Christmas, New Year, and Chinese New Year and close on public holidays;
+for example, see the [official NLB operating-hours wording](https://reference.nlb.gov.sg/contact-us/). This is a date-specific operating
+hours rule to test separately from a full-day `settings.holidays` closure.
 
 ## Why this needs live testing
 
@@ -181,6 +215,8 @@ Capture results for the same library and area where possible.
 | Ordinary weekday | Normal metadata, today's matrix, and future interval responses | Existing timeline behavior |
 | Holiday eve with early closure | Area hours, today's matrix, dwell limits, and future responses before/after closure | No selectable green cells after actual closure |
 | Full holiday, ordinary area | Holiday record, branch exclusion, today's matrix, and future interval responses | Date remains inspectable and every interval is explicitly closed/unavailable |
+| Planned renovation closure | Dated NLB closure notice, branch catalog presence, holiday/closure settings, and date-specific responses | Treat the branch as operationally closed for the affected dates; do not infer openness from catalog presence or remove its seat-plan baseline automatically |
+| Planned reopening after renovation | Confirmed reopening notice, refreshed branch/area catalog, map image, and exact availability response | Re-audit before restoring selectable seats or accepting the old annotation baseline as current |
 | Full holiday, `ignoreHolidays` area | Area flag, today's matrix, and future interval responses | Only genuinely operating intervals selectable |
 | Holiday excluded for one branch | `excludedBranches` and two branch responses | Excluded branch follows normal behavior if NLB intends that exception |
 | Holiday followed by an open day | Date range before and after release time | Follows confirmed `advanceBookingDays` semantics |
@@ -196,6 +232,8 @@ For each scenario, record:
 - `advanceBookingDays`;
 - booking release times;
 - `settings.holidays`;
+- any known planned closure or reopening notice, including its source and
+  effective dates;
 - relevant branch code and holiday exclusions;
 - branch dwell-time configuration;
 - area ID, facility ID/code, normal opening/closing times, and
@@ -249,6 +287,10 @@ Holiday support is complete only when:
 
 - a fully closed ordinary area cannot show a selectable interval;
 - an early closure produces no API calls or selectable cells after closure;
+- a planned renovation closure is not treated as open merely because its
+  branch or seat plan remains in the catalog;
+- a planned reopening triggers a fresh catalog, map, and availability review
+  before seats become selectable;
 - an extended-hours area remains usable only for its confirmed hours;
 - branch-specific holiday exclusions are respected;
 - the next open date follows NLB's actual advance-booking semantics;

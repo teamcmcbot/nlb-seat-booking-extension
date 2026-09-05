@@ -7,6 +7,11 @@ reviewed an annotation tied to an exact map revision.
 See [`seat-plan-maintenance.md`](seat-plan-maintenance.md) for drift capture,
 fingerprinting, work-packet generation, and acceptance. The generated
 [`seat-plan-inventory.md`](seat-plan-inventory.md) lists the current baseline.
+Operational branch closures, renovations, reopenings, and special-hours notes
+are tracked separately in [`branch-inventory.md`](branch-inventory.md). They do
+not mutate annotations by themselves, but confirmed structural drift can lead
+to an explicitly reviewed suspension or retirement after archive evidence is
+prepared.
 
 ## Safety model
 

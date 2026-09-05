@@ -22,7 +22,7 @@ const outputDir = path.resolve(
 await mkdir(outputDir, { recursive: true });
 
 const annotationTypes = new Set([
-  "area-added", "area-removed", "map-path", "image-width", "image-height",
+  "branch-added", "branch-removed", "area-added", "area-removed", "map-path", "image-width", "image-height",
   "image-sha256", "seat-added", "seat-removed", "seat-name", "seat-id",
 ]);
 const affected = [...new Set(
@@ -35,6 +35,16 @@ const results = [];
 for (const key of affected) {
   const [branchId, areaId] = key.split(":");
   const types = [...new Set(report.changes.filter((change) => change.key === key).map((change) => change.type))];
+  if (types.includes("branch-added") || types.includes("branch-removed")) {
+    const change = report.changes.find((candidate) => candidate.key === key && types.includes(candidate.type));
+    results.push({
+      key,
+      status: "manual",
+      types,
+      reason: change?.actionPlan?.resolution?.join(" ") ?? "Branch lifecycle changes require catalog, operational-status, archive, and annotation review.",
+    });
+    continue;
+  }
   if (types.includes("area-added") || types.includes("area-removed")) {
     results.push({ key, status: "manual", types, reason: "Area lifecycle changes require catalog and annotation-design review." });
     continue;

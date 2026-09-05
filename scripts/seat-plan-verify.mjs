@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import {
   BASELINE_PATH,
   FINGERPRINT_PATH,
+  RETIREMENTS_PATH,
   annotationKey,
   baselineAreaKey,
   fingerprintModule,
@@ -11,9 +12,10 @@ import {
   readJson,
 } from "./seat-plan-tools.mjs";
 
-const [definitions, baseline, inventory, fingerprintSource, inventorySource] = await Promise.all([
+const [definitions, baseline, retirements, inventory, fingerprintSource, inventorySource] = await Promise.all([
   loadDefinitions(),
   readJson(BASELINE_PATH),
+  readJson(RETIREMENTS_PATH),
   parseInventory(),
   readFile(FINGERPRINT_PATH, "utf8"),
   readFile(new URL("../docs/seat-plan-inventory.md", import.meta.url), "utf8"),
@@ -42,6 +44,9 @@ for (const definition of definitions) {
     errors.push(`${key}: missing baseline entry`);
     continue;
   }
+  if (area.annotationStatus !== "implemented") {
+    errors.push(`${key}: active definition points to a baseline area that is not marked implemented`);
+  }
   if (
     area.image.width !== definition.imageWidth ||
     area.image.height !== definition.imageHeight
@@ -69,8 +74,24 @@ for (const definition of definitions) {
 }
 
 for (const key of baselineByKey.keys()) {
-  if (!definitionKeys.has(key)) {
+  const area = baselineByKey.get(key);
+  if (area.annotationStatus === "implemented" && !definitionKeys.has(key)) {
     errors.push(`${key}: baseline has no annotation definition`);
+  }
+}
+
+for (const entry of retirements.entries ?? []) {
+  if (entry.scope === "branch") {
+    const active = definitions.filter((definition) => definition.branchId === entry.key);
+    if (active.length > 0) {
+      errors.push(`${entry.key}: retired branch still has ${active.length} active annotation definition(s)`);
+    }
+  }
+  if (entry.scope === "area") {
+    const [branchId, areaId] = String(entry.key).split(":");
+    if (definitions.some((definition) => definition.branchId === branchId && definition.areaId === areaId)) {
+      errors.push(`${entry.key}: retired area still has an active annotation definition`);
+    }
   }
 }
 
@@ -86,6 +107,6 @@ if (errors.length) {
   process.exitCode = 1;
 } else {
   console.log(
-    `Verified ${definitions.length} definitions, ${baseline.areas.length} baseline areas, and ${definitionKeys.size} fingerprints.`,
+    `Verified ${definitions.length} active definitions, ${baseline.areas.length} catalog baseline areas, ${definitionKeys.size} fingerprints, and ${retirements.entries?.length ?? 0} retirement records.`,
   );
 }
