@@ -18,15 +18,15 @@ describe("seat-plan audit evidence", () => {
     expect(result.evidenceIssues).toEqual([]);
     expect(result.coverage.observed).toEqual(result.coverage.configured);
     expect(result.coverage.images).toMatchObject({
-      configured: 83,
-      checked: 83,
+      configured: 81,
+      checked: 81,
       changed: [],
       missing: [],
     });
     expect(result.html).toContain('href="candidate.json"');
     expect(result.html).toContain('href="drift.json"');
     expect(result.html).toContain("No branches or areas were added or removed.");
-    expect(result.html).toContain("83 of 83 configured seat-plan images");
+    expect(result.html).toContain("81 of 81 configured seat-plan images");
   });
 
   it("treats routine URL omissions and first-observed seat codes as non-drift evidence", async () => {
@@ -125,6 +125,7 @@ describe("seat-plan audit evidence", () => {
           areaId: "1",
           areaName: "New Study Area",
         });
+        snapshot.rawCatalogAreas = snapshot.areas;
       },
     );
 
@@ -141,44 +142,20 @@ describe("seat-plan audit evidence", () => {
     expect(result.html).toContain("Investigate and onboard added branch");
   });
 
-  it("uses raw catalog coverage and keeps the expected Queenstown closure as actionable drift", async () => {
+  it("does not report retired Queenstown when it is absent from the accepted baseline", async () => {
     const result = await runAudit(
       { exportMetadata: { extensionVersion: "1.3.0", mode: "catalog" } },
-      2,
-      (snapshot) => {
-        snapshot.rawCatalogAreas = snapshot.areas.filter(
-          (candidate) => candidate.branchId !== "25",
-        );
-      },
+      0,
     );
 
-    expect(result.status).toBe("drift");
-    expect(result.changes).toEqual([
-      expect.objectContaining({
-        type: "branch-removed",
-        key: "25",
-        branch: expect.objectContaining({ areaCount: 2, seatCount: 50 }),
-        operationalContext: expect.objectContaining({
-          branchName: "Queenstown Library",
-          recommendedDisposition: "retired",
-        }),
-        actionPlan: expect.objectContaining({
-          title: "Investigate and resolve removed branch",
-        }),
-      }),
-    ]);
-    expect(result.coverage.observed).toEqual({
-      branches: 22,
-      areas: 81,
-      seats: 2030,
-    });
+    expect(result.status).toBe("clean");
+    expect(result.changes).toEqual([]);
+    expect(result.coverage.observed).toEqual({ branches: 22, areas: 81, seats: 2030 });
     expect(result.coverage.candidate).toEqual(result.coverage.configured);
-    expect(result.coverage.annotations.absent).toHaveLength(2);
-    expect(result.html).toContain("Operational context");
-    expect(result.html).toContain("NLB Our Libraries and Locations");
-    expect(result.html).toContain("archive-proposal");
-    expect(result.html).not.toContain("Expected changes acknowledged");
-    expect(result.html).toContain("Raw catalog");
+    expect(result.coverage.annotations).toMatchObject({ configured: 81, present: 81, absent: [] });
+    expect(result.html).toContain("No catalog or map drift detected.");
+    expect(result.html).toContain("Queenstown Library");
+    expect(result.html).not.toContain("branch-removed");
   });
 
   it("reports an unexpected raw branch removal", async () => {
@@ -209,6 +186,7 @@ describe("seat-plan audit evidence", () => {
           areaId: "999",
           areaName: "New Existing-Branch Area",
         });
+        snapshot.rawCatalogAreas = snapshot.areas;
       },
     );
 

@@ -27,8 +27,9 @@ retires it; archive reviewed evidence before removing active configuration.
 After a confirmed reopening, treat reappearance as new drift and refresh the
 catalog, maps, fingerprints, and availability before restoring seats.
 
-The reviewed seat-plan baseline currently includes Queenstown only among these
-five libraries, with two annotated areas and 50 seats. The holiday test guide
+The reviewed seat-plan baseline no longer contains an active plan for any of
+these five libraries. Queenstown's two areas and 50 seats were retired on 5
+September 2026 and preserved in the retirement ledger. The holiday test guide
 also records the recurring NLB notice that libraries close at 5.00pm on the
 eves of Christmas, New Year, and Chinese New Year and close on public holidays;
 see the [official NLB operating-hours wording](https://reference.nlb.gov.sg/contact-us/).

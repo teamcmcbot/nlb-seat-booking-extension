@@ -30,9 +30,10 @@ The extension does not automatically consume this table. A validated NLB
 closure signal or separately reviewed implementation is required before planned
 revamp dates can affect runtime availability.
 
-The reviewed seat-plan baseline currently contains Queenstown only among these
-five libraries: two areas and 50 annotated seats. The other four libraries do
-not currently have reviewed seat-plan definitions. A branch's presence in the
+The reviewed seat-plan baseline currently contains no active plan for these
+five libraries. Queenstown's two areas and 50 annotated seats were retired on
+5 September 2026 and preserved in the retirement ledger. The other four
+libraries do not currently have reviewed seat-plan definitions. A branch's presence in the
 Seat Booking catalog is not proof that it is open or bookable, and a planned
 closure must not by itself remove a baseline or alter seat geometry.
 

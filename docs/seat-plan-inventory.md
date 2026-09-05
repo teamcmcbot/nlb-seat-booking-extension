@@ -1,6 +1,6 @@
 # Seat-plan inventory
 
-Generated from `docs/data/seat-plan-baseline.json`, observed 2026-08-12T04:06:32.646Z.
+Generated from `docs/data/seat-plan-baseline.json`, observed 2026-09-05T06:30:04.832Z.
 It is point-in-time evidence, not a stable NLB API contract. Run the
 maintenance capture and audit before changing or releasing annotations.
 
@@ -8,13 +8,13 @@ maintenance capture and audit before changing or releasing annotations.
 
 | Item | Count |
 | --- | ---: |
-| Branch entries | 23 |
-| Areas | 83 |
-| Areas with a seat-plan image | 83 |
-| Fully labelled plans | 81 |
+| Branch entries | 22 |
+| Areas | 81 |
+| Areas with a seat-plan image | 81 |
+| Fully labelled plans | 79 |
 | Range-only plans | 1 |
 | Hybrid plans | 1 |
-| Implemented clickable annotations | 83 |
+| Implemented clickable annotations | 81 |
 | Pending clickable annotations | 0 |
 
 The SHA-256 column is abbreviated for review. The complete digest and seat
@@ -141,13 +141,6 @@ identity set are retained in the machine-readable baseline.
 | Area ID | Area | Seats | Labels | Map asset | Size | SHA-256 | Annotation |
 | ---: | --- | ---: | --- | --- | ---: | --- | --- |
 | 47 | Quiet Reading Lounge, Level 4 | 13 | Full | `prpl-4-quietreading-sp-full.png` | 769×618 | `4d521d8b68fd…` | **Done** |
-
-### Queenstown Library (branch 25)
-
-| Area ID | Area | Seats | Labels | Map asset | Size | SHA-256 | Annotation |
-| ---: | --- | ---: | --- | --- | ---: | --- | --- |
-| 48 | Singapore Collection, Level 2 | 30 | Full | `qupl-2-singaporecollection-sp-full.png` | 4246×691 | `ff62f7fab10b…` | **Done** |
-| 49 | Near Quiet Reading Room, Level 2 | 20 | Full | `qupl-2-quietreading-sp-full.png` | 3832×703 | `7be0e096af15…` | **Done** |
 
 ### Sembawang Library (branch 26)
 

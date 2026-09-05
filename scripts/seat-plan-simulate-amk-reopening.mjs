@@ -71,7 +71,7 @@ const snapshot = {
   },
   simulation: {
     title: "Ang Mo Kio Library reopening catalog scenario",
-    description: "Synthetic November 2026 scenario: Queenstown remains absent and a new Ang Mo Kio branch with one placeholder area and 12 placeholder seats appears. IDs, counts, areas, seats, maps, and opening status must be replaced by fresh live evidence during a real audit.",
+    description: "Synthetic November 2026 scenario after Queenstown retirement: a new Ang Mo Kio branch with one placeholder area and 12 placeholder seats appears. IDs, counts, areas, seats, maps, and opening status must be replaced by fresh live evidence during a real audit.",
     scenarioDate: "2026-11-20",
   },
   rawCatalogAreas: sortAreas([...currentRawAreas, syntheticRawArea]),

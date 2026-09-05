@@ -7,7 +7,8 @@ seat, fingerprint, and annotation evidence only.
 
 ## Status and evidence
 
-Last recorded: **1 September 2026**.
+Operational notices last recorded: **1 September 2026**. Queenstown's
+seat-plan retirement was recorded: **5 September 2026**.
 
 The notices below were supplied from the NLB chatbot and are user-reported,
 point-in-time operational evidence. They are not a captured NLB API closure
@@ -27,7 +28,7 @@ baseline change.
 | Orchard Library | Closed until the second half of 2026 | None |
 | Cheng San Library | Closed until the first half of 2027 | None |
 | Marine Parade Library | Closed until mid-2027 | None |
-| Queenstown Library | Closed from 31 August 2026 until late 2028 | 2 areas, 50 seats |
+| Queenstown Library | Closed from 31 August 2026 until late 2028 | Retired 5 September 2026; 2 areas, 50 seats archived |
 | Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub | None |
 
 NLB library pages also commonly state that libraries close at 5.00pm on the
@@ -52,6 +53,10 @@ seat-plan baseline and image fingerprints.
   selectable seats. Never reactivate old hotspots automatically.
 - Keep closure notices and reopening evidence in this file rather than adding
   temporary status fields to the generated seat-plan inventory.
+
+Queenstown's long renovation was accepted as a retirement on 5 September 2026.
+Its two areas and 50 seats remain preserved in the retirement ledger, while no
+Queenstown plan remains in the active baseline or runtime annotation index.
 
 ## Interpreting the 1 September 2026 audit
 
@@ -79,6 +84,10 @@ The lifecycle-aware audit now preserves that distinction:
 - The report remains drift until the accepted baseline and active annotation
   configuration are reconciled. A known explanation is not a clean result.
 
+After the retirement was applied, the accepted baseline is **22 branches, 81
+areas, and 2,030 seats**. The Queenstown notice remains an operational record,
+but an identical catalog no longer produces a Queenstown drift event.
+
 ## Simulated Ang Mo Kio reopening
 
 Run `npm run seat-plans:simulate-amk-reopening` to generate a deterministic,
@@ -91,5 +100,5 @@ The simulated report should show Ang Mo Kio as `branch-added`, attach the
 planned AMK Hub reopening notice, and recommend confirming live branch/area/
 seat identities, accepting the catalog branch with annotation pending, using
 targeted map discovery only if needed, and creating new reviewed annotations
-and independent tests. It also continues to show unresolved Queenstown removal
-until that lifecycle decision is applied.
+and independent tests. Because Queenstown's retirement has been applied, the
+simulation does not emit a second Queenstown removal event.

@@ -26,8 +26,9 @@ authoritative NLB response:
 Re-check branch status against NLB's [Our Libraries and Locations](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations) page or a
 dated authoritative response before treating a notice as current operational
 truth. A branch remaining in `GetAccountInfo` does not prove that it is open or
-bookable. Among these five libraries, the reviewed baseline currently contains
-only Queenstown, with two annotated areas and 50 seats.
+bookable. As of 5 September 2026, none of these five libraries has an active
+seat-plan baseline; Queenstown's two areas and 50 seats are preserved in the
+retirement ledger after its retirement.
 
 Use [`docs/branch-inventory.md`](../../../docs/branch-inventory.md) for the
 maintained operational-status overlay. Keep it separate from the generated

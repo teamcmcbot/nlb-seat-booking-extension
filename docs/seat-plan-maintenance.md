@@ -22,10 +22,10 @@ notices are not yet captured as a dated NLB API closure contract, so they guide
 investigation but never suppress drift or authorize baseline mutation by
 themselves.
 
-Among these five libraries, the reviewed baseline currently contains only
-Queenstown: two areas with 50 annotated seats. A routine catalog audit may
-still list a closed branch because catalog identity and operational opening
-status are separate evidence. Report the closure separately, do not run live
+As of 5 September 2026, Queenstown's two areas and 50 annotated seats are
+retired from the active baseline and preserved in the retirement ledger. A
+routine catalog audit may still list a closed branch because catalog identity
+and operational opening status are separate evidence. Report the closure separately, do not run live
 booking tests or targeted map discovery for a known closed branch solely
 because it remains in the catalog, and perform a fresh catalog, map, and
 availability review after a confirmed reopening before re-enabling seats.
@@ -337,10 +337,12 @@ npm run seat-plans:simulate-amk-reopening
 ```
 
 The generated report is prominently labelled simulation. It assumes
-Queenstown remains absent and adds a synthetic Ang Mo Kio branch with one
-placeholder area and placeholder seats on 20 November 2026. The output tests
-report behavior only; real branch IDs, areas, seats, map evidence, opening
-status, and annotations must come from a fresh live audit.
+Queenstown has already been retired from the accepted baseline and adds a
+synthetic Ang Mo Kio branch with one placeholder area and placeholder seats on
+20 November 2026. The output tests report behavior only; real branch IDs,
+areas, seats, map evidence, opening status, and annotations must come from a
+fresh live audit. The simulated report therefore shows AMK onboarding drift
+without re-reporting the already resolved Queenstown removal.
 
 ## Prepare an annotation update
 
