@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/teamcmcbot/nlb-seat-booking-extension/docs/schemas/branch-status.schema.json",
+  "title": "Seat-plan branch operational context",
+  "type": "object",
+  "required": ["schemaVersion", "lastReviewed", "sources", "branches"],
+  "properties": {
+    "schemaVersion": { "const": 2 },
+    "lastReviewed": { "type": "string", "format": "date" },
+    "sources": { "type": "array", "items": { "$ref": "#/$defs/source" } },
+    "branches": { "type": "array", "items": { "$ref": "#/$defs/branch" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["id", "title", "authority"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "title": { "type": "string", "minLength": 1 },
+        "authority": { "type": "string", "minLength": 1 },
+        "url": { "type": "string", "minLength": 1 },
+        "note": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    },
+    "branch": {
+      "type": "object",
+      "required": ["branchName", "status", "notice", "expectedCatalogState", "evidenceLevel", "recommendedDisposition", "sourceIds"],
+      "properties": {
+        "branchId": { "type": "string", "minLength": 1 },
+        "branchName": { "type": "string", "minLength": 1 },
+        "aliases": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true },
+        "status": { "enum": ["closed-for-renovation", "planned-reopening", "open", "unknown"] },
+        "notice": { "type": "string", "minLength": 1 },
+        "expectedCatalogState": { "enum": ["present", "absent", "unknown"] },
+        "effectiveFrom": { "type": "string", "format": "date" },
+        "expectedReopenDate": { "type": "string", "format": "date" },
+        "expectedReopenWindow": { "type": "string", "minLength": 1 },
+        "plannedLocation": { "type": "string", "minLength": 1 },
+        "evidenceLevel": { "enum": ["official", "mixed", "user-reported", "unverified"] },
+        "recommendedDisposition": { "enum": ["investigate", "suspended", "retired"] },
+        "sourceIds": { "type": "array", "items": { "type": "string", "minLength": 1 }, "uniqueItems": true }
+      },
+      "additionalProperties": false
+    }
+  }
+}

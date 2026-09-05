@@ -37,8 +37,6 @@ export const SEAT_PLAN_FINGERPRINTS: Readonly<Record<string, string>> = {
   "20:38:hbpl-3-readinglounge1bottom-sp-full.png?t=20220615": "b4e75534dafb4d293e82657d780a10cc67c0bb6259c7d4e6dd93f00a30ecb2f0",
   "20:39:hbpl-3-adultcollection-sp-full.png?t=20220615": "76cb26e101bcd3ff8a63879cdeddcaa16af098dc47acba8ee1f1fa8ccbae8ebd",
   "24:47:prpl-4-quietreading-sp-full.png": "4d521d8b68fde27b1e50d5703f8071802e805070d51cd1a5bebb9c750707f21b",
-  "25:48:qupl-2-singaporecollection-sp-full.png": "ff62f7fab10bb86d11e4d073f0e9be07af770e743ed4fdffd8d07535bfad30ba",
-  "25:49:qupl-2-quietreading-sp-full.png": "7be0e096af15840f6dc9e8dc43f712d3d756e0b2cf124daab45186543621b86a",
   "26:50:sbpl-5-adultsection-sp-full.png": "75c6a5ef53c6bd8846ef610d47815c3a797580926b09e94879fe651dc572de53",
   "26:51:sbpl-5-readinglounge-sp-full.png": "870fe76637d4d2968475b8864020dfc3f6f31642d104cfd26b450d78c4bdf480",
   "27:52:skpl-3-readinglounge-sp-full.png": "745d982075e02675a77b59563aa4d744e673ca032b1422524779e5de76d5be04",

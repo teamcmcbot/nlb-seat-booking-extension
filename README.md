@@ -186,6 +186,8 @@ npm run seat-plans:audit    # Compare a candidate with reviewed evidence
 npm run seat-plans:full-audit  # Capture and generate JSON + HTML reports
 npm run seat-plans:prepare  # Generate an ignored visual review packet
 npm run seat-plans:prepare-drift  # Prepare all drifted annotation packets
+npm run seat-plans:archive-proposal  # Preserve removal evidence for review
+npm run seat-plans:simulate-amk-reopening  # Generate the future AMK report fixture
 npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 ```
 
@@ -263,6 +265,11 @@ versioned download.
 - [Seat-plan Inventory](docs/seat-plan-inventory.md) is the generated
   point-in-time summary of reviewed areas, maps, fingerprints, and annotation
   status.
+- [Branch Inventory](docs/branch-inventory.md) records manually maintained,
+  point-in-time operational closure, renovation, reopening, and holiday-hours
+  notes separately from the generated seat-plan evidence.
+- [Seat-plan Retirement Ledger](docs/data/seat-plan-retirements.json) preserves
+  explicitly accepted retired evidence outside the active runtime inventory.
 - [Chrome Web Store Publication Plan](docs/chrome-web-store-publication.md)
   records the public-release research, branding and privacy decisions, current
   account-storage behavior, Settings design, store copy, and staged
@@ -312,7 +319,7 @@ src/content/                  Injected application shell and styles
 src/models/                   Normalized account, catalog, and booking types
 src/services/                 Parsing, rules, persistence, conflicts, and plans
 scripts/                      Packaging and seat-plan maintenance commands
-docs/data/                    Reviewed machine-readable seat-plan baseline
+docs/data/                    Reviewed seat-plan baseline, operational context, and retirement ledger
 vite.config.ts                Content-script production build
 ```
 

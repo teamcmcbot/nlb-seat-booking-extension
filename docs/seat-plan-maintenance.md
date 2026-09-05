@@ -4,6 +4,37 @@ NLB can change branches, areas, seat identities, and map artwork without
 notice. This workflow detects that drift before stale coordinates are treated
 as clickable seats and prepares review material for annotation updates.
 
+## Operational closure and revamp status
+
+The following notices were supplied from the NLB chatbot on 1 September 2026
+and are retained here as point-in-time, user-reported operational evidence:
+
+| Library | Reported closure or reopening notice |
+| --- | --- |
+| Orchard Library | Closed until the second half of 2026 |
+| Cheng San Library | Closed until the first half of 2027 |
+| Marine Parade Library | Closed until mid-2027 |
+| Queenstown Library | Closed from 31 August 2026 until late 2028 |
+| Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub |
+
+Re-check current branch status on NLB's [Our Libraries and Locations](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations) page. These
+notices are not yet captured as a dated NLB API closure contract, so they guide
+investigation but never suppress drift or authorize baseline mutation by
+themselves.
+
+As of 5 September 2026, Queenstown's two areas and 50 annotated seats are
+retired from the active baseline and preserved in the retirement ledger. A
+routine catalog audit may still list a closed branch because catalog identity
+and operational opening status are separate evidence. Report the closure separately, do not run live
+booking tests or targeted map discovery for a known closed branch solely
+because it remains in the catalog, and perform a fresh catalog, map, and
+availability review after a confirmed reopening before re-enabling seats.
+
+NLB's public library pages also state that libraries close at 5.00pm on the
+eves of Christmas, New Year, and Chinese New Year and close on public holidays;
+see the [official NLB operating-hours wording](https://reference.nlb.gov.sg/contact-us/). Treat this as an operational
+hours check separate from seat-plan identity and image-fingerprint evidence.
+
 ## Sources of evidence
 
 Use each source only for the evidence it can provide:
@@ -23,12 +54,23 @@ state.
 ## Tracked artifacts
 
 - `docs/data/seat-plan-baseline.json` is the machine-readable point-in-time
-  baseline. It records area metadata, seat identities, map metadata, and the
-  raw image SHA-256.
+  accepted catalog baseline. It records area and seat identities for accepted
+  catalog state; areas with `annotationStatus: "implemented"` additionally
+  carry reviewed map metadata and exact SHA-256 evidence. Accepted new areas
+  may remain `missing` until annotation review is complete.
 - `src/data/seatPlanFingerprints.ts` is generated from the baseline and bundled
   into the extension for runtime verification.
 - `docs/seat-plan-inventory.md` is generated from the baseline for human
   review.
+- `docs/branch-inventory.md` is a manually maintained operational-status
+  overlay for closures, renovations, reopenings, and special hours. It must
+  not be used to derive seat-plan geometry or baseline counts.
+- `docs/data/branch-status.json` links tracked operational notices to reviewable
+  sources. The audit attaches matching context and actions without suppressing
+  structural drift.
+- `docs/data/seat-plan-retirements.json` is the discoverable ledger for
+  explicitly accepted retired branch, area, or seat-plan evidence. Git history
+  remains the complete backup.
 - `.cache/seat-plans/` is an ignored content-addressed image cache. Preserve it
   locally when comparing an old image with a replacement.
 - `seat-plan-work/` is an ignored directory for generated review packets.
@@ -161,7 +203,11 @@ for an already known area. Candidate capture downloads that file again and
 records current dimensions, SHA-256, byte length, content type, ETag, and
 Last-Modified. A changed image at an unchanged URL is therefore detected.
 `GetAccountInfo` remains authoritative for the complete current branch, area,
-and seat catalog and can expose newly added branches or areas.
+and seat catalog and can expose newly added branches or areas. Record raw
+catalog branch, area, and seat counts before capture: when a catalog omits a
+reviewed area, candidate capture retains that definition so its reviewed map
+path can still be fingerprinted, which means candidate counts alone must not
+be used as proof that the raw catalog still contains the branch or area.
 
 Routine `observedMapUrls` are allowed to be empty. The normalizer ignores the
 generic `mapUrls` field found on bookings, and the audit treats URL absence as
@@ -192,7 +238,10 @@ discovery evidence is incomplete. The report is still generated for codes `2`
 and `3`. The HTML links the generated evidence and reviewed configuration,
 compares observed branch, area, and seat counts with the current baseline, and
 lists branch/area lifecycle changes, changed or missing map images, and missing
-annotation coverage.
+annotation coverage. Every drift item includes evidence checks, allowed
+dispositions, operational context when tracked, and concrete resolution steps.
+Known or explained drift remains exit code `2` until reviewed state is actually
+reconciled.
 
 The lower-level candidate command remains available:
 
@@ -209,6 +258,11 @@ definition path, and that omission is not drift. Use optional targeted branch
 discovery only if the reviewed path cannot be downloaded, a new area has no
 reviewed path, or non-empty authoritative evidence conflicts with the reviewed
 association. Do not run parallel live API or map discovery requests.
+
+For a reviewed definition absent from the raw catalog, candidate capture marks
+`catalogState: "absent"` and `seatSource: "reviewed-annotation"`. Those seats
+are retained only for annotation/image review and never count as current raw
+catalog evidence.
 
 A directly guessed image URL can establish that an asset exists, but cannot by
 itself establish that NLB currently associates that asset with the requested
@@ -241,11 +295,54 @@ evidence as clean or as a removal.
 | Image dimensions change | Re-project or recreate hotspots, then review every coordinate |
 | Seat renamed with the same stable ID | Confirm the printed label and update the hotspot seat name |
 | Seat added or removed | Update coverage and geometry; verify the complete area catalog |
-| Branch or area added | Create a new definition and independent expected-seat test |
-| Branch or area removed | Remove only after confirming the complete catalog source |
+| Branch added | Confirm live identity and opening status, accept catalog state with annotation pending, then create reviewed definitions and independent tests |
+| Branch removed | Confirm complete evidence, review linked operational sources, then reject, suspend, or retire; archive before removing active configuration |
+| Area added | Accept the catalog area with annotation pending; discover and annotate only from exact reviewed evidence |
+| Area removed | Confirm the parent branch remains and the result is not availability-scoped; archive before suspension or retirement |
 
 Range and hybrid plans always require manual verification of endpoint order
 and arrow direction. OCR must not decide those assignments.
+
+See the maintenance skill's
+[`drift-actions.md`](../.agents/skills/maintain-seat-plans/references/drift-actions.md)
+for the complete branch, area, seat, metadata, and map decision matrix.
+
+### Archive before removal
+
+Generate a read-only proposal for a reported removal:
+
+```bash
+npm run seat-plans:archive-proposal -- \
+  --report /path/to/drift.json \
+  --branch <branch-id>
+```
+
+Use `--area <branch-id:area-id>` for an area. The proposal includes the
+reviewed catalog areas, seats, image metadata, fingerprints represented by the
+baseline, annotation definitions, operational context, and acceptance
+checklist. It does not change the baseline, runtime index, fingerprints,
+inventory, tests, or retirement ledger.
+
+After explicit approval, append the reviewed evidence to
+`docs/data/seat-plan-retirements.json`, remove the retired item from active
+configuration, regenerate artifacts, update documentation, and rerun the full
+verification workflow.
+
+### Simulate Ang Mo Kio reopening
+
+Run the deterministic future scenario without browser or network access:
+
+```bash
+npm run seat-plans:simulate-amk-reopening
+```
+
+The generated report is prominently labelled simulation. It assumes
+Queenstown has already been retired from the accepted baseline and adds a
+synthetic Ang Mo Kio branch with one placeholder area and placeholder seats on
+20 November 2026. The output tests report behavior only; real branch IDs,
+areas, seats, map evidence, opening status, and annotations must come from a
+fresh live audit. The simulated report therefore shows AMK onboarding drift
+without re-reporting the already resolved Queenstown removal.
 
 ## Prepare an annotation update
 
@@ -289,19 +386,28 @@ resolution and confirm every seat name against the sanitized catalog.
 
 ## Accept a reviewed update
 
-1. Update or add the definition under `src/data/seatPlans/`.
-2. Add an independent expected-seat fixture. Do not derive the fixture from
+1. Record the reviewed disposition. For removal, approve and retain an archive
+   proposal before changing active configuration.
+2. Update, add, suspend, or retire the definition under `src/data/seatPlans/`
+   and its runtime index entry.
+3. Add an independent expected-seat fixture. Do not derive the fixture from
    the definition being tested.
-3. Put the reviewed candidate at `docs/data/seat-plan-baseline.json` or rerun
-   capture without `--output` using the sanitized catalog.
-4. Regenerate fingerprints and inventory with `npm run seat-plans:capture`.
-5. Run `npm run seat-plans:verify`, `npm test`, `npm run typecheck`, and
+4. Put the reviewed candidate at `docs/data/seat-plan-baseline.json` or, only
+   after approved archive and lifecycle decisions, run capture with the
+   sanitized catalog and `--accept-catalog`. Catalog-backed baseline overwrite
+   is rejected without that explicit flag.
+5. Regenerate fingerprints and inventory with `npm run seat-plans:capture`.
+6. Update branch inventory, retirement records, drift action documentation,
+   and aggregate counts as applicable.
+7. Run `npm run seat-plans:verify`, `npm test`, `npm run typecheck`, and
    `npm run build` for the normal release artifact.
-6. Inspect the generated overlay and smoke-test the area in Chrome.
+8. Inspect the generated overlay, smoke-test the area in Chrome, and run a
+   fresh audit. Exit code `0` must come from reconciliation, not suppression.
 
-`seat-plans:verify` checks one-to-one baseline/definition coverage, dimensions,
-SHA-256 format, complete seat-name coverage, inventory counts, and whether the
-generated fingerprint and inventory files are current.
+`seat-plans:verify` permits catalog areas explicitly marked pending annotation.
+It requires one-to-one coverage for every active implemented definition,
+dimensions, SHA-256, complete seat names, inventory counts, current generated
+artifacts, and no active definition for a retired branch or area.
 
 ## Runtime failure behavior
 

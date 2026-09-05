@@ -34,7 +34,6 @@ import { LKCRL_LEVELS_7_TO_9_SEAT_PLANS } from "./lkcrlLevels7To9";
 import { PASIR_RIS_LIBRARY_SEAT_PLANS } from "./pasirRisLibrary";
 import { PUNGGOL_LIBRARY_LEVEL_3_SEAT_PLANS } from "./punggolLibraryLevel3";
 import { PUNGGOL_LIBRARY_LEVEL_4_SEAT_PLANS } from "./punggolLibraryLevel4";
-import { QUEENSTOWN_LIBRARY_SEAT_PLANS } from "./queenstownLibrary";
 import { SEMBAWANG_LIBRARY_SEAT_PLANS } from "./sembawangLibrary";
 import { SENGKANG_LIBRARY_SEAT_PLANS } from "./sengkangLibrary";
 import { SERANGOON_LIBRARY_SEAT_PLANS } from "./serangoonLibrary";
@@ -74,7 +73,6 @@ export const SEAT_PLAN_DEFINITIONS: readonly SeatPlanDefinition[] = [
   ...PASIR_RIS_LIBRARY_SEAT_PLANS,
   ...PUNGGOL_LIBRARY_LEVEL_3_SEAT_PLANS,
   ...PUNGGOL_LIBRARY_LEVEL_4_SEAT_PLANS,
-  ...QUEENSTOWN_LIBRARY_SEAT_PLANS,
   ...SEMBAWANG_LIBRARY_SEAT_PLANS,
   ...SENGKANG_LIBRARY_SEAT_PLANS,
   ...SERANGOON_LIBRARY_SEAT_PLANS,

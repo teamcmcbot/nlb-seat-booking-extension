@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/teamcmcbot/nlb-seat-booking-extension/docs/schemas/seat-plan-retirements.schema.json",
+  "title": "Retired NLB seat-plan evidence",
+  "type": "object",
+  "required": ["schemaVersion", "entries"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "entries": { "type": "array", "items": { "$ref": "#/$defs/entry" } }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "entry": {
+      "type": "object",
+      "required": ["scope", "key", "retiredAt", "reason", "catalogAreas", "annotationDefinitions"],
+      "properties": {
+        "scope": { "enum": ["branch", "area", "seat"] },
+        "key": { "type": "string", "minLength": 1 },
+        "retiredAt": { "type": "string", "format": "date" },
+        "reason": { "type": "string", "minLength": 1 },
+        "sourceReport": { "type": "string", "minLength": 1 },
+        "operationalContext": { "type": "object" },
+        "catalogAreas": { "type": "array", "items": { "type": "object" } },
+        "annotationDefinitions": { "type": "array", "items": { "type": "object" } },
+        "reactivationPolicy": { "type": "string", "minLength": 1 }
+      },
+      "additionalProperties": false
+    }
+  }
+}

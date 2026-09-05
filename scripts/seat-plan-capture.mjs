@@ -20,13 +20,26 @@ const outputPath = path.resolve(REPO_ROOT, args.output || BASELINE_PATH);
 const catalog = args.catalog
   ? JSON.parse(await readFile(path.resolve(REPO_ROOT, args.catalog), "utf8"))
   : undefined;
+if (args["accept-catalog"] && !catalog) {
+  throw new Error("--accept-catalog requires --catalog <sanitized-export.json>.");
+}
+if (catalog && outputPath === BASELINE_PATH && !args["accept-catalog"]) {
+  throw new Error(
+    "Refusing to overwrite the accepted baseline from catalog evidence without --accept-catalog. Run a full audit and archive approved removals first.",
+  );
+}
 const catalogAreas = normalizedCatalogAreas(catalog);
 const definitions = await loadDefinitions();
 const inventory = await parseInventory();
 const areas = [];
 const capturedAreaIds = new Set();
+const definitionsToCapture = args["accept-catalog"]
+  ? definitions.filter((definition) =>
+      catalogAreas.has(`${definition.branchId}:${definition.areaId}`),
+    )
+  : definitions;
 
-for (const [index, definition] of definitions.entries()) {
+for (const [index, definition] of definitionsToCapture.entries()) {
   const identity = `${definition.branchId}:${definition.areaId}`;
   const inventoryArea = inventory.get(identity);
   const catalogArea = catalogAreas.get(identity);
@@ -36,7 +49,7 @@ for (const [index, definition] of definitions.entries()) {
   const observedMapPath = chooseMapPath(catalogArea?.areaMapUrls);
   const mapPath = normalizeMapPath(observedMapPath || definition.mapPath);
   process.stdout.write(
-    `[${index + 1}/${definitions.length}] ${identity} ${mapPath}\n`,
+    `[${index + 1}/${definitionsToCapture.length}] ${identity} ${mapPath}\n`,
   );
   const image = await fetchMapImage(mapPath, {
     refresh: !args["cache-only"],
@@ -74,6 +87,8 @@ for (const [index, definition] of definitions.entries()) {
       lastModified: image.lastModified,
     },
     seats,
+    catalogState: catalogArea ? "present" : catalog ? "absent" : "not-observed",
+    seatSource: catalogArea?.seats.length ? "catalog" : "reviewed-annotation",
     annotationStatus: "implemented",
   });
   capturedAreaIds.add(identity);
@@ -106,6 +121,8 @@ for (const catalogArea of catalogAreas.values()) {
     mapPath: observedMapPath ? normalizeMapPath(observedMapPath) : undefined,
     observedMapUrls: catalogArea.areaMapUrls,
     image,
+    catalogState: "present",
+    seatSource: "catalog",
     annotationStatus: "missing",
   });
 }
@@ -124,6 +141,9 @@ const baseline = {
         mapDiscovery: catalog.mapDiscovery,
       }
     : undefined,
+  rawCatalogAreas: catalog
+    ? sortAreas([...catalogAreas.values()])
+    : undefined,
   areas: sortAreas(areas),
 };
 
@@ -133,6 +153,9 @@ if (outputPath === BASELINE_PATH) {
   await writeInventory(baseline);
 }
 console.log(`Wrote ${areas.length} areas to ${path.relative(REPO_ROOT, outputPath)}.`);
+if (args["accept-catalog"]) {
+  console.log("Accepted catalog mode excluded reviewed definitions absent from the sanitized catalog; reconcile active definitions and retirement records before verification.");
+}
 
 function chooseMapPath(urls = []) {
   return (

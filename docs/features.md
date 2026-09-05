@@ -124,12 +124,12 @@ steps remain in the repository [`README`](../README.md).
 - Uses the same snapshot behavior for the main Favourite seats **Manage**
   interface: **Done** refreshes a changed, non-empty final set and preserves
   availability when the final set is unchanged.
-- Adds 2,080 verified clickable hotspots across all 83 inventoried plans,
+- Adds 2,030 verified clickable hotspots across all 81 inventoried plans,
   including range-order mappings for the two plans without individual labels.
 - Verifies the exact rendered image bytes against a reviewed SHA-256 and falls
   back to seat-number search whenever the path, image, dimensions, or catalog
   seats no longer match.
-- Tracks the current 83-area baseline, map fingerprints, seat identities, and
+- Tracks the current 81-area baseline, map fingerprints, seat identities, and
   visual label classification in the [seat-plan inventory](seat-plan-inventory.md).
 - Provides repeatable capture, drift-audit, overlay, and verification commands
   documented in [seat-plan maintenance](seat-plan-maintenance.md).

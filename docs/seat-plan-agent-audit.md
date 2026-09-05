@@ -5,6 +5,40 @@ This is the repeatable operator guide for invoking the repository
 under `seat-plan-work/` and never updates the reviewed baseline unless the user
 later gives explicit approval.
 
+## Closure-aware reporting
+
+The following notices were supplied from the NLB chatbot on 1 September 2026:
+
+| Library | Reported closure or reopening notice |
+| --- | --- |
+| Orchard Library | Closed until the second half of 2026 |
+| Cheng San Library | Closed until the first half of 2027 |
+| Marine Parade Library | Closed until mid-2027 |
+| Queenstown Library | Closed from 31 August 2026 until late 2028 |
+| Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub |
+
+Treat these as user-reported, point-in-time notices until rechecked against
+NLB's [Our Libraries and Locations](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations) page or a
+dated authoritative response. A branch remaining in `GetAccountInfo` does not
+prove that it is open or bookable. A notice guides investigation but does not
+suppress structural drift or authorize baseline mutation. Confirmed catalog
+removal must remain drift until a maintainer explicitly rejects, suspends, or
+retires it; archive reviewed evidence before removing active configuration.
+After a confirmed reopening, treat reappearance as new drift and refresh the
+catalog, maps, fingerprints, and availability before restoring seats.
+
+The reviewed seat-plan baseline no longer contains an active plan for any of
+these five libraries. Queenstown's two areas and 50 seats were retired on 5
+September 2026 and preserved in the retirement ledger. The holiday test guide
+also records the recurring NLB notice that libraries close at 5.00pm on the
+eves of Christmas, New Year, and Chinese New Year and close on public holidays;
+see the [official NLB operating-hours wording](https://reference.nlb.gov.sg/contact-us/).
+The maintained operational-status overlay is
+[`branch-inventory.md`](branch-inventory.md); keep it separate from the
+generated seat-plan inventory. Machine-readable sources and context are in
+[`data/branch-status.json`](data/branch-status.json); retirement records are in
+[`data/seat-plan-retirements.json`](data/seat-plan-retirements.json).
+
 ## Prerequisites
 
 1. Run `npm run build:maintenance` on the branch to be audited. Normal builds
@@ -48,7 +82,9 @@ NLB branch, area, seat, reviewed seat-plan URL, map image, fingerprint, and
 annotation configuration. Use the signed-in Chrome Seat Booking tab and the
 visible Seat-plan maintenance export. Generate the candidate snapshot, JSON
 drift report, and HTML report under seat-plan-work, inspect the complete report,
-and give me a summary with a clickable HTML report. Use the routine catalog
+and give me a summary with a clickable HTML report. For every drift, include
+the investigation checklist, linked operational context, allowed dispositions,
+and concrete baseline/archive/annotation/documentation actions. Use the routine catalog
 export; do not run targeted URL discovery unless the report identifies a map
 association that needs it or a reviewed map path cannot be downloaded. Empty
 routine observed map URLs are unobserved evidence, not drift. Treat requested
@@ -62,7 +98,13 @@ The agent should click the visible routine export, accept its confirmation,
 locate the new sanitized download, verify that it is a `catalog` export, run
 the deterministic full-audit command, and report clean, drift, or incomplete.
 This export makes one `GetAccountInfo` request and zero
-`SearchAvailableAreas` calls. Map downloads stay sequential.
+`SearchAvailableAreas` calls. Record the raw catalog's branch, area, and seat
+counts before running capture. Map downloads stay sequential.
+
+Include any applicable planned closure or reopening notice separately in the
+summary. Do not interpret catalog presence as evidence that the branch is
+operational, and do not call explained drift clean until the baseline is
+actually reconciled.
 
 The routine catalog derives branch, area, and seat identities from
 `GetAccountInfo`; it does not promote booking `mapUrls` into area associations.
@@ -97,6 +139,16 @@ baseline, fingerprint configuration, annotation index, and inventory. It shows
 observed versus configured branch, area, and seat counts; explicit branch and
 area additions/removals; the number of reviewed seat-plan images checked; every
 changed or missing image; and annotation coverage.
+For each drift it also shows matching branch-status sources, evidence checks,
+allowed dispositions, and concrete catalog-baseline, archive, annotation,
+fingerprint, inventory, test, and documentation actions. A whole removed branch
+is one hierarchical event with affected area and seat totals.
+
+Candidate capture may supplement an omitted reviewed area so its known map path
+can still be fingerprinted; these areas are marked `catalogState: "absent"`
+and `seatSource: "reviewed-annotation"`. Therefore, report raw downloaded-catalog counts
+separately from candidate counts and use the raw catalog when concluding that a
+branch or area was removed.
 
 ## Prompt: prepare drifted annotations
 

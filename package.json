@@ -14,10 +14,12 @@
     "package:firefox": "npm run build && node scripts/lint-firefox.mjs && web-ext build --source-dir dist --artifacts-dir . --filename nlb-seat-helper-firefox.zip --overwrite-dest",
     "package:firefox-source": "node scripts/package-firefox-source.mjs",
     "seat-plans:audit": "node scripts/seat-plan-audit.mjs",
+    "seat-plans:archive-proposal": "node scripts/seat-plan-archive-proposal.mjs",
     "seat-plans:capture": "node scripts/seat-plan-capture.mjs",
     "seat-plans:full-audit": "node scripts/seat-plan-full-audit.mjs",
     "seat-plans:prepare": "node scripts/seat-plan-prepare.mjs",
     "seat-plans:prepare-drift": "node scripts/seat-plan-prepare-drift.mjs",
+    "seat-plans:simulate-amk-reopening": "node scripts/seat-plan-simulate-amk-reopening.mjs",
     "seat-plans:verify": "node scripts/seat-plan-verify.mjs",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"

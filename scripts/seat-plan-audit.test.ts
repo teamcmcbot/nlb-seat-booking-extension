@@ -18,15 +18,15 @@ describe("seat-plan audit evidence", () => {
     expect(result.evidenceIssues).toEqual([]);
     expect(result.coverage.observed).toEqual(result.coverage.configured);
     expect(result.coverage.images).toMatchObject({
-      configured: 83,
-      checked: 83,
+      configured: 81,
+      checked: 81,
       changed: [],
       missing: [],
     });
     expect(result.html).toContain('href="candidate.json"');
     expect(result.html).toContain('href="drift.json"');
     expect(result.html).toContain("No branches or areas were added or removed.");
-    expect(result.html).toContain("83 of 83 configured seat-plan images");
+    expect(result.html).toContain("81 of 81 configured seat-plan images");
   });
 
   it("treats routine URL omissions and first-observed seat codes as non-drift evidence", async () => {
@@ -125,16 +125,116 @@ describe("seat-plan audit evidence", () => {
           areaId: "1",
           areaName: "New Study Area",
         });
+        snapshot.rawCatalogAreas = snapshot.areas;
       },
     );
 
     expect(result.coverage.observed.branches).toBe(result.coverage.configured.branches + 1);
     expect(result.coverage.observed.areas).toBe(result.coverage.configured.areas + 1);
-    expect(result.changes).toEqual(expect.arrayContaining([
-      expect.objectContaining({ type: "branch-added", key: "999" }),
-      expect.objectContaining({ type: "area-added", key: "999:1" }),
-    ]));
-    expect(result.html).toContain("New Library / New Study Area");
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        type: "branch-added",
+        key: "999",
+        branch: expect.objectContaining({ areaCount: 1 }),
+      }),
+    ]);
+    expect(result.html).toContain("New Library (1 area");
+    expect(result.html).toContain("Investigate and onboard added branch");
+  });
+
+  it("does not report retired Queenstown when it is absent from the accepted baseline", async () => {
+    const result = await runAudit(
+      { exportMetadata: { extensionVersion: "1.3.0", mode: "catalog" } },
+      0,
+    );
+
+    expect(result.status).toBe("clean");
+    expect(result.changes).toEqual([]);
+    expect(result.coverage.observed).toEqual({ branches: 22, areas: 81, seats: 2030 });
+    expect(result.coverage.candidate).toEqual(result.coverage.configured);
+    expect(result.coverage.annotations).toMatchObject({ configured: 81, present: 81, absent: [] });
+    expect(result.html).toContain("No catalog or map drift detected.");
+    expect(result.html).toContain("Queenstown Library");
+    expect(result.html).not.toContain("branch-removed");
+  });
+
+  it("reports an unexpected raw branch removal", async () => {
+    const result = await runAudit(
+      { exportMetadata: { extensionVersion: "1.3.0", mode: "catalog" } },
+      2,
+      (snapshot) => {
+        snapshot.rawCatalogAreas = snapshot.areas.filter(
+          (candidate) => candidate.branchId !== "11",
+        );
+      },
+    );
+
+    expect(result.changes).toEqual([
+      expect.objectContaining({ type: "branch-removed", key: "11" }),
+    ]);
+    expect(result.changes[0].operationalContext).toBeUndefined();
+    expect(result.html).toContain("No matching tracked closure or reopening notice");
+  });
+
+  it("reports an area added under an existing branch with onboarding actions", async () => {
+    const result = await runAudit(
+      { exportMetadata: { extensionVersion: "1.3.0", mode: "catalog" } },
+      2,
+      (snapshot) => {
+        snapshot.areas.push({
+          ...snapshot.areas[0],
+          areaId: "999",
+          areaName: "New Existing-Branch Area",
+        });
+        snapshot.rawCatalogAreas = snapshot.areas;
+      },
+    );
+
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        type: "area-added",
+        key: "1:999",
+        actionPlan: expect.objectContaining({ title: "Investigate and onboard added area" }),
+      }),
+    ]);
+  });
+
+  it("labels the Ang Mo Kio reopening fixture as a simulation and adds operational context", async () => {
+    const result = await runAudit(
+      { exportMetadata: { extensionVersion: "1.3.0", mode: "catalog" } },
+      2,
+      (snapshot) => {
+        const area = {
+          ...snapshot.areas[0],
+          branchId: "SIM-AMK-2026",
+          branchCode: "AMPL-SIM",
+          branchName: "Ang Mo Kio Library",
+          areaId: "SIM-AMK-AREA-1",
+          areaName: "Simulated Study Area at AMK Hub",
+          annotationStatus: "missing",
+        };
+        snapshot.areas.push(area);
+        snapshot.rawCatalogAreas = snapshot.areas;
+        snapshot.simulation = {
+          title: "Ang Mo Kio reopening",
+          description: "Synthetic future catalog.",
+          scenarioDate: "2026-11-20",
+        };
+      },
+    );
+
+    expect(result.changes).toEqual([
+      expect.objectContaining({
+        type: "branch-added",
+        key: "SIM-AMK-2026",
+        operationalContext: expect.objectContaining({
+          branchName: "Ang Mo Kio Library",
+          expectedReopenDate: "2026-11-20",
+        }),
+      }),
+    ]);
+    expect(result.html).toContain("SIMULATION — NOT LIVE NLB EVIDENCE");
+    expect(result.html).toContain("planned reopening on 20 November 2026 at AMK Hub");
   });
 
   it("lists changed seat-plan fingerprints in the HTML report", async () => {
@@ -161,12 +261,17 @@ interface AuditArea {
   observedMapUrls: string[];
   image: { sha256: string };
   seats: Array<{ code?: string }>;
+  annotationStatus?: string;
 }
 
 async function runAudit(
   catalogEvidence: object,
   expectedExit = 0,
-  mutate?: (snapshot: { areas: AuditArea[] }) => void,
+  mutate?: (snapshot: {
+    areas: AuditArea[];
+    rawCatalogAreas?: AuditArea[];
+    simulation?: { title: string; description: string; scenarioDate?: string };
+  }) => void,
 ) {
   const directory = await mkdtemp(path.join(tmpdir(), "seat-plan-audit-"));
   const baseline = JSON.parse(
@@ -212,9 +317,12 @@ async function runAudit(
     changes: Array<Record<string, unknown>>;
     coverage: {
       observed: { branches: number; areas: number; seats: number };
+      candidate: { branches: number; areas: number; seats: number };
       configured: { branches: number; areas: number; seats: number };
       images: { configured: number; checked: number; changed: unknown[]; missing: unknown[] };
+      annotations: { configured: number; present: number; absent: unknown[]; pending: unknown[] };
     };
+    simulation?: { title: string; description: string; scenarioDate?: string };
     html: string;
   };
 }

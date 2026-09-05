@@ -16,6 +16,14 @@ export const INVENTORY_PATH = path.join(
   REPO_ROOT,
   "docs/seat-plan-inventory.md",
 );
+export const BRANCH_STATUS_PATH = path.join(
+  REPO_ROOT,
+  "docs/data/branch-status.json",
+);
+export const RETIREMENTS_PATH = path.join(
+  REPO_ROOT,
+  "docs/data/seat-plan-retirements.json",
+);
 export const IMAGE_CACHE = path.join(REPO_ROOT, ".cache/seat-plans");
 export const MAP_BASE_URL = "https://www.nlb.gov.sg/seatbooking/img/areas/";
 
@@ -43,7 +51,7 @@ export function annotationKey(branchId, areaId, mapPath) {
 }
 
 export function normalizeMapPath(value) {
-  return value
+  return String(value ?? "")
     .trim()
     .replace(/^https?:\/\/[^/]+\//, "")
     .replace(/^\/+/, "")
@@ -244,7 +252,12 @@ function uniqueStrings(values) {
 
 export function fingerprintModule(baseline) {
   const entries = baseline.areas
-    .filter((area) => area.mapPath && area.image?.sha256)
+    .filter(
+      (area) =>
+        area.annotationStatus === "implemented" &&
+        area.mapPath &&
+        area.image?.sha256,
+    )
     .map((area) => [
       annotationKey(area.branchId, area.areaId, area.mapPath),
       area.image.sha256,
