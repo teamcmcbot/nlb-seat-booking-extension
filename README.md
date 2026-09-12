@@ -330,9 +330,16 @@ the current NLB Seat Booking website. NLB can change those endpoints or
 response formats, so the extension may require updates when the website
 changes.
 
+Booking timelines use each selected area's `GetAccountInfo` opening time,
+closing time, and booking interval. Published building or extended-access hours
+can differ from reservable seat hours; a timeline label is a slot's start time
+(for example, 20:00 with a 60-minute interval ends at 21:00).
+
 Full-day holiday closures are enforced from validated account settings.
-Holiday-eve operating hours, non-empty branch exclusions, and extended-hours
-areas still require additional live API verification. See
+Area-specific holiday exemptions (`ignoreHolidays`) are not implemented, so an
+extended-hours zone may be shown as closed even when it is physically open.
+Holiday-eve hours and non-empty branch exclusions also require live API
+verification before full parity with NLB can be claimed. See
 [Holiday and Early-Closure Testing](docs/holiday-and-closure-testing.md) for
 the current behavior, known gaps, test matrix, and proposed acceptance
 criteria.

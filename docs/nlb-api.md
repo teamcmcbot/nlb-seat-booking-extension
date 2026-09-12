@@ -460,6 +460,33 @@ record and are not promoted into the branch/area catalog. Seat-plan maintenance
 uses reviewed definition paths for routine image verification and accepts live
 area associations only from exact-area `SearchAvailableAreas` evidence.
 
+#### Booking hours versus public access hours
+
+Reviewed against version 1.4.1 on 12 September 2026: `areaFromRecord` consumes
+area-level `openingTime`, `closingTime`, and `bookingTimeslotInMinutes`;
+`getTimelineSlots` passes them to `buildHourSlots`. Branch-level public opening
+hours are not used as a fallback, and the public library directory is not a
+runtime data source. Only complete intervals inside that area's API window
+are generated. Time labels denote starts, not ends.
+
+On 12 September the maintainer reported matching 09:00 through 20:00 booking
+starts in the extension and NLB's own site for Choa Chu Kang's study area,
+while the official directory advertised access until 22:00. This is a dated
+user-observed UI comparison, not a fresh captured hours contract. With a
+60-minute interval, a 20:00 start ends at 21:00. Illustrative API hours
+09:00–21:00 would explain those starts, but the exact raw closing field was
+not captured in this review and must not be inferred from the last label.
+
+The sanitized 12 September seat-plan export omits operating hours, holiday
+settings, and availability. Its clean map/catalog audit cannot validate those
+rules. See [the dated hours review and holiday test plan](holiday-and-closure-testing.md#12-september-2026-hours-review)
+for public-access examples and the unresolved area-exemption behavior.
+
+No new response fields are consumed by this documentation clarification.
+`ignoreHolidays`, `areaIgnoreHolidays`, special-day hours, and holiday dwell
+limits remain unimplemented; public opening notices alone cannot grant an
+API booking exception or justify changing `OffsiteMode`.
+
 #### Seat fields used by the extension
 
 | Field | Use |

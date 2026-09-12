@@ -334,8 +334,11 @@ account can use `privilegeUserBookingReleaseTime` instead.
 
 Dates are calendar dates. A holiday `startTime` and `endTime` are normalized
 to their local `YYYY-MM-DD` portions and treated as an inclusive range of full
-closed days. A branch remains open only when its ID or code appears in that
-holiday's `excludedBranches` list.
+closed days. The extension exempts a branch from that holiday only when its
+ID or code appears in the holiday's `excludedBranches` list. This is a runtime
+closure rule, not proof of physical opening status. Area-level `ignoreHolidays` is not
+consumed, so an extended-hours area can be over-blocked on a holiday. The
+ordinary closure rule cannot establish parity for those exceptions.
 
 Closed dates remain selectable within the already released calendar-day range;
 they do not extend `advanceBookingDays`. Before noon on a closed day, for
@@ -349,6 +352,19 @@ Early closures remain dependent on date-specific NLB availability until a
 separate time-specific contract is observed and verified.
 
 ## Interval generation
+
+The hours belong to the selected **area** in the normalized `GetAccountInfo`
+catalog. Branch identity groups areas; branch website hours are not inherited
+as a shared timetable. The extension does not scrape the public directory or
+apply a fixed 09:00, 10:00, 11:00, or 22:00 boundary. Different areas in the
+same branch can therefore have different timelines. Missing/unparseable hours
+or a closing time no later than opening produce no intervals.
+
+These API fields define the candidate booking window, not a guarantee that
+every interval is available or that physical access ends at the same time.
+For example, illustrative hours 09:00–21:00 with 60-minute intervals produce
+starts 09:00 through 20:00; a 20:00 cell represents 20:00–21:00. A website
+advertising access until 22:00 does not add a 21:00 booking cell.
 
 Intervals start at `openingTime`, advance by
 `bookingTimeslotInMinutes`, and are included only when a complete interval

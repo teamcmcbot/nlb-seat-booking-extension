@@ -7,7 +7,8 @@ seat, fingerprint, and annotation evidence only.
 
 ## Status and evidence
 
-Operational notices last recorded: **1 September 2026**. Queenstown's
+Renovation notices last recorded: **1 September 2026**. Operating-hours
+summary recorded: **12 September 2026**. Queenstown's
 seat-plan retirement was recorded: **5 September 2026**.
 
 The notices below were supplied from the NLB chatbot and are user-reported,
@@ -36,6 +37,59 @@ eves of Christmas, New Year, and Chinese New Year and close on public holidays.
 See the [official NLB operating-hours wording](https://reference.nlb.gov.sg/contact-us/).
 Treat this as a date-specific operating-hours test input, separate from the
 seat-plan baseline and image fingerprints.
+
+## Area hours and extended access
+
+The [official NLB directory](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations)
+was checked on 12 September 2026 for operating-hours differences. It lists
+09:00–22:00 holiday-inclusive study-zone access at Choa Chu Kang, Bukit Batok
+(Level 2), and Punggol (Level 3), while their main library hours differ. It
+also distinguishes 09:00–11:00 early access from staffed hours at Bukit Batok,
+Clementi, Harbourfront, and Yishun. These exceptions mean the general 17:00
+holiday-eve/public-holiday closure wording must not be applied to every area
+without checking the area's notice.
+
+Public access hours do not establish reservable seat intervals. The extension
+uses area-level API hours and currently does not implement area-specific
+holiday exemptions. See the [dated hours review](holiday-and-closure-testing.md#12-september-2026-hours-review)
+for evidence, the reported Choa Chu Kang booking comparison, and remaining
+live checks. No runtime or seat-plan baseline changes follow from these public
+notices alone.
+
+### NLB chatbot operating-hours summary, 12 September 2026
+
+The maintainer supplied the following NLB chatbot response on 12 September
+2026. This is user-reported, point-in-time evidence. The directory check above
+independently supports the listed extended-access distinctions; Clementi's
+13 July effective date is retained as chatbot-reported, not independently
+verified in that check. All times below are Singapore time, Monday–Sunday.
+
+| Normal public hours | Libraries listed by the chatbot |
+| --- | --- |
+| 10:00–21:00 | Ang Mo Kio, Bedok, Bishan, Central, Central Arts, Geylang East, Jurong, Jurong West, Punggol, Queenstown, Tampines, Toa Payoh, Woodlands |
+| 11:00–21:00 | Bukit Panjang, Chinatown, Choa Chu Kang, Pasir Ris, Sembawang, Sengkang, Serangoon |
+| 11:00–21:00, plus 09:00–11:00 extended access | Bukit Batok, Clementi (reported effective 13 July 2026), Harbourfront, Yishun; staff-assisted services begin at 11:00 |
+
+The chatbot states the general rule as closing at 17:00 on the eves of
+Christmas, New Year and Chinese New Year, and closing on public holidays.
+Its explicit exceptions are:
+
+| Extended zone | Reported access, including public holidays and eves |
+| --- | --- |
+| Bukit Batok, Level 2 Multimedia and Study Zone | 09:00–22:00 |
+| Choa Chu Kang, Study and Multimedia Zone | 09:00–22:00 |
+| Punggol, Level 3 Study Zone via Lift Lobby B | 09:00–22:00 |
+
+This is a normal-hours reference, not an assertion that every listed library
+is currently open. In particular, the Ang Mo Kio and Queenstown entries do not
+supersede the renovation closures recorded above. A public-library listing
+also does not prove presence in the Seat Booking catalog. The general closure
+sentence must be read together with the zone exceptions; early morning access
+at another library does not establish its public-holiday exemption.
+
+Keep this summary separate from runtime API rules and seat-plan configuration.
+The [Deepavali verification plan](holiday-and-closure-testing.md#planned-deepavali-verification-6-9-november-2026)
+will compare actual booking evidence before any holiday implementation changes.
 
 ## Maintenance rules
 
