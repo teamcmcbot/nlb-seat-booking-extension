@@ -7,6 +7,122 @@ This document records the extension's current behavior, holiday-related fields
 observed in NLB's current web client, and the tests still required for
 partial-day closures, area-specific exceptions, and planned branch closures.
 
+## 12 September 2026 hours review
+
+**Ordinary area hours are supported; complete public-holiday parity is not yet
+established.** Code review of version 1.4.1 confirms each area's own
+`GetAccountInfo` hours and booking interval generate its timeline. There is no
+single timetable for all branches, and no extension-imposed 20:00 cutoff.
+
+The rendered [NLB library directory](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations)
+was checked on 12 September 2026. The named holiday eves are Christmas, New
+Year, and Chinese New Year. Its public-access notices distinguish:
+
+| Location | Published access distinction |
+| --- | --- |
+| Choa Chu Kang | Main library 11:00–21:00; Multimedia and Study Zone 09:00–22:00, including public holidays and the three named holiday eves. |
+| Bukit Batok | Main library 11:00–21:00, with early access 09:00–11:00; Level 2 Multimedia and Study Zone 09:00–22:00 including those holidays/eves. |
+| Punggol | Main library 10:00–21:00; Level 3 Study Zone via Lift Lobby B 09:00–22:00 including those holidays/eves. |
+| Clementi, Harbourfront, Yishun | Main library 11:00–21:00, early access 09:00–11:00, and staff-assisted services from 11:00; normal holiday/eve closure notices still apply. |
+
+These are dated public-access observations, not API booking-window fixtures.
+Do not generalize a holiday exception to every area in the branch, or assume
+that early access alone means public-holiday access. NLB's
+[Choa Chu Kang fact sheet, dated 24 November 2025](https://www.nlb.gov.sg/main/main/-/media/NLBMedia/Documents/Visit-Us/Libraries/CCKPL/Choa-Chu-Kang-Library-Fact-Sheet.pdf)
+also describes separate gated access to its Study and Multimedia Zone.
+
+The maintainer's 12 September comparison found booking starts from 09:00 to
+20:00 in both the extension and NLB site for Choa Chu Kang's study area. For
+one-hour slots, the final 20:00 start ends at 21:00. Illustrative API hours
+09:00–21:00 generate exactly those starts; the exact current raw hours were
+not captured here, so this is consistent with the implementation but does not
+prove the field value or explain NLB's access/booking difference. Do not infer
+that the remaining hour is walk-in-only or requires on-site booking.
+
+The day's sanitized maintenance catalog contains seat identities and map
+metadata, but no operating hours, holiday settings, or availability. The clean
+seat-plan audit is not a holiday or operating-hours verification.
+
+The maintainer also supplied an NLB chatbot operating-hours summary on
+12 September, now recorded in the [branch inventory](branch-inventory.md#nlb-chatbot-operating-hours-summary-12-september-2026).
+It lists the ordinary 10:00/11:00 opening groups, early access at four
+libraries, Clementi's reported 13 July 2026 effective date, and the three
+holiday-inclusive study-zone exceptions. This supports prioritizing those
+zones for testing, but does not establish the `ignoreHolidays` API contract.
+Its normal-hours list includes branches under renovation and must not override
+their current closure notices.
+
+### Authority at each stage
+
+| Stage | Current behavior and limitation |
+| --- | --- |
+| Initial timeline | Generate complete slots inside the selected area's API hours. Today uses the undated account matrix; an applicable normalized holiday overrides it with closed cells. Future availability requires a date-specific check. |
+| Manual refresh/check | Today refreshes account data and uses its matrix, falling back to sequential exact-interval searches when the matrix is unusable. Future dates use exact-interval searches. An applicable holiday blocks scans; no public-directory hours are imported. |
+| Map discovery | Metadata only; it cannot extend hours, exempt an area from a holiday, or make cells available. Normal UI discovery is skipped for a known holiday; optional maintenance probes have a separate metadata-only budget. |
+| Booking preflight/submission | Refresh account data, recheck the holiday, preserve current-day false matrix values, and check the exact selected blocks. `bookings/Book` remains final authority. Server validation does not fix an open holiday area that the UI already prevents users from selecting. |
+
+### What remains unverified
+
+An applicable holiday with no recognized branch exclusion closes every area
+in that branch in the extension. `ignoreHolidays` is not normalized or applied.
+Consequently, the Choa Chu Kang, Bukit Batok, and Punggol zones above may be
+incorrectly shown as closed if NLB permits holiday seat reservations there.
+Public access is verified; holiday reservation support still needs same-area
+API and official booking-UI evidence. Do not remove the ordinary holiday guard:
+the National Day matrix anomaly below is evidence that it is necessary.
+
+Prioritize a read-only comparison for those zones and an ordinary area in each
+branch on a released holiday date. Record the exact area ID, API hours,
+interval length, holiday/exclusion/exception fields, official UI starts and
+ends, and bounded sequential exact-interval responses. Compare the final
+reservable interval with the advertised access end. Repeat on a holiday eve
+around 17:00 and for a 09:00 early-access area on an ordinary date. No real
+booking or cancellation is authorized solely for these tests.
+
+This review changes documentation only. It does not establish live holiday,
+holiday-eve, or extended-hours booking parity and does not enable exemptions.
+
+## Planned Deepavali verification: 6-9 November 2026
+
+Decision recorded 12 September: defer runtime changes and gather the missing
+holiday/area-exception evidence first. Preserve the existing full-day guard.
+
+[MOM's 2026 holiday announcement](https://www.mom.gov.sg/newsroom/press-releases/2025/0616-public-holidays-for-2026)
+lists Deepavali on Sunday, 8 November, and Monday, 9 November as a public
+holiday. MOM's [holiday calendar](https://www.mom.gov.sg/employment-practices/public-holidays)
+also explains the Monday entitlement where Sunday is the employee's rest day.
+Verify NLB's own closure settings for both dates; employment entitlement is
+not an area-specific booking contract.
+
+Plan reminders for **12:05 Singapore time (UTC+08:00)**, allowing five minutes
+after the currently observed normal-account next-day release:
+
+| Check date | Released dates to compare | Purpose |
+| --- | --- | --- |
+| Friday, 6 November | Today and Saturday, 7 November | Establish ordinary-day reference and inspect Deepavali eve's next-day hours. |
+| Saturday, 7 November | Today's eve and Sunday, 8 November | Compare the eve's current-day matrix with Friday's evidence; inspect holiday settings and next-day ordinary/extended-area behavior. |
+| Sunday, 8 November | Today's Deepavali and Monday, 9 November | Check whether holiday metadata correctly overrides today's matrix and how the observed Monday holiday is represented. |
+| Monday, 9 November | Today's observed holiday and Tuesday, 10 November | Verify Monday's behavior and the return to ordinary availability without extending the configured booking window. |
+
+Confirm the account's actual release time and advance-booking rules on each
+run. Friday does not release Sunday for a normal one-day account. Do not
+assume 7 November closes at 17:00: Deepavali eve is not among NLB's standard
+published Christmas, New Year and Chinese New Year early-closing eves.
+This campaign cannot replace a later verified test of one of those eves.
+
+Compare an ordinary area with Choa Chu Kang, Bukit Batok and Punggol study
+zones. Record exact branch/area IDs, area opening/closing times and interval,
+`settings.holidays`, `excludedBranches`, any area `ignoreHolidays`, the official
+booking UI's starts/ends, today's matrix, and bounded sequential date-specific
+checks. Missing fields and conflicting results must remain explicit unknowns.
+Use the same areas across days, and distinguish physical access from booking.
+
+An active signed-in NLB tab is needed for the live comparison. These are
+reminders and read-only evidence checks; they do not authorize bookings,
+cancellations, runtime changes, or baseline acceptance. Sanitize all retained
+evidence. The seat-plan maintenance export alone does not contain the hours
+or holiday settings needed for this investigation.
+
 ## Known planned closures and revamps
 
 The following point-in-time notices were supplied from the NLB chatbot on
