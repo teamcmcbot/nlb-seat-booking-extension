@@ -6,3 +6,13 @@ nlb-seat-helper-firefox-source.zip
 .DS_Store
 .cache/seat-plans/
 seat-plan-work/
+
+# Terraform local caches, state, plans, and private configuration
+**/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfplan
+*.tfvars
+*.auto.tfvars.json
+crash.log
+crash.*.log

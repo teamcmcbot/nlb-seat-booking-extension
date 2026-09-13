@@ -198,8 +198,9 @@ extension without a development process running.
 Chromium session, without an extension or NLB sign-in. Install the browser with
 `npx playwright install chromium` first. A daily GitHub workflow and manual
 branch-discovery input are described in [Seat-plan Maintenance](docs/seat-plan-maintenance.md).
-Pushover notifications and AWS integration are deferred; the audit needs no
-AWS configuration or notification secrets.
+The workflow sends a Pushover summary after each audit through a separate
+AWS OIDC job. See [notification IAM setup](terraform/README.md) for its
+GitHub environment and SSM configuration.
 
 `npm run build:maintenance` is the manual extension-export fallback for a
 read-only seat-plan audit. Chrome labels this unpacked build **Library Seats SG -
