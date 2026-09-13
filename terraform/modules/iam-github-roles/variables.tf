@@ -31,3 +31,18 @@ variable "tags" {
   type    = map(string)
   default = {}
 }
+
+variable "github_owner_id" {
+  type = string
+  validation {
+    condition     = can(regex("^[0-9]+$", var.github_owner_id))
+    error_message = "Use the immutable numeric GitHub owner ID."
+  }
+}
+variable "github_repository_id" {
+  type = string
+  validation {
+    condition     = can(regex("^[0-9]+$", var.github_repository_id))
+    error_message = "Use the immutable numeric GitHub repository ID."
+  }
+}

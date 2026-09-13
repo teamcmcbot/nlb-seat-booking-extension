@@ -60,7 +60,7 @@ Set these in the repository's `notifications` GitHub Environment:
 
 Restrict the environment's deployment branches to `main` before enabling the
 job. The exact OIDC subject is
-`repo:teamcmcbot/nlb-seat-booking-extension:environment:notifications`.
+`repo:teamcmcbot@133510590/nlb-seat-booking-extension@1317438263:environment:notifications`.
 An environment-based subject does not include the branch, so GitHub's environment
 branch protection must enforce that restriction. Keep unattended execution in
 mind when choosing reviewer gates.
@@ -82,3 +82,7 @@ access are granted.
 References: [GitHub OIDC in AWS](https://docs.github.com/en/actions/how-tos/secure-your-work/security-harden-deployments/oidc-in-aws),
 [Terraform S3 backend](https://developer.hashicorp.com/terraform/language/backend/s3),
 [AWS bucket namespaces](https://docs.aws.amazon.com/AmazonS3/latest/userguide/bucketnamingrules.html).
+
+This repository uses immutable GitHub OIDC subjects. Verify the prefix with
+`gh api repos/teamcmcbot/nlb-seat-booking-extension/actions/oidc/customization/sub`
+before changing its trust policy; name-only subjects do not match.
