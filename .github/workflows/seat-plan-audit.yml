@@ -1,6 +1,9 @@
 name: Seat-plan audit
 
 on:
+  # Temporary hosted validation; remove before merging.
+  push:
+    branches: [codex/anonymous-seat-plan-audit]
   schedule:
     # 12:05 Singapore time. Routine collection does not depend on slot release.
     - cron: '5 4 * * *'
