@@ -176,6 +176,7 @@ export async function fetchMapImage(mapPath, { refresh = false } = {}) {
 
   const response = await fetch(url, {
     headers: { accept: "image/*" },
+    signal: AbortSignal.timeout(30_000),
     redirect: "follow",
   });
   if (!response.ok) {

@@ -1,6 +1,7 @@
 import { mkdir } from "node:fs/promises";
 import { spawn } from "node:child_process";
 import path from "node:path";
+import { validateExportProvenance } from "./seat-plan-export-provenance.mjs";
 import { REPO_ROOT, parseArgs, readJson } from "./seat-plan-tools.mjs";
 
 const args = parseArgs(process.argv.slice(2));
@@ -15,15 +16,7 @@ const outputDir = path.resolve(REPO_ROOT, args.output || `seat-plan-work/audit-$
 const catalogPath = path.resolve(REPO_ROOT, args.catalog);
 const catalog = await readJson(catalogPath);
 const packageMetadata = await readJson(path.join(REPO_ROOT, "package.json"));
-const acceptedModes = new Set(["catalog", "targeted-discovery"]);
-if (!acceptedModes.has(catalog.exportMetadata?.mode)) {
-  throw new Error("The catalog is not a recognized sanitized maintenance export.");
-}
-if (catalog.exportMetadata.extensionVersion !== packageMetadata.version) {
-  throw new Error(
-    `Catalog extension version ${catalog.exportMetadata.extensionVersion ?? "missing"} does not match this worktree (${packageMetadata.version}). Reload the current build and export again.`,
-  );
-}
+validateExportProvenance(catalog.exportMetadata, packageMetadata.version);
 if (
   catalog.exportMetadata.mode === "targeted-discovery" &&
   (catalog.mapDiscovery?.requested !== true || catalog.mapDiscovery?.scope !== "branch")

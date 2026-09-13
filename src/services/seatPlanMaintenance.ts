@@ -9,10 +9,18 @@ import {
   getTimelineSlots,
 } from "./bookingRules";
 
-export interface SeatPlanExportMetadata {
+export type SeatPlanExportMetadata = {
   extensionVersion: string;
   mode: "catalog" | "targeted-discovery";
-}
+} | {
+  source: "anonymous-browser";
+  collectorVersion: number;
+  repositoryVersion: string;
+  sourceRevision: string;
+  sourceDirty: boolean;
+  anonymous: true;
+  mode: "catalog" | "targeted-discovery";
+};
 
 export function sanitizedSeatPlanCatalog(
   catalog: Catalog,

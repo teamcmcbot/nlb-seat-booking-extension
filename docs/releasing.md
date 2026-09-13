@@ -126,3 +126,18 @@ extension.
 
 Uploading to AMO, tagging, pushing, and publishing releases are remote-state
 changes and require explicit maintainer authorization.
+
+## Maintenance workflow changes
+
+The anonymous seat-plan workflow is repository tooling and does not require a
+new installable extension version when runtime behavior is unchanged. Run the
+collector tests, full test suite, typecheck, build, and `seat-plans:verify`.
+Validate a fresh anonymous collection and full audit locally, then run the
+workflow on GitHub after the branch is approved and published. Local browser
+success does not establish access from a hosted runner.
+
+The daily schedule becomes active on the default branch. Manual dispatch
+supports an optional numeric branch ID for bounded URL discovery. No NLB
+credentials are configured. Publishing/merging the workflow requires the usual
+remote-state authorization. Audit artifacts and baseline updates are separate
+from extension release assets; the workflow never publishes a release.

@@ -1,3 +1,16 @@
+# Unreleased maintenance tooling
+
+- Adds anonymous Chromium catalog collection without an extension or NLB
+  sign-in, plus optional bounded map discovery for one library.
+- Adds a daily/manual GitHub audit workflow and portable sanitized evidence
+  artifacts. Drift, incomplete evidence, and collection failures do not alter
+  reviewed annotations or baselines.
+- Verified anonymous catalog and Jurong map discovery locally; the routine
+  81-map audit was clean. Full tests (316), typecheck, build, and seat-plan
+  verification passed. Hosted-runner access awaits publication and a live run.
+- Keeps extension runtime behavior and version 1.4.1 unchanged; this is a
+  repository maintenance change, not a new installable extension release.
+
 # Library Seats SG - for NLB v1.4.1
 
 This patch improves the responsive booking workspace and makes long favourite

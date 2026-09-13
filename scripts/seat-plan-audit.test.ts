@@ -29,6 +29,24 @@ describe("seat-plan audit evidence", () => {
     expect(result.html).toContain("81 of 81 configured seat-plan images");
   });
 
+  it("accepts anonymous collector evidence and renders its producer revision", async () => {
+    const result = await runAudit({ exportMetadata: {
+      source: "anonymous-browser", collectorVersion: 1, repositoryVersion: "1.4.1",
+      sourceRevision: "a".repeat(40), sourceDirty: false, anonymous: true, mode: "catalog",
+    }});
+    expect(result.status).toBe("clean");
+    expect(result.html).toContain("anonymous browser collector v1");
+    expect(result.html).toContain("a".repeat(40));
+  });
+
+  it("fails closed on incompatible anonymous collector evidence", async () => {
+    const result = await runAudit({ exportMetadata: {
+      source: "anonymous-browser", collectorVersion: 9, repositoryVersion: "1.4.1",
+      sourceRevision: "a".repeat(40), sourceDirty: false, anonymous: true, mode: "catalog",
+    }}, 3);
+    expect(result.status).toBe("incomplete");
+  });
+
   it("treats routine URL omissions and first-observed seat codes as non-drift evidence", async () => {
     const result = await runAudit(
       { exportMetadata: { extensionVersion: "1.3.0", mode: "catalog" } },

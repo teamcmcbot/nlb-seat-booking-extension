@@ -51,14 +51,84 @@ close on public holidays; treat that as a date-specific operating-hours check,
 separate from seat-plan identity and image-fingerprint evidence. See the
 [official NLB operating-hours wording](https://reference.nlb.gov.sg/contact-us/).
 
-## Full live audit
+## Review an existing GitHub audit
+
+When the user refers to a workflow run, daily report, or downloaded artifact,
+start from that evidence rather than launching another live collection. Follow
+[report retrieval and follow-up](../../../docs/seat-plan-maintenance.md#retrieve-a-scheduled-report-and-follow-up).
+
+For a supplied run URL, inspect that exact run. For "latest", inspect the
+repository's **Seat-plan audit** workflow and select its latest completed run,
+including failed runs; mention a newer in-progress run if present. Use available
+GitHub tools, authenticated `gh` CLI, or the Actions UI to inspect and download
+the specific run/attempt's `seat-plan-audit-<run-id>-<attempt>` artifact. Do not
+silently fall back to an older green run. If access is unavailable, request the
+run URL or downloaded artifact location instead of assuming a result.
+
+Extract the contained `seat-plan-audit.tar.gz` into a fresh ignored directory
+under `seat-plan-work/`. Read its README, summary, full HTML/JSON report, and
+sanitized `catalog.json`. Record run ID, attempt, capture timestamp, source
+revision, and status. Failed setup, cancellation, or artifact expiry may leave
+no report; classify this as missing evidence, never clean. The skill knows the
+artifact convention but does not watch GitHub or start itself automatically.
+
+Compare the report's included baseline with the current worktree before
+preparing changes: later accepted updates may already resolve older findings.
+Keep the original report's result intact and explain any later reconciliation.
+Do not trigger a fresh collection unless needed to resolve stale/incomplete
+evidence or requested by the user. Apply all existing triage and approval
+boundaries to workflow findings. Routine reports compare against the reviewed
+baseline, not the previous day's candidate.
+
+## Anonymous automated audit
+
+Prefer the standalone collector for routine audits; no maintenance extension
+or signed-in browser is needed. Follow the anonymous collection section in
+[`docs/seat-plan-maintenance.md`](../../../docs/seat-plan-maintenance.md).
+Run `npm run seat-plans:verify`, then `npm run seat-plans:ci` (use Xvfb on a
+Linux host without a desktop). The CLI launches fresh headed Chromium, reuses
+NLB's native startup `GetAccountInfo`, requires `accountInfo: null`, and exports
+only sanitized catalog fields. The browser handles the site's normal session
+initialization, including its own AWS WAF resources, without cookie inspection
+or saved browser state. Stop on access or CAPTCHA failures; do not add stealth,
+credential handling, or challenge-bypass logic.
+
+The daily/manual GitHub workflow uses the same commands. No LLM is required
+for collection, fingerprints, drift comparison, or report packaging. Inspect
+the output status and complete report: `0` clean, `2` drift, `3` incomplete,
+`1` collection/capture failure. Never treat failed collection as removals.
+Preserve raw catalog counts separately from supplemented candidate counts.
+Standalone provenance must identify the anonymous collector version, repository
+version, source revision, modified-worktree flag, and mode; do not require an
+installed extension version for these exports.
+
+Routine collection allows one account request and zero availability searches.
+Use `--branch <numeric-id>` only for a deliberate targeted discovery operation
+under the same conditions below; it permits at most two sequential searches.
+Public page resources and normal WAF initialization are additional browser
+requests, not catalog/discovery API calls. Never repeat a failed run just to
+chase availability-scoped omissions. Verify hosted-runner access independently
+of a local successful run.
+
+Extract the complete artifact before opening its report. Review
+`image-index.json`: null paths identify missing old artwork, which a hash
+cannot recreate. Artifacts expire; preserve reviewed evidence when required.
+All drift triage, annotation review, archive, and acceptance boundaries below
+apply equally to automated evidence. Automation never accepts a baseline.
+
+## Extension export fallback
+
+Use this path if standalone collection cannot reach NLB or the user asks for
+the visible extension export. Its signed-in prerequisites are UI requirements
+of this fallback, not a demonstrated authentication requirement of the API.
+
 
 1. Protect unrelated work and inspect the current branch and diff.
 2. Confirm the prerequisites in the maintenance document. Build with
    `npm run build:maintenance`, reload that unpacked build, and use Chrome
    browser control when a signed-in NLB Seat Booking tab is already open.
-   Before exporting, confirm `chrome://extensions` identifies it as **NLB Seat
-   Helper (Maintenance)** with a `-maintenance` display version. Confirm Codex
+   Before exporting, confirm `chrome://extensions` identifies it as **Library Seats SG -
+   for NLB (Maintenance)** with a `-maintenance` display version. Confirm Codex
    Chrome computer-use permissions allow browsing `https://www.nlb.gov.sg`;
    after changing that permission, restart Chrome and reopen the signed-in tab.
    Full CDP access is unnecessary. The maintenance section may begin collapsed.
@@ -143,7 +213,9 @@ cannot download a reviewed path, reports a conflicting non-empty authoritative
 association, or the user explicitly requests fresh URL association evidence.
 Do not run discovery merely because a routine `GetAccountInfo` export has empty
 `observedMapUrls`; booking `mapUrls` are not area-association evidence.
-Select one library and click **Discover selected library maps** once. The
+For standalone collection, run a new `seat-plans:collect` export with
+`--branch <numeric-id>`. For the extension fallback, select one library and
+click **Discover selected library maps** once. The
 maintenance build refreshes `GetAccountInfo`, then makes at most two sequential
 branch-level `SearchAvailableAreas` requests with no `AreaId`. The response is
 still parsed by exact returned `areaId`; omitted areas remain incomplete
@@ -190,7 +262,7 @@ that is unavailable in the session.
 - Do not classify routine URL omission or first-observed availability-scoped
   seat codes as baseline drift.
 - Initiate a targeted branch export at most once per deliberate operation. Its
-  strict budget is one `GetAccountInfo` refresh plus at most two sequential
+  strict budget is one `GetAccountInfo` request plus at most two sequential
   branch-level searches; HTTP retry is not used for these maintenance probes.
 - Never retry merely because browser control timed out while a confirmation
   dialog or export handler was active.

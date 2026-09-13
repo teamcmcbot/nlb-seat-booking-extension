@@ -124,13 +124,15 @@ the ignored image cache, generated work packets, or unreviewed OCR/computer-
 vision output. A changed or missing image fingerprint must fail closed until a
 person verifies every affected hotspot.
 
-For a complete live audit, check the prerequisites documented in
-`docs/seat-plan-maintenance.md`. The NLB tab must have the latest unpacked
-build and an active Seat Booking session. Prefer browser control of the visible,
-confirmation-gated **Seat-plan maintenance** export; do not inject JavaScript.
-If browser control cannot reach the tab or dialog, ask the user to click the
-same visible control. Apple Events permission is unnecessary. Auditing never
-authorizes changing the reviewed baseline.
+For a complete live audit, follow the anonymous collector path documented in
+`docs/seat-plan-maintenance.md`: a fresh Chromium context collects sanitized
+catalog evidence without sign-in or a maintenance extension. Use the visible
+extension export as a fallback; that fallback still requires the latest
+maintenance build and active signed-in Seat Booking session. Do not inject
+JavaScript into a user's existing tab for the fallback. The standalone
+collector's bounded same-origin requests run only in its own fresh context.
+Auditing, locally or in GitHub Actions, never authorizes changing the reviewed
+baseline.
 
 ## Change workflow
 

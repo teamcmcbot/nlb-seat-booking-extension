@@ -9,6 +9,7 @@ import {
   readJson,
   writeJson,
 } from "./seat-plan-tools.mjs";
+import { validateExportProvenance } from "./seat-plan-export-provenance.mjs";
 import { enrichChange } from "./seat-plan-drift-actions.mjs";
 
 const args = parseArgs(process.argv.slice(2));
@@ -91,10 +92,11 @@ if (
   snapshot.catalogSource === "sanitized-get-account-info" &&
   snapshotPath !== baselinePath
 ) {
-  if (!["catalog", "targeted-discovery"].includes(evidence?.exportMetadata?.mode)) {
+  try {
+    validateExportProvenance(evidence?.exportMetadata);
+  } catch {
     evidenceIssues.unshift({
-      branchId: "—",
-      areaId: "—",
+      branchId: "—", areaId: "—",
       message: "Candidate lacks recognized sanitized-export provenance.",
     });
   }
@@ -172,6 +174,7 @@ const report = {
     },
   },
   artifacts: {
+    catalog: evidence?.catalogPath,
     baseline: path.relative(REPO_ROOT, baselinePath),
     candidate: path.relative(REPO_ROOT, snapshotPath),
     jsonReport: reportPath ? path.relative(REPO_ROOT, reportPath) : undefined,
@@ -464,7 +467,7 @@ function renderHtml(value, htmlPath) {
 ${simulationBanner}
 <p class="status">Status: ${escapeHtml(value.status.toUpperCase())}</p>
 <p class="note">This report is read-only. Drift remains unresolved until a reviewed baseline or annotation update is explicitly accepted; operational notes never suppress structural drift.</p>
-<h2>Evidence</h2><ul><li>Catalog captured: ${escapeHtml(value.evidence?.capturedAt ?? "not recorded")}</li><li>Extension: ${escapeHtml(exportMetadata?.extensionVersion ?? "not recorded")}</li><li>Export mode: ${escapeHtml(exportMetadata?.mode ?? "not recorded")}</li><li>Map discovery: ${discovery ? `${discovery.succeeded}/${discovery.attempted} targeted areas succeeded in ${discovery.requestCount ?? "an unrecorded number of"} request(s)` : "not requested; reviewed map paths were checked directly"}</li></ul>
+<h2>Evidence</h2><ul><li>Catalog captured: ${escapeHtml(value.evidence?.capturedAt ?? "not recorded")}</li><li>Producer: ${escapeHtml(exportMetadata?.source === "anonymous-browser" ? `anonymous browser collector v${exportMetadata.collectorVersion}, repository ${exportMetadata.repositoryVersion}, revision ${exportMetadata.sourceRevision}${exportMetadata.sourceDirty ? " (modified worktree)" : ""}` : `extension ${exportMetadata?.extensionVersion ?? "not recorded"}`)}</li><li>Export mode: ${escapeHtml(exportMetadata?.mode ?? "not recorded")}</li><li>Map discovery: ${discovery ? `${discovery.succeeded}/${discovery.attempted} targeted areas succeeded in ${discovery.requestCount ?? "an unrecorded number of"} request(s)` : "not requested; reviewed map paths were checked directly"}</li></ul>
 <ul class="artifacts">${artifactItems}</ul>
 <h2>Operational notices to re-check</h2><p>These dated notes come from the repository branch inventory and its linked sources. They guide investigation but do not suppress drift or prove current API state.</p>
 ${operationalRows ? `<table><thead><tr><th>Library</th><th>Recorded notice</th><th>Evidence</th><th>Expected catalog state</th></tr></thead><tbody>${operationalRows}</tbody></table>` : "<p>No operational notice is tracked.</p>"}
@@ -529,6 +532,7 @@ function signedDifference(observed, configured) {
 
 function artifactLabel(key) {
   return ({
+    catalog: "Sanitized source catalog",
     baseline: "Reviewed baseline",
     candidate: "Candidate snapshot",
     jsonReport: "JSON drift report",

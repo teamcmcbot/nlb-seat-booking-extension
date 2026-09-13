@@ -1,0 +1,60 @@
+name: Seat-plan audit
+
+on:
+  schedule:
+    # 12:05 Singapore time. Routine collection does not depend on slot release.
+    - cron: '5 4 * * *'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Optional numeric library ID for at most two map-discovery searches; blank means catalog only'
+        required: false
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seat-plan-audit
+  cancel-in-progress: false
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      TZ: Asia/Singapore
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - run: npm ci
+      - run: npm run seat-plans:verify
+      - run: npx playwright install --with-deps chromium
+      - name: Collect anonymously and audit
+        id: audit
+        env:
+          DISCOVERY_BRANCH: ${{ inputs.branch }}
+        shell: bash
+        run: |
+          args=()
+          if [[ -n "$DISCOVERY_BRANCH" ]]; then
+            if [[ ! "$DISCOVERY_BRANCH" =~ ^[0-9]+$ ]]; then
+              echo 'Branch must be a numeric library ID.' >&2
+              exit 1
+            fi
+            args+=(--branch "$DISCOVERY_BRANCH")
+          fi
+          xvfb-run --auto-servernum npm run seat-plans:ci -- "${args[@]}"
+      - name: Preserve sanitized evidence, including drift or failure
+        if: ${{ always() && steps.audit.outputs.artifact != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: seat-plan-audit-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.audit.outputs.artifact }}
+          if-no-files-found: error
+          retention-days: 30

@@ -194,7 +194,14 @@ npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 `npm run dev` is optional. A completed `npm run build` produces a working
 extension without a development process running.
 
-`npm run build:maintenance` is only for repository maintainers performing a
+`npm run seat-plans:ci` collects and audits seat plans using a fresh anonymous
+Chromium session, without an extension or NLB sign-in. Install the browser with
+`npx playwright install chromium` first. A daily GitHub workflow and manual
+branch-discovery input are described in [Seat-plan Maintenance](docs/seat-plan-maintenance.md).
+Pushover notifications and AWS integration are deferred; the audit needs no
+AWS configuration or notification secrets.
+
+`npm run build:maintenance` is the manual extension-export fallback for a
 read-only seat-plan audit. Chrome labels this unpacked build **Library Seats SG -
 for NLB (Maintenance)**; normal release builds do not expose the maintenance
 controls.

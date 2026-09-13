@@ -140,6 +140,26 @@ interface GetAccountInfoResponse {
 }
 ```
 
+On 12 September 2026, fresh headed Chrome and Playwright Chromium sessions
+received HTTP 200 with `accountInfo: null` from the page's native startup
+request without signing in. Direct HTTP requests returned 400, including a
+probe that first visited the homepage; a headless Chrome probe did not
+initialize the page. These observations establish that sign-in is not required
+for that successful browser request, but do not establish a portable HTTP-only
+contract or guaranteed GitHub-runner access. See
+[anonymous maintenance collection](seat-plan-maintenance.md#anonymous-automated-collection)
+for the isolated collector, request limits, provenance, and failure behavior.
+
+In the same local Chromium investigation, anonymous `SearchAvailableAreas`
+returned HTTP 200 with a JSON object containing `found`, `areas`, and
+`selectedSeatName`. A branch-2 tomorrow-at-10:00 `OffsiteMode` probe returned
+exact-area map associations for all five Jurong seat areas. No account was
+signed in and no extension was loaded. This verifies the bounded discovery
+path for that branch/date, not all possible areas or availability windows.
+The sanitized seat catalog contained 22 branches, 81 areas, and 2,030 seats;
+the broader menu contained 35 branches and 87 areas, including empty branch
+menus and six facility-2 areas excluded by the existing seat parser.
+
 `accountInfo: null` means the catalog may still be available but the extension
 does not consider the user signed in. A non-null `accountInfo` with a non-empty
 `userId` becomes the active account session.
