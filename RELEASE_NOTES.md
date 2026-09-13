@@ -7,7 +7,8 @@
   reviewed annotations or baselines.
 - Verified anonymous catalog and Jurong map discovery locally; the routine
   81-map audit was clean. Full tests (316), typecheck, build, and seat-plan
-  verification passed. Hosted-runner access awaits publication and a live run.
+  verification passed. GitHub-hosted anonymous collection and the clean
+  81-map audit also passed on 13 September 2026.
 - Keeps extension runtime behavior and version 1.4.1 unchanged; this is a
   repository maintenance change, not a new installable extension release.
 

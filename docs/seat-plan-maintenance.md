@@ -570,3 +570,15 @@ clickable layer and leaves seat-number search available.
 
 Do not implement runtime OCR, coordinate inference, or automatic acceptance of
 new artwork.
+
+### GitHub-hosted validation on 13 September 2026
+
+[Run 34736694335, attempt 1](https://github.com/teamcmcbot/nlb-seat-booking-extension/actions/runs/34736694335)
+passed on Ubuntu with headed Chromium under Xvfb, at revision
+`8fae82978f28384cb0ba338144c07dfec3ce751b`. The anonymous catalog captured at
+03:56:53 UTC contained 22 seat branches, 81 areas, and 2,030 seats, using one
+GetAccountInfo and zero SearchAvailableAreas requests. All 81 map images were
+checked, with zero drift or missing evidence. The uploaded artifact was
+downloaded and its report links and all 162 current/reviewed image references
+verified against SHA-256. The included baseline matched the worktree. The
+temporary feature-branch push trigger was removed after validation.
