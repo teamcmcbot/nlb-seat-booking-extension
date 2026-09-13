@@ -22,7 +22,9 @@
     "seat-plans:simulate-amk-reopening": "node scripts/seat-plan-simulate-amk-reopening.mjs",
     "seat-plans:verify": "node scripts/seat-plan-verify.mjs",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "seat-plans:collect": "node scripts/seat-plan-collect.mjs",
+    "seat-plans:ci": "node scripts/seat-plan-ci.mjs"
   },
   "dependencies": {
     "react": "^18.3.1",
@@ -33,6 +35,7 @@
     "@types/react": "^18.3.18",
     "@types/react-dom": "^18.3.5",
     "@vitejs/plugin-react": "^4.4.1",
+    "playwright": "1.63.0",
     "typescript": "^5.7.3",
     "vite": "^6.1.0",
     "vitest": "^4.1.10",

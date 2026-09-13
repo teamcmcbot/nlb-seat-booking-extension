@@ -137,7 +137,9 @@ const baseline = {
   catalogEvidence: catalog
     ? {
         capturedAt: catalog.capturedAt,
+        catalogPath: path.relative(REPO_ROOT, path.resolve(REPO_ROOT, args.catalog)),
         exportMetadata: catalog.exportMetadata,
+        collectionScope: catalog.collectionScope,
         mapDiscovery: catalog.mapDiscovery,
       }
     : undefined,

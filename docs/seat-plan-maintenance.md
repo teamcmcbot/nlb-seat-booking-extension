@@ -80,9 +80,160 @@ retained only as diagnostic hints. A future decoded-pixel or perceptual hash
 may help classify re-encoding and visual similarity, but must not authorize a
 map automatically.
 
-## Prerequisites for a complete audit
+## Anonymous automated collection
 
-A full live audit of the current catalog and refreshed image fingerprints
+The standalone collector uses a fresh, non-persistent Playwright Chromium
+context. It requires neither an extension nor NLB sign-in. Install once:
+
+```bash
+npm ci
+npx playwright install chromium
+```
+
+For a routine collection and complete deterministic audit:
+
+```bash
+npm run seat-plans:verify
+npm run seat-plans:ci
+```
+
+On Linux without a desktop, install browser OS dependencies with
+`npx playwright install --with-deps chromium` and run
+`xvfb-run --auto-servernum npm run seat-plans:ci`. Headed Chromium is the
+default: a headless Chrome probe did not initialize NLB on 12 September 2026,
+while fresh headed Chrome and Chromium received HTTP 200 with
+`accountInfo: null`. This is point-in-time evidence, not a guarantee of access
+from every network or future NLB deployment. GitHub-hosted network access was verified on 13 September 2026; see the
+hosted validation record below. Future access can still change.
+
+To generate only the catalog, or deliberately discover one branch:
+
+```bash
+npm run seat-plans:collect -- --output seat-plan-work/my-run/catalog.json
+npm run seat-plans:collect -- --output seat-plan-work/my-discovery/catalog.json --branch 2
+```
+
+Choose a new output filename for every run. `--channel chrome` uses an installed
+Chrome browser with a fresh context; `--headless` is available for explicit
+compatibility experiments. Neither option attaches to a personal browser
+profile. No cookies are read or exported, no authentication state is saved,
+and no raw payload, browser trace, screenshot, or HAR is written. Collection
+requires an explicit `accountInfo: null` and validates the complete known
+`settings.menus.branchMenus[].areas[].seats[]` structure before normalization.
+Malformed identities, missing arrays, empty seat collections, duplicates, or
+lost seat records fail collection rather than suggesting removals. Empty branch
+menus and facility-2 meeting rooms are excluded by the existing extension
+parser; `collectionScope` records their IDs and raw menu counts separately
+from the normalized seat-catalog counts. Structural plausibility checks in
+the audit remain necessary; an anonymous catalog cannot prove operational
+opening status or completeness merely by returning HTTP 200.
+
+The collector reuses the page's one native startup `GetAccountInfo` response.
+It does not perform an additional refresh. Routine mode allows zero
+`SearchAvailableAreas` requests. An explicit `--branch` uses the existing
+Singapore-time discovery planner for at most two sequential branch-level
+`OffsiteMode` searches, without `AreaId`, accepting only exact returned area
+associations. It does not simulate account privileges. Availability-scoped
+omissions remain incomplete evidence. NLB API writes and login navigation are blocked. The browser may load NLB
+resources and the site's normal AWS WAF initialization script and validation
+requests; these are additional setup traffic beyond the catalog/search
+budget. Access or CAPTCHA failures stop the run instead of invoking login or
+challenge-bypass logic.
+
+Standalone exports retain schema 1 and mode `catalog` or `targeted-discovery`,
+with `source: "anonymous-browser"`, collector version, repository version,
+Git source revision, modified-worktree flag, and `anonymous: true`. They do
+not pretend to come from an installed extension. The full-audit wrapper
+validates compatible producer provenance; existing extension exports continue
+to use the extension-version check.
+
+### GitHub workflow and review artifacts
+
+`.github/workflows/seat-plan-audit.yml` runs daily at 12:05 SGT and supports
+manual dispatch. Leave the optional branch input empty for routine audits;
+use a numeric branch ID only for deliberate targeted discovery. Scheduling
+does not require the next-day availability release window. Scheduled jobs may
+be delayed; overlapping audit runs are serialized. The workflow uses read-only
+repository permissions and no NLB credentials or account secrets.
+
+The workflow installs Chromium and uses Xvfb, verifies the reviewed baseline,
+collects the anonymous catalog, refreshes map bytes sequentially, and runs the
+existing drift audit. Exit codes are `0` clean, `2` drift, `3` incomplete, and
+`1` collection/capture failure. Non-clean outcomes fail the job, while its
+artifact step still preserves the generated evidence. No issue, PR, baseline,
+fingerprint, retirement, or annotation is automatically created or changed.
+
+`seat-plans:ci` writes a fresh timestamped directory under `seat-plan-work/`
+and produces `seat-plan-audit.tar.gz`. Extract the entire archive before
+opening the report; repository-relative links resolve to included reviewed
+configuration. Only allowlisted sanitized results, reviewed configuration,
+and referenced map bytes are packaged. `image-index.json` distinguishes
+current and reviewed image evidence; a null path means old artwork was not
+available on that runner. A digest cannot reconstruct an old image. Artifacts
+are retained for 30 days; retain a reviewed artifact separately if it is
+needed beyond that window. The workflow does not persist browser profiles or
+upload the ignored image cache wholesale.
+
+Catalog generation, fingerprint comparison, and report generation require no
+LLM. Use the skill for investigation and visual review when drift is found.
+Acceptance remains a separate reviewed change. The visible extension export
+below remains a manual fallback when standalone collection cannot reach NLB.
+
+### Retrieve a scheduled report and follow up
+
+Open the repository's **Actions → Seat-plan audit → specific run**. The run's
+summary shows status, catalog counts, images checked, and total changes.
+Download its `seat-plan-audit-<run-id>-<attempt>` artifact and extract the
+contained `seat-plan-audit.tar.gz` in a fresh ignored directory. The bundle's
+README identifies the HTML report path. It includes `catalog.json` (sanitized
+source evidence, never the original account response), `candidate.json`,
+`drift.json`, `summary.md`, reviewed configuration, and available referenced
+map images. A failed collection may have only a failure summary and reviewed
+configuration; setup failures or cancellation can prevent artifact creation.
+
+When asking the maintenance skill to investigate, supply the run URL or the
+extracted report path. It should inspect the latest completed run including
+failures, not silently select an older successful run. Record the run ID,
+attempt, timestamp, producer revision, and status. Check the report's included
+baseline against the current worktree before preparing changes; later accepted
+changes may already resolve old findings. Do not re-collect merely to read an
+existing report. An expired artifact or failed collection is missing evidence.
+
+Pushover notifications, AWS integration, and Terraform provisioning are deferred.
+The workflow requires no AWS role, SSM parameter, or notification environment.
+Results are available in the GitHub Actions job summary and downloadable artifact.
+GitHub's own Actions notifications depend on your account notification settings.
+
+No GitHub issue or maintenance agent is automatically invoked. Drift, incomplete
+evidence, or collection failure produces a failed audit run. Each audit compares
+with the committed reviewed baseline, so unresolved findings recur on later runs.
+Follow-up investigation and accepted changes remain manual using the maintenance
+skill.
+
+### Local validation on 12 September 2026
+
+Fresh headed Playwright Chromium on macOS, normal `/seatbooking/` route,
+`accountInfo: null`, no extension or personal browser profile:
+
+- Catalog: 22 seat branches, 81 areas, 2,030 seats; raw menu counts were 35
+  branches and 87 areas, with exclusions recorded in `collectionScope`.
+- Targeted Jurong discovery: one startup account call and one tomorrow-at-10:00
+  `OffsiteMode` search returned all five seat-area map associations.
+- Full targeted audit: 81 fresh map downloads, zero changed or missing images,
+  and five map-URL enrichment findings. No baseline was accepted or changed.
+- Routine end-to-end audit: one startup account call, zero availability
+  searches, 81 fresh map downloads, zero changes, exit code 0 (clean).
+- Automated checks: 43 test files and 316 tests passed, plus typecheck, build,
+  reviewed-baseline verification, and diff checks. The failure-artifact path
+  was also exercised without contacting NLB.
+- Portable artifact generated successfully; all HTML report links resolved
+  inside the extracted bundle.
+- This local test did not establish hosted-runner access; the separate
+  successful hosted validation on 13 September 2026 is recorded below.
+
+## Prerequisites for the extension export fallback
+
+The extension-based path for a live catalog and refreshed image fingerprints
 requires all of the following. Fresh URL association is an optional targeted
 step, not a routine prerequisite:
 
@@ -419,3 +570,15 @@ clickable layer and leaves seat-number search available.
 
 Do not implement runtime OCR, coordinate inference, or automatic acceptance of
 new artwork.
+
+### GitHub-hosted validation on 13 September 2026
+
+[Run 34736694335, attempt 1](https://github.com/teamcmcbot/nlb-seat-booking-extension/actions/runs/34736694335)
+passed on Ubuntu with headed Chromium under Xvfb, at revision
+`8fae82978f28384cb0ba338144c07dfec3ce751b`. The anonymous catalog captured at
+03:56:53 UTC contained 22 seat branches, 81 areas, and 2,030 seats, using one
+GetAccountInfo and zero SearchAvailableAreas requests. All 81 map images were
+checked, with zero drift or missing evidence. The uploaded artifact was
+downloaded and its report links and all 162 current/reviewed image references
+verified against SHA-256. The included baseline matched the worktree. The
+temporary feature-branch push trigger was removed after validation.

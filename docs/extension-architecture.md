@@ -791,3 +791,19 @@ Seat availability and quota can change between scan and booking.
 See [`holiday-and-closure-testing.md`](holiday-and-closure-testing.md) and the
 booking lifecycle section of [`nlb-api.md`](nlb-api.md) for investigation
 notes.
+
+## Standalone maintenance collector
+
+The anonymous seat-plan collector is repository tooling, separate from the
+content script and account/profile lifecycle. A fresh Playwright context loads
+NLB's page and reuses its native startup catalog response, requiring
+`accountInfo: null`. Strict input checks precede the existing catalog parser
+and sanitizer. Optional branch discovery reuses the existing planner with
+Singapore local time and a two-request maximum. Only sanitized identity and
+map evidence is saved; browser state is discarded on exit.
+
+The scheduled GitHub workflow runs deterministic catalog/image audits and
+packages review artifacts. It cannot accept a baseline or annotation change.
+The installed extension's initial timeline, manual availability checks, map
+discovery, booking preflight, and submission behavior are unchanged. See
+[Seat-plan Maintenance](seat-plan-maintenance.md) for execution and provenance.
