@@ -86,3 +86,13 @@ References: [GitHub OIDC in AWS](https://docs.github.com/en/actions/how-tos/secu
 This repository uses immutable GitHub OIDC subjects. Verify the prefix with
 `gh api repos/teamcmcbot/nlb-seat-booking-extension/actions/oidc/customization/sub`
 before changing its trust policy; name-only subjects do not match.
+
+## Verified deployment
+
+On 13 September 2026, Terraform reported no drift after correcting the IAM
+trust to the repository's immutable OIDC subject.
+[Workflow run 34751787404, attempt 2](https://github.com/teamcmcbot/nlb-seat-booking-extension/actions/runs/34751787404)
+successfully assumed the role, decrypted the configured SSM parameter, and
+received Pushover acceptance. The initial attempt failed role assumption due to
+the legacy subject format; only the notification job was rerun. GitHub's
+notifications environment permits only the `main` branch after the test.
