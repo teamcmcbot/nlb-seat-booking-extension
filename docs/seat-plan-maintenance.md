@@ -199,10 +199,23 @@ baseline against the current worktree before preparing changes; later accepted
 changes may already resolve old findings. Do not re-collect merely to read an
 existing report. An expired artifact or failed collection is missing evidence.
 
-Pushover notifications, AWS integration, and Terraform provisioning are deferred.
-The workflow requires no AWS role, SSM parameter, or notification environment.
-Results are available in the GitHub Actions job summary and downloadable artifact.
-GitHub's own Actions notifications depend on your account notification settings.
+A separate `notify` job sends a Pushover summary after every audit, including
+clean runs and failures. It assumes the notification role through GitHub OIDC
+and retrieves the API key from SSM in memory. The title is
+`NLB Seat Audit (yyyy-mm-dd)` in Singapore time; the message includes drift
+severity counts and branch/area/seat totals, plus a workflow-run link. Missing
+reports use unavailable counts, never zero drift. Notification failure fails
+its own job and preserves the audit artifacts.
+
+See [Terraform setup](../terraform/README.md) for the `notifications` environment
+configuration. Only the notification job has `id-token: write`; the browser
+job has no AWS credentials. The sender makes one delivery attempt, with a
+30-second timeout and no automatic retry. The service may retry internally.
+It uses the service's default Pushover application and recipient. It omits
+`dedupeKey` because the reviewed service implementation maps that field to
+Pushover `expire`, not deduplication. Repeated unresolved drift sends another
+notification each day. GitHub cancellation or setup failures can prevent
+notification delivery; Actions notifications remain dependent on user settings.
 
 No GitHub issue or maintenance agent is automatically invoked. Drift, incomplete
 evidence, or collection failure produces a failed audit run. Each audit compares

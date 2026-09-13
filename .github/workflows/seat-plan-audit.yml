@@ -20,6 +20,8 @@ concurrency:
 
 jobs:
   audit:
+    outputs:
+      notification_data: ${{ steps.audit.outputs.notification_data }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -58,3 +60,32 @@ jobs:
           path: ${{ steps.audit.outputs.artifact }}
           if-no-files-found: error
           retention-days: 30
+
+  notify:
+    name: Send Pushover summary
+    needs: audit
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    environment: notifications
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - name: Send audit notification
+        env:
+          AWS_REGION: ${{ vars.AWS_REGION }}
+          SEND_NOTIFICATION_SSM_PARAM: ${{ secrets.SEND_NOTIFICATION_SSM_PARAM }}
+          AUDIT_DATA: ${{ needs.audit.outputs.notification_data }}
+          AUDIT_JOB_RESULT: ${{ needs.audit.result }}
+        run: node scripts/seat-plan-notify.mjs

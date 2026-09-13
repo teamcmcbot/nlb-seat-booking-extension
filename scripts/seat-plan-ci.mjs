@@ -25,6 +25,7 @@ try {
   if (![0, 2, 3].includes(exitCode)) throw new Error("Capture or audit failed.");
   const report = await readJson(path.join(runDir, "drift.json"));
   status = report.status;
+  if (process.env.GITHUB_OUTPUT) await appendFile(process.env.GITHUB_OUTPUT, `notification_data=${JSON.stringify({ status, generatedAt: report.generatedAt, summary: report.summary, observed: report.coverage.observed })}\n`);
   await writeFile(path.join(runDir, "summary.md"),
     `Seat-plan audit: **${status}**\n\n` +
     `Raw catalog: ${report.coverage.observed.branches} branches, ${report.coverage.observed.areas} areas, ${report.coverage.observed.seats} seats.\n\n` +

@@ -1,5 +1,9 @@
 # Unreleased maintenance tooling
 
+- Adds reviewed Terraform configuration for a notification-only GitHub OIDC
+  role and an AWS CLI backend bootstrap. A separate job sends daily Pushover
+  audit summaries with Singapore-date titles, drift counts, and run links.
+
 - Adds anonymous Chromium catalog collection without an extension or NLB
   sign-in, plus optional bounded map discovery for one library.
 - Adds a daily/manual GitHub audit workflow and portable sanitized evidence
