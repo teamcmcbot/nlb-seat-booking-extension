@@ -103,8 +103,8 @@ On Linux without a desktop, install browser OS dependencies with
 default: a headless Chrome probe did not initialize NLB on 12 September 2026,
 while fresh headed Chrome and Chromium received HTTP 200 with
 `accountInfo: null`. This is point-in-time evidence, not a guarantee of access
-from every network or future NLB deployment. GitHub-hosted network access must
-be verified by running the workflow after publication.
+from every network or future NLB deployment. GitHub-hosted network access was verified on 13 September 2026; see the
+hosted validation record below. Future access can still change.
 
 To generate only the catalog, or deliberately discover one branch:
 
@@ -228,8 +228,8 @@ Fresh headed Playwright Chromium on macOS, normal `/seatbooking/` route,
   was also exercised without contacting NLB.
 - Portable artifact generated successfully; all HTML report links resolved
   inside the extracted bundle.
-- GitHub-hosted execution remains unverified until the workflow is published
-  and run on a hosted runner; the local result does not claim otherwise.
+- This local test did not establish hosted-runner access; the separate
+  successful hosted validation on 13 September 2026 is recorded below.
 
 ## Prerequisites for the extension export fallback
 
