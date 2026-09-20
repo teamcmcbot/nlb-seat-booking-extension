@@ -595,3 +595,14 @@ checked, with zero drift or missing evidence. The uploaded artifact was
 downloaded and its report links and all 162 current/reviewed image references
 verified against SHA-256. The included baseline matched the worktree. The
 temporary feature-branch push trigger was removed after validation.
+
+### Workflow dependency updates on 20 September 2026
+
+Both jobs use explicit `ubuntu-24.04` runners to retain the validated
+Chromium/Xvfb environment when `ubuntu-latest` migrates to Ubuntu 26.04.
+Actions are pinned to the latest verified releases: checkout `v7.0.1`,
+setup-node `v7.0.0`, upload-artifact `v7.0.1`, and
+configure-aws-credentials `v6.3.0`. Their Node.js 24 runtime is separate from
+the Node.js 22 selected to run repository scripts. npm caching remains enabled
+only for the audit; automatic package-manager caching is disabled for the
+notification job. Schedule, artifact retention, and OIDC permissions are unchanged.
