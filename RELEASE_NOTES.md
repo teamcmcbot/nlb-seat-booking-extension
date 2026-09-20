@@ -1,5 +1,9 @@
 # Unreleased maintenance tooling
 
+- Updates audit actions to their latest releases as of 20 September 2026
+  with Node.js 24 action runtimes, and pins both runners to Ubuntu 24.04
+  to avoid the upcoming ubuntu-latest OS migration.
+
 - Adds reviewed Terraform configuration for a notification-only GitHub OIDC
   role and an AWS CLI backend bootstrap. A separate job sends daily Pushover
   audit summaries with Singapore-date titles, drift counts, and run links.
