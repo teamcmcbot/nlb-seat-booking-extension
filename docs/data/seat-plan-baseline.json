@@ -1,13 +1,60 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-09-05T06:30:04.832Z",
+  "observedAt": "2026-10-05T14:20:42.022Z",
   "catalogSource": "sanitized-get-account-info",
   "imageSource": "nlb-seat-plan-assets",
   "catalogEvidence": {
-    "capturedAt": "2026-09-05T04:30:41.471Z",
+    "capturedAt": "2026-10-05T13:59:33.300Z",
+    "catalogPath": "seat-plan-work/run-37302088224-attempt-1/bukit-batok-targeted-catalog.json",
     "exportMetadata": {
-      "extensionVersion": "1.4.1",
-      "mode": "catalog"
+      "source": "anonymous-browser",
+      "collectorVersion": 1,
+      "repositoryVersion": "1.4.1",
+      "sourceRevision": "e6e3463d104c10905e7bb73c1c4443e0a22cd950",
+      "sourceDirty": false,
+      "anonymous": true,
+      "mode": "targeted-discovery"
+    },
+    "collectionScope": {
+      "menuBranches": 35,
+      "menuAreas": 88,
+      "emptyBranchIds": [
+        "6",
+        "35",
+        "12",
+        "37",
+        "34",
+        "22",
+        "21",
+        "39",
+        "40",
+        "41",
+        "38",
+        "36",
+        "29"
+      ],
+      "excludedFacilityAreas": [
+        "2:100",
+        "17:92",
+        "17:93",
+        "33:89",
+        "1:96",
+        "31:99"
+      ],
+      "seatCatalog": {
+        "branches": 22,
+        "areas": 82,
+        "seats": 2053
+      }
+    },
+    "mapDiscovery": {
+      "requested": true,
+      "scope": "branch",
+      "branchId": "9",
+      "requestCount": 1,
+      "attempted": 2,
+      "succeeded": 2,
+      "failed": []
     }
   },
   "rawCatalogAreas": [
@@ -4079,7 +4126,10 @@
       "areaId": "97",
       "areaName": "Study Zone, Level 2",
       "floor": "2",
-      "areaMapUrls": [],
+      "areaMapUrls": [
+        "bbpl-2-studyzone-fp.png",
+        "bbpl-2-studyzone-sp-full.png"
+      ],
       "seats": [
         {
           "id": "2441",
@@ -4103,11 +4153,13 @@
         },
         {
           "id": "2445",
+          "code": "BBPL.2.StudyZone.5",
           "name": "S5",
           "disabled": false
         },
         {
           "id": "2446",
+          "code": "BBPL.2.StudyZone.6",
           "name": "S6",
           "disabled": false
         },
@@ -4118,11 +4170,13 @@
         },
         {
           "id": "2448",
+          "code": "BBPL.2.StudyZone.8",
           "name": "S8",
           "disabled": false
         },
         {
           "id": "2449",
+          "code": "BBPL.2.StudyZone.9",
           "name": "S9",
           "disabled": false
         },
@@ -4138,6 +4192,7 @@
         },
         {
           "id": "2452",
+          "code": "BBPL.2.StudyZone.12",
           "name": "S12",
           "disabled": false
         },
@@ -4148,6 +4203,7 @@
         },
         {
           "id": "2454",
+          "code": "BBPL.2.StudyZone.14",
           "name": "S14",
           "disabled": false
         },
@@ -4178,11 +4234,13 @@
         },
         {
           "id": "2460",
+          "code": "BBPL.2.StudyZone.20",
           "name": "S20",
           "disabled": false
         },
         {
           "id": "2461",
+          "code": "BBPL.2.StudyZone.21",
           "name": "S21",
           "disabled": false
         },
@@ -4198,6 +4256,7 @@
         },
         {
           "id": "2464",
+          "code": "BBPL.2.StudyZone.24",
           "name": "S24",
           "disabled": false
         },
@@ -4209,6 +4268,73 @@
         {
           "id": "2440",
           "name": "S26",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "branchId": "9",
+      "branchCode": "BBPL",
+      "branchName": "Bukit Batok Library",
+      "areaId": "103",
+      "areaName": "Sound Pavilion, Level 2",
+      "floor": "2",
+      "areaMapUrls": [
+        "bbpl-2-sound-pavilion-sp-full.png",
+        "bbpl-2-sound-pavilion-fp.png"
+      ],
+      "seats": [
+        {
+          "id": "2491",
+          "name": "S27",
+          "disabled": false
+        },
+        {
+          "id": "2492",
+          "code": "BBPL.2.SoundPavilion.28",
+          "name": "S28",
+          "disabled": false
+        },
+        {
+          "id": "2493",
+          "name": "S29",
+          "disabled": false
+        },
+        {
+          "id": "2494",
+          "name": "S30",
+          "disabled": false
+        },
+        {
+          "id": "2495",
+          "code": "BBPL.2.SoundPavilion.31",
+          "name": "S31",
+          "disabled": false
+        },
+        {
+          "id": "2496",
+          "name": "S32",
+          "disabled": false
+        },
+        {
+          "id": "2497",
+          "name": "S33",
+          "disabled": false
+        },
+        {
+          "id": "2498",
+          "code": "BBPL.2.SoundPavilion.34",
+          "name": "S34",
+          "disabled": false
+        },
+        {
+          "id": "2499",
+          "name": "S35",
+          "disabled": false
+        },
+        {
+          "id": "2500",
+          "name": "S36",
           "disabled": false
         }
       ]
@@ -4705,6 +4831,11 @@
         {
           "id": "729",
           "name": "S22",
+          "disabled": false
+        },
+        {
+          "id": "2490",
+          "name": "S63",
           "disabled": false
         }
       ]
@@ -11049,6 +11180,66 @@
           "id": "2283",
           "name": "S223",
           "disabled": false
+        },
+        {
+          "id": "2501",
+          "name": "S224",
+          "disabled": false
+        },
+        {
+          "id": "2502",
+          "name": "S225",
+          "disabled": false
+        },
+        {
+          "id": "2503",
+          "name": "S226",
+          "disabled": false
+        },
+        {
+          "id": "2504",
+          "name": "S227",
+          "disabled": false
+        },
+        {
+          "id": "2505",
+          "name": "S228",
+          "disabled": false
+        },
+        {
+          "id": "2506",
+          "name": "S229",
+          "disabled": false
+        },
+        {
+          "id": "2507",
+          "name": "S230",
+          "disabled": false
+        },
+        {
+          "id": "2508",
+          "name": "S231",
+          "disabled": false
+        },
+        {
+          "id": "2509",
+          "name": "S232",
+          "disabled": false
+        },
+        {
+          "id": "2510",
+          "name": "S233",
+          "disabled": false
+        },
+        {
+          "id": "2511",
+          "name": "S234",
+          "disabled": false
+        },
+        {
+          "id": "2512",
+          "name": "S235",
+          "disabled": false
         }
       ]
     }
@@ -14640,13 +14831,13 @@
       "mapPath": "bepl-3-teensfiction-sp-full.png",
       "observedMapUrls": [],
       "image": {
-        "width": 1272,
-        "height": 754,
-        "sha256": "fd91ad8d88b4ecf290c4aadde6d960c39cbe030d90757d0582c000f847a0b0eb",
-        "byteLength": 490860,
+        "width": 1280,
+        "height": 720,
+        "sha256": "99d79264300e47101deb88a9a61a15e43615fa7aea21a409d91c5ab3cd3ff8e0",
+        "byteLength": 63564,
         "contentType": "image/png",
-        "etag": "\"0a666a8b2e1dc1:0\"",
-        "lastModified": "Tue, 12 May 2026 01:57:16 GMT"
+        "etag": "\"0cfdd86d49dd1:0\"",
+        "lastModified": "Mon, 21 Sep 2026 02:00:54 GMT"
       },
       "seats": [
         {
@@ -15418,7 +15609,10 @@
       "floor": "2",
       "labelType": "full",
       "mapPath": "bbpl-2-studyzone-sp-full.png",
-      "observedMapUrls": [],
+      "observedMapUrls": [
+        "bbpl-2-studyzone-fp.png",
+        "bbpl-2-studyzone-sp-full.png"
+      ],
       "image": {
         "width": 657,
         "height": 811,
@@ -15451,11 +15645,13 @@
         },
         {
           "id": "2445",
+          "code": "BBPL.2.StudyZone.5",
           "name": "S5",
           "disabled": false
         },
         {
           "id": "2446",
+          "code": "BBPL.2.StudyZone.6",
           "name": "S6",
           "disabled": false
         },
@@ -15466,11 +15662,13 @@
         },
         {
           "id": "2448",
+          "code": "BBPL.2.StudyZone.8",
           "name": "S8",
           "disabled": false
         },
         {
           "id": "2449",
+          "code": "BBPL.2.StudyZone.9",
           "name": "S9",
           "disabled": false
         },
@@ -15486,6 +15684,7 @@
         },
         {
           "id": "2452",
+          "code": "BBPL.2.StudyZone.12",
           "name": "S12",
           "disabled": false
         },
@@ -15496,6 +15695,7 @@
         },
         {
           "id": "2454",
+          "code": "BBPL.2.StudyZone.14",
           "name": "S14",
           "disabled": false
         },
@@ -15526,11 +15726,13 @@
         },
         {
           "id": "2460",
+          "code": "BBPL.2.StudyZone.20",
           "name": "S20",
           "disabled": false
         },
         {
           "id": "2461",
+          "code": "BBPL.2.StudyZone.21",
           "name": "S21",
           "disabled": false
         },
@@ -15546,6 +15748,7 @@
         },
         {
           "id": "2464",
+          "code": "BBPL.2.StudyZone.24",
           "name": "S24",
           "disabled": false
         },
@@ -15557,6 +15760,87 @@
         {
           "id": "2440",
           "name": "S26",
+          "disabled": false
+        }
+      ],
+      "catalogState": "present",
+      "seatSource": "catalog",
+      "annotationStatus": "implemented"
+    },
+    {
+      "branchId": "9",
+      "branchCode": "BBPL",
+      "branchName": "Bukit Batok Library",
+      "areaId": "103",
+      "areaName": "Sound Pavilion, Level 2",
+      "floor": "2",
+      "labelType": "full",
+      "mapPath": "bbpl-2-sound-pavilion-sp-full.png",
+      "observedMapUrls": [
+        "bbpl-2-sound-pavilion-sp-full.png",
+        "bbpl-2-sound-pavilion-fp.png"
+      ],
+      "image": {
+        "width": 1280,
+        "height": 720,
+        "sha256": "77b2b45e794e63822a066f0cd262aa7a3ed8fb0f2f5263dd3d3a12735594f06d",
+        "byteLength": 12711,
+        "contentType": "image/png",
+        "etag": "\"01b1946d49dd1:0\"",
+        "lastModified": "Mon, 21 Sep 2026 02:00:46 GMT"
+      },
+      "seats": [
+        {
+          "id": "2491",
+          "name": "S27",
+          "disabled": false
+        },
+        {
+          "id": "2492",
+          "code": "BBPL.2.SoundPavilion.28",
+          "name": "S28",
+          "disabled": false
+        },
+        {
+          "id": "2493",
+          "name": "S29",
+          "disabled": false
+        },
+        {
+          "id": "2494",
+          "name": "S30",
+          "disabled": false
+        },
+        {
+          "id": "2495",
+          "code": "BBPL.2.SoundPavilion.31",
+          "name": "S31",
+          "disabled": false
+        },
+        {
+          "id": "2496",
+          "name": "S32",
+          "disabled": false
+        },
+        {
+          "id": "2497",
+          "name": "S33",
+          "disabled": false
+        },
+        {
+          "id": "2498",
+          "code": "BBPL.2.SoundPavilion.34",
+          "name": "S34",
+          "disabled": false
+        },
+        {
+          "id": "2499",
+          "name": "S35",
+          "disabled": false
+        },
+        {
+          "id": "2500",
+          "name": "S36",
           "disabled": false
         }
       ],
@@ -16020,13 +16304,13 @@
       "mapPath": "gepl-2-magazine-collection-sp-full.png",
       "observedMapUrls": [],
       "image": {
-        "width": 1174,
-        "height": 682,
-        "sha256": "008d2ffcb1f7883957f77f38cc120ece8b9056cbee9400ecb154c520f36d75a1",
-        "byteLength": 467848,
+        "width": 1280,
+        "height": 720,
+        "sha256": "8b754a43d111497b85fede0693207443cff878bb3031f741306e1ad736da32e7",
+        "byteLength": 68200,
         "contentType": "image/png",
-        "etag": "\"0ff4317b3e1dc1:0\"",
-        "lastModified": "Tue, 12 May 2026 02:00:22 GMT"
+        "etag": "\"0cfdd86d49dd1:0\"",
+        "lastModified": "Mon, 21 Sep 2026 02:00:54 GMT"
       },
       "seats": [
         {
@@ -16137,6 +16421,11 @@
         {
           "id": "729",
           "name": "S22",
+          "disabled": false
+        },
+        {
+          "id": "2490",
+          "name": "S63",
           "disabled": false
         }
       ],
@@ -21695,13 +21984,13 @@
       "mapPath": "yipl-4-englishfiction-sp-full.png",
       "observedMapUrls": [],
       "image": {
-        "width": 1129,
-        "height": 448,
-        "sha256": "735d5249704c2958426cf19467d151a8defdfd8834459dfc04bdcc4480a122e5",
-        "byteLength": 150543,
+        "width": 1280,
+        "height": 720,
+        "sha256": "001f10acb1e1df49350e426f646daf04dfdc968c7c3a902673e07b59f92a2a4c",
+        "byteLength": 9351,
         "contentType": "image/png",
-        "etag": "\"0d1bab3b4e1dc1:0\"",
-        "lastModified": "Tue, 12 May 2026 02:11:54 GMT"
+        "etag": "\"0cfdd86d49dd1:0\"",
+        "lastModified": "Mon, 21 Sep 2026 02:00:54 GMT"
       },
       "seats": [
         {
@@ -21900,13 +22189,13 @@
       "mapPath": "yipl-4-digitallearningzone-sp-full.png",
       "observedMapUrls": [],
       "image": {
-        "width": 355,
-        "height": 214,
-        "sha256": "2efd7c97da05e8496b3f588d5dee49840be5b24aadb217d540d311829a4355b2",
-        "byteLength": 8355,
+        "width": 1280,
+        "height": 720,
+        "sha256": "02c46e2a4d76a2c75f306b8035eed2767e95802dfe1ebacc535a0f30b0385d3b",
+        "byteLength": 21034,
         "contentType": "image/png",
-        "etag": "\"05242099d0dc1:0\"",
-        "lastModified": "Mon, 20 Apr 2026 07:41:40 GMT"
+        "etag": "\"0cfdd86d49dd1:0\"",
+        "lastModified": "Mon, 21 Sep 2026 02:00:54 GMT"
       },
       "seats": [
         {
@@ -23035,13 +23324,13 @@
       "mapPath": "prl-4-long-study-space-sp-full.png",
       "observedMapUrls": [],
       "image": {
-        "width": 1529,
-        "height": 474,
-        "sha256": "2d3f341699718196c013890a41dd67d18cc4bb4b5c553a2b6e0f47dbc94f1769",
-        "byteLength": 28961,
+        "width": 1280,
+        "height": 720,
+        "sha256": "bcd1dce3f734d039fe42719d64e7e46abeadd8dfee7568a8583b7cf24809db2e",
+        "byteLength": 14132,
         "contentType": "image/png",
-        "etag": "\"0afc18dea7edc1:0\"",
-        "lastModified": "Tue, 06 Jan 2026 08:57:58 GMT"
+        "etag": "\"0cfdd86d49dd1:0\"",
+        "lastModified": "Mon, 21 Sep 2026 02:00:54 GMT"
       },
       "seats": [
         {
@@ -23222,6 +23511,66 @@
         {
           "id": "2283",
           "name": "S223",
+          "disabled": false
+        },
+        {
+          "id": "2501",
+          "name": "S224",
+          "disabled": false
+        },
+        {
+          "id": "2502",
+          "name": "S225",
+          "disabled": false
+        },
+        {
+          "id": "2503",
+          "name": "S226",
+          "disabled": false
+        },
+        {
+          "id": "2504",
+          "name": "S227",
+          "disabled": false
+        },
+        {
+          "id": "2505",
+          "name": "S228",
+          "disabled": false
+        },
+        {
+          "id": "2506",
+          "name": "S229",
+          "disabled": false
+        },
+        {
+          "id": "2507",
+          "name": "S230",
+          "disabled": false
+        },
+        {
+          "id": "2508",
+          "name": "S231",
+          "disabled": false
+        },
+        {
+          "id": "2509",
+          "name": "S232",
+          "disabled": false
+        },
+        {
+          "id": "2510",
+          "name": "S233",
+          "disabled": false
+        },
+        {
+          "id": "2511",
+          "name": "S234",
+          "disabled": false
+        },
+        {
+          "id": "2512",
+          "name": "S235",
           "disabled": false
         }
       ],

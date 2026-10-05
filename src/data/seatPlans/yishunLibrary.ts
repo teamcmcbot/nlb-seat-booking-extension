@@ -1,36 +1,36 @@
 import type { SeatPlanDefinition } from "../../models/seatPlan";
 
-/** Manually verified against the observed 355 × 214 NLB plan revision. */
+/** Manually verified against the observed 1280 × 720 NLB plan revision. */
 export const YISHUN_DIGITAL_LEARNING_ZONE_SEAT_PLAN: SeatPlanDefinition = {
   branchId: "32", areaId: "101", mapPath: "yipl-4-digitallearningzone-sp-full.png",
-  imageWidth: 355, imageHeight: 214, coverage: "complete",
+  imageWidth: 1280, imageHeight: 720, coverage: "complete",
   hotspots: [
-    { seatName: "S32", x: 51, y: 158, width: 22, height: 27 },
-    { seatName: "S33", x: 78, y: 158, width: 22, height: 27 },
-    { seatName: "S34", x: 105, y: 158, width: 22, height: 27 },
-    { seatName: "S35", x: 132, y: 158, width: 22, height: 27 },
-    { seatName: "S36", x: 156, y: 158, width: 22, height: 27 },
-    { seatName: "S37", x: 182, y: 158, width: 22, height: 27 },
-    { seatName: "S38", x: 209, y: 158, width: 22, height: 27 },
-    { seatName: "S39", x: 236, y: 158, width: 22, height: 27 },
-    { seatName: "S40", x: 263, y: 158, width: 22, height: 27 },
-    { seatName: "S41", x: 290, y: 158, width: 22, height: 27 },
+    { seatName: "S32", x: 279, y: 309, width: 57, height: 53 },
+    { seatName: "S33", x: 349, y: 310, width: 57, height: 53 },
+    { seatName: "S34", x: 420, y: 309, width: 58, height: 53 },
+    { seatName: "S35", x: 493, y: 310, width: 57, height: 53 },
+    { seatName: "S36", x: 561, y: 309, width: 57, height: 53 },
+    { seatName: "S37", x: 628, y: 309, width: 57, height: 53 },
+    { seatName: "S38", x: 696, y: 310, width: 57, height: 53 },
+    { seatName: "S39", x: 765, y: 309, width: 57, height: 53 },
+    { seatName: "S40", x: 835, y: 309, width: 57, height: 53 },
+    { seatName: "S41", x: 903, y: 309, width: 57, height: 53 },
   ],
 };
 
-/** Manually verified against the observed 1129 × 448 NLB plan revision. */
+/** Manually verified against the observed 1280 × 720 NLB plan revision. */
 export const YISHUN_LEVEL_4_ENGLISH_FICTION_SEAT_PLAN: SeatPlanDefinition = {
   branchId: "32", areaId: "76", mapPath: "yipl-4-englishfiction-sp-full.png",
-  imageWidth: 1129, imageHeight: 448, coverage: "complete",
+  imageWidth: 1280, imageHeight: 720, coverage: "complete",
   hotspots: [
-    { seatName: "S1", x: 134, y: 241, width: 63, height: 57 },
-    { seatName: "S2", x: 205, y: 241, width: 63, height: 57 },
-    { seatName: "S3", x: 274, y: 241, width: 63, height: 57 },
-    { seatName: "S4", x: 463, y: 241, width: 63, height: 57 },
-    { seatName: "S5", x: 533, y: 241, width: 63, height: 57 },
-    { seatName: "S6", x: 602, y: 241, width: 63, height: 57 },
-    { seatName: "S7", x: 839, y: 241, width: 63, height: 57 },
-    { seatName: "S8", x: 909, y: 241, width: 63, height: 57 },
+    { seatName: "S1", x: 274, y: 310, width: 55, height: 47 },
+    { seatName: "S2", x: 340, y: 310, width: 55, height: 47 },
+    { seatName: "S3", x: 409, y: 310, width: 55, height: 47 },
+    { seatName: "S4", x: 530, y: 310, width: 55, height: 47 },
+    { seatName: "S5", x: 597, y: 310, width: 55, height: 47 },
+    { seatName: "S6", x: 666, y: 310, width: 55, height: 47 },
+    { seatName: "S7", x: 803, y: 309, width: 55, height: 47 },
+    { seatName: "S8", x: 870, y: 310, width: 55, height: 47 },
   ],
 };
 

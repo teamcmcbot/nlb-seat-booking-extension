@@ -18,15 +18,15 @@ describe("seat-plan audit evidence", () => {
     expect(result.evidenceIssues).toEqual([]);
     expect(result.coverage.observed).toEqual(result.coverage.configured);
     expect(result.coverage.images).toMatchObject({
-      configured: 81,
-      checked: 81,
+      configured: 82,
+      checked: 82,
       changed: [],
       missing: [],
     });
     expect(result.html).toContain('href="candidate.json"');
     expect(result.html).toContain('href="drift.json"');
     expect(result.html).toContain("No branches or areas were added or removed.");
-    expect(result.html).toContain("81 of 81 configured seat-plan images");
+    expect(result.html).toContain("82 of 82 configured seat-plan images");
   });
 
   it("accepts anonymous collector evidence and renders its producer revision", async () => {
@@ -168,9 +168,9 @@ describe("seat-plan audit evidence", () => {
 
     expect(result.status).toBe("clean");
     expect(result.changes).toEqual([]);
-    expect(result.coverage.observed).toEqual({ branches: 22, areas: 81, seats: 2030 });
+    expect(result.coverage.observed).toEqual({ branches: 22, areas: 82, seats: 2053 });
     expect(result.coverage.candidate).toEqual(result.coverage.configured);
-    expect(result.coverage.annotations).toMatchObject({ configured: 81, present: 81, absent: [] });
+    expect(result.coverage.annotations).toMatchObject({ configured: 82, present: 82, absent: [] });
     expect(result.html).toContain("No catalog or map drift detected.");
     expect(result.html).toContain("Queenstown Library");
     expect(result.html).not.toContain("branch-removed");

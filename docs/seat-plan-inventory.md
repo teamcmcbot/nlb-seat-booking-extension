@@ -1,6 +1,6 @@
 # Seat-plan inventory
 
-Generated from `docs/data/seat-plan-baseline.json`, observed 2026-09-05T06:30:04.832Z.
+Generated from `docs/data/seat-plan-baseline.json`, observed 2026-10-05T14:20:42.022Z.
 It is point-in-time evidence, not a stable NLB API contract. Run the
 maintenance capture and audit before changing or releasing annotations.
 
@@ -9,12 +9,12 @@ maintenance capture and audit before changing or releasing annotations.
 | Item | Count |
 | --- | ---: |
 | Branch entries | 22 |
-| Areas | 81 |
-| Areas with a seat-plan image | 81 |
-| Fully labelled plans | 79 |
+| Areas | 82 |
+| Areas with a seat-plan image | 82 |
+| Fully labelled plans | 80 |
 | Range-only plans | 1 |
 | Hybrid plans | 1 |
-| Implemented clickable annotations | 81 |
+| Implemented clickable annotations | 82 |
 | Pending clickable annotations | 0 |
 
 The SHA-256 column is abbreviated for review. The complete digest and seat
@@ -56,7 +56,7 @@ identity set are retained in the machine-readable baseline.
 | 19 | Adult Non-Fiction, Level 2 | 17 | Full | `bepl-2-adultnonfiction-sp-full.png` | 1338×499 | `2d522ce3a81d…` | **Done** |
 | 20 | Learning Zone, Level 2 | 8 | Full | `bepl-2-learningzone-sp-full.png` | 461×502 | `4a8d28bb9de6…` | **Done** |
 | 21 | Large Print & AV, Level 2 | 7 | Full | `bepl-2-largeprint-sp-full.png` | 905×404 | `3abfdbc69959…` | **Done** |
-| 22 | Teens' Fiction, Level 3 | 36 | Full | `bepl-3-teensfiction-sp-full.png` | 1272×754 | `fd91ad8d88b4…` | **Done** |
+| 22 | Teens' Fiction, Level 3 | 36 | Full | `bepl-3-teensfiction-sp-full.png` | 1280×720 | `99d79264300e…` | **Done** |
 
 ### Bishan Library (branch 8)
 
@@ -71,6 +71,7 @@ identity set are retained in the machine-readable baseline.
 | Area ID | Area | Seats | Labels | Map asset | Size | SHA-256 | Annotation |
 | ---: | --- | ---: | --- | --- | ---: | --- | --- |
 | 97 | Study Zone, Level 2 | 26 | Full | `bbpl-2-studyzone-sp-full.png` | 657×811 | `1485ee117b87…` | **Done** |
+| 103 | Sound Pavilion, Level 2 | 10 | Full | `bbpl-2-sound-pavilion-sp-full.png` | 1280×720 | `77b2b45e794e…` | **Done** |
 
 ### Bukit Panjang Library (branch 10)
 
@@ -96,7 +97,7 @@ identity set are retained in the machine-readable baseline.
 
 | Area ID | Area | Seats | Labels | Map asset | Size | SHA-256 | Annotation |
 | ---: | --- | ---: | --- | --- | ---: | --- | --- |
-| 31 | Magazine Collection, Level 2 | 22 | Full | `gepl-2-magazine-collection-sp-full.png` | 1174×682 | `008d2ffcb1f7…` | **Done** |
+| 31 | Magazine Collection, Level 2 | 23 | Full | `gepl-2-magazine-collection-sp-full.png` | 1280×720 | `8b754a43d111…` | **Done** |
 | 32 | Near Multimedia Stations, Level 2 | 10 | Full | `gepl-2-nearmultimedia-sp-full.png` | 816×726 | `7437ed2a6566…` | **Done** |
 | 33 | Chinese Collection, Level 2 | 6 | Full | `gepl-2-chinesecollection-sp-full.png` | 486×721 | `559e3167282f…` | **Done** |
 | 34 | Quiet Reading Room, Level 2 | 16 | Full | `gepl-2-quietreading-sp-full.png` | 918×562 | `688c6c6ed569…` | **Done** |
@@ -196,9 +197,9 @@ identity set are retained in the machine-readable baseline.
 
 | Area ID | Area | Seats | Labels | Map asset | Size | SHA-256 | Annotation |
 | ---: | --- | ---: | --- | --- | ---: | --- | --- |
-| 76 | English Fiction, Level 4 | 8 | Full | `yipl-4-englishfiction-sp-full.png` | 1129×448 | `735d5249704c…` | **Done** |
+| 76 | English Fiction, Level 4 | 8 | Full | `yipl-4-englishfiction-sp-full.png` | 1280×720 | `001f10acb1e1…` | **Done** |
 | 77 | Malay Collection, Level 4 | 23 | Full | `yipl-4-malaycollection-sp-full.png` | 507×563 | `1a6ebd78a35d…` | **Done** |
-| 101 | Digital Learning Zone, Level 4 | 10 | Full | `yipl-4-digitallearningzone-sp-full.png` | 355×214 | `2efd7c97da05…` | **Done** |
+| 101 | Digital Learning Zone, Level 4 | 10 | Full | `yipl-4-digitallearningzone-sp-full.png` | 1280×720 | `02c46e2a4d76…` | **Done** |
 
 ### Punggol Library (branch 33)
 
@@ -209,4 +210,4 @@ identity set are retained in the machine-readable baseline.
 | 85 | Long Study Space, Level 3 | 36 | Full | `prl-3-long-study-space-sp-full.png` | 1372×466 | `77973c8c26e5…` | **Done** |
 | 86 | Launch and Co-Working Zone, Level 4 | 37 | Full | `prl-4-launch-coworking-zone-sp-full.png` | 3015×2092 | `563d0b8f0a2f…` | **Done** |
 | 87 | Beside Chinese Non-Fiction, Level 4 | 15 | Full | `prl-4-beside-chinese-non-fiction-sp-full.png` | 1917×963 | `0204709daa13…` | **Done** |
-| 88 | Long Study Space, Level 4 | 36 | Full | `prl-4-long-study-space-sp-full.png` | 1529×474 | `2d3f34169971…` | **Done** |
+| 88 | Long Study Space, Level 4 | 48 | Full | `prl-4-long-study-space-sp-full.png` | 1280×720 | `bcd1dce3f734…` | **Done** |
