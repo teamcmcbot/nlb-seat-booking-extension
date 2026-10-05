@@ -40,3 +40,98 @@ export const BUKIT_BATOK_LEVEL_2_STUDY_ZONE_SEAT_PLAN: SeatPlanDefinition = {
     { seatName: "S26", x: 566, y: 700, width: 34, height: 32 },
   ],
 };
+
+/**
+ * Manually verified against the observed 1280 × 720 NLB plan revision.
+ * Each hotspot covers one visible blue seat label and excludes the green desks.
+ */
+export const BUKIT_BATOK_LEVEL_2_SOUND_PAVILION_SEAT_PLAN: SeatPlanDefinition = {
+  branchId: "9",
+  areaId: "103",
+  mapPath: "bbpl-2-sound-pavilion-sp-full.png",
+  imageWidth: 1280,
+  imageHeight: 720,
+  coverage: "complete",
+  hotspots: [
+    {
+      seatName: "S27",
+      expectedSeatId: "2491",
+      x: 345,
+      y: 222,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S28",
+      expectedSeatId: "2492",
+      x: 345,
+      y: 253,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S29",
+      expectedSeatId: "2493",
+      x: 345,
+      y: 284,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S30",
+      expectedSeatId: "2494",
+      x: 345,
+      y: 315,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S31",
+      expectedSeatId: "2495",
+      x: 345,
+      y: 346,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S32",
+      expectedSeatId: "2496",
+      x: 345,
+      y: 377,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S33",
+      expectedSeatId: "2497",
+      x: 478,
+      y: 222,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S34",
+      expectedSeatId: "2498",
+      x: 478,
+      y: 268,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S35",
+      expectedSeatId: "2499",
+      x: 478,
+      y: 314,
+      width: 44,
+      height: 27,
+    },
+    {
+      seatName: "S36",
+      expectedSeatId: "2500",
+      x: 478,
+      y: 368,
+      width: 44,
+      height: 27,
+    },
+  ],
+};

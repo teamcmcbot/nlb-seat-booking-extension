@@ -34,7 +34,7 @@ export const GEYLANG_EAST_LEVEL_2_ENGLISH_FICTION_SEAT_PLAN: SeatPlanDefinition 
 };
 
 /**
- * Manually verified against the observed 1174 × 682 NLB plan revision.
+ * Manually verified against the observed 1280 × 720 NLB plan revision.
  * Rectangles follow visible blue portions of rotated seats where tables obscure
  * part of the chair shape.
  */
@@ -42,32 +42,40 @@ export const GEYLANG_EAST_LEVEL_2_MAGAZINE_COLLECTION_SEAT_PLAN: SeatPlanDefinit
   branchId: "14",
   areaId: "31",
   mapPath: "gepl-2-magazine-collection-sp-full.png",
-  imageWidth: 1174,
-  imageHeight: 682,
+  imageWidth: 1280,
+  imageHeight: 720,
   coverage: "complete",
   hotspots: [
-    { seatName: "S1", x: 454, y: 165, width: 65, height: 58 },
-    { seatName: "S2", x: 563, y: 165, width: 64, height: 58 },
-    { seatName: "S3", x: 673, y: 165, width: 64, height: 58 },
-    { seatName: "S4", x: 781, y: 165, width: 65, height: 58 },
-    { seatName: "S5", x: 948, y: 219, width: 61, height: 61 },
-    { seatName: "S6", x: 971, y: 390, width: 58, height: 67 },
-    { seatName: "S7", x: 742, y: 225, width: 67, height: 74 },
-    { seatName: "S8", x: 769, y: 326, width: 63, height: 64 },
-    { seatName: "S9", x: 635, y: 249, width: 68, height: 71 },
-    { seatName: "S10", x: 659, y: 344, width: 65, height: 70 },
-    { seatName: "S11", x: 528, y: 275, width: 66, height: 70 },
-    { seatName: "S12", x: 554, y: 367, width: 65, height: 71 },
-    { seatName: "S13", x: 420, y: 302, width: 66, height: 65 },
-    { seatName: "S14", x: 444, y: 405, width: 64, height: 59 },
-    { seatName: "S15", x: 817, y: 526, width: 64, height: 59 },
-    { seatName: "S16", x: 786, y: 421, width: 68, height: 69 },
-    { seatName: "S17", x: 709, y: 550, width: 64, height: 58 },
-    { seatName: "S18", x: 684, y: 445, width: 67, height: 69 },
-    { seatName: "S19", x: 603, y: 569, width: 65, height: 63 },
-    { seatName: "S20", x: 578, y: 469, width: 67, height: 67 },
-    { seatName: "S21", x: 497, y: 589, width: 65, height: 66 },
-    { seatName: "S22", x: 470, y: 495, width: 65, height: 66 },
+    { seatName: "S1", x: 322, y: 227, width: 77, height: 59 },
+    { seatName: "S2", x: 423, y: 227, width: 76, height: 61 },
+    { seatName: "S3", x: 519, y: 227, width: 77, height: 64 },
+    { seatName: "S4", x: 624, y: 227, width: 76, height: 61 },
+    { seatName: "S5", x: 947, y: 232, width: 65, height: 77 },
+    { seatName: "S6", x: 968, y: 404, width: 74, height: 86 },
+    { seatName: "S7", x: 780, y: 268, width: 83, height: 69 },
+    { seatName: "S8", x: 790, y: 366, width: 82, height: 69 },
+    { seatName: "S9", x: 625, y: 291, width: 83, height: 69 },
+    { seatName: "S10", x: 636, y: 390, width: 82, height: 69 },
+    { seatName: "S11", x: 471, y: 314, width: 82, height: 69 },
+    { seatName: "S12", x: 481, y: 413, width: 83, height: 69 },
+    { seatName: "S13", x: 316, y: 338, width: 82, height: 68 },
+    { seatName: "S14", x: 327, y: 438, width: 83, height: 67 },
+    { seatName: "S15", x: 819, y: 552, width: 82, height: 69 },
+    { seatName: "S16", x: 809, y: 453, width: 82, height: 69 },
+    { seatName: "S17", x: 664, y: 575, width: 83, height: 69 },
+    { seatName: "S18", x: 654, y: 477, width: 82, height: 68 },
+    { seatName: "S19", x: 510, y: 599, width: 82, height: 68 },
+    { seatName: "S20", x: 499, y: 500, width: 83, height: 68 },
+    { seatName: "S21", x: 356, y: 623, width: 83, height: 68 },
+    { seatName: "S22", x: 344, y: 523, width: 83, height: 69 },
+    {
+      seatName: "S63",
+      expectedSeatId: "2490",
+      x: 209,
+      y: 226,
+      width: 77,
+      height: 57,
+    },
   ],
 };
 

@@ -11,9 +11,13 @@ import type { Area, Seat } from "../models/catalog";
 import type { SeatPlanDefinition } from "../models/seatPlan";
 import { resolveSeatPlan } from "./seatPlanAnnotations";
 
+const EXPECTED_SEAT_IDS: Readonly<Record<string, string>> = {
+  S63: "2490",
+};
+
 function seat(name: string): Seat {
   return {
-    id: `geylang-east-${name}`,
+    id: EXPECTED_SEAT_IDS[name] ?? `geylang-east-${name}`,
     code: "",
     name,
     disabled: false,
@@ -85,6 +89,7 @@ const cases: readonly {
       "S20",
       "S21",
       "S22",
+      "S63",
     ],
   },
   {
@@ -136,6 +141,14 @@ const cases: readonly {
 ];
 
 describe("Geylang East Library seat-plan annotations", () => {
+  it("pins the added Magazine Collection seat to its stable catalog ID", () => {
+    expect(
+      GEYLANG_EAST_LEVEL_2_MAGAZINE_COLLECTION_SEAT_PLAN.hotspots.find(
+        ({ seatName }) => seatName === "S63",
+      ),
+    ).toMatchObject({ expectedSeatId: EXPECTED_SEAT_IDS.S63 });
+  });
+
   it.each(cases)("has complete verified coverage for $label", (testCase) => {
     expect(testCase.definition.coverage).toBe("complete");
     expect(testCase.definition.hotspots).toHaveLength(

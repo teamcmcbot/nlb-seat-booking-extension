@@ -79,20 +79,82 @@ for Mozilla's signed AMO distribution. Attach both Firefox artifacts to the
 GitHub release for reproducibility, while directing users to the signed AMO
 listing for normal Firefox installation.
 
+## Update the browser stores
+
+Complete these steps only after the tagged GitHub release artifacts have been
+verified. Store review and publication are separate remote-state changes and
+require maintainer authorization and access to the existing publisher
+accounts.
+
+### Chrome Web Store
+
+Update the existing item; do not create a second listing for a routine version
+update.
+
+1. Open the extension in the
+   [Chrome Developer Dashboard](https://chrome.google.com/webstore/devconsole/).
+2. Confirm `public/manifest.json` and the ZIP both contain a version higher
+   than the currently published version.
+3. On **Package**, choose **Upload new package** and upload
+   `nlb-seat-helper.zip`. The ZIP must contain the complete extension, with
+   `manifest.json` at its root.
+4. Review **Store listing**, **Privacy practices**, and **Distribution**. Update
+   them whenever the release changes user-visible behavior, permissions, data
+   handling, countries, visibility, or testing channel.
+5. Select **Submit for review**. Choose deferred publishing if the approved
+   version must wait for a coordinated release; otherwise allow publication
+   after approval.
+6. After publication, confirm the listing shows the intended version. In a
+   clean Chrome profile, install or update the store build and repeat the
+   critical smoke tests. Existing users remain on the prior version until the
+   update is published and Chrome's update cycle reaches them.
+
+See Google's official
+[update instructions](https://developer.chrome.com/docs/webstore/update/).
+
+### Firefox Add-ons (AMO)
+
+Upload the version from the existing AMO add-on page so Mozilla recognizes it
+as an update rather than a separate add-on.
+
+1. Open **Developer Hub → My Add-ons** on
+   [addons.mozilla.org](https://addons.mozilla.org/developers/) and select the
+   existing Library Seats SG add-on.
+2. Choose to upload a new version and provide
+   `nlb-seat-helper-firefox.zip`.
+3. Review the validator output. The repository lint permits only the three
+   reviewed warnings documented in
+   [Firefox Add-ons publication](firefox-add-ons-publication.md); investigate
+   any additional AMO finding before continuing.
+4. When asked whether source code is required, answer yes for the bundled and
+   minified build, then upload `nlb-seat-helper-firefox-source.zip`. Include the
+   build and reviewer information from
+   [Firefox Add-ons submission](firefox-add-ons-submission.md).
+5. Enter version-specific release notes, keep the platform set to Firefox
+   Desktop, and submit the version.
+6. After Mozilla signs and approves the version, confirm the AMO listing shows
+   the intended version. Install the signed listing build in Firefox Desktop
+   140 or newer and repeat the critical smoke tests. AMO-listed installations
+   receive approved higher versions through Firefox's normal update checks.
+
+See Mozilla's official
+[add-on submission and update instructions](https://extensionworkshop.com/documentation/publish/submitting-an-add-on/)
+and [source-code submission guidance](https://extensionworkshop.com/documentation/publish/source-code-submission/).
+
 ## Publish
 
-For version `1.4.1`:
+For version `1.5.0`:
 
 ```bash
-git tag v1.4.1
-git push origin v1.4.1
-gh release create v1.4.1 \
+git tag v1.5.0
+git push origin v1.5.0
+gh release create v1.5.0 \
   nlb-seat-helper.zip \
   nlb-seat-helper-firefox.zip \
   nlb-seat-helper-firefox-source.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "Library Seats SG - for NLB v1.4.1" \
-  --notes-file /tmp/release-notes-v1.4.1.md
+  --title "Library Seats SG - for NLB v1.5.0" \
+  --notes-file /tmp/release-notes-v1.5.0.md
 ```
 
 `RELEASE_NOTES.md` is the cumulative repository changelog. Create a

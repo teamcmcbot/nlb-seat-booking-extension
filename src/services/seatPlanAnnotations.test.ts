@@ -76,14 +76,14 @@ describe("seat-plan annotations", () => {
         `${definition.branchId}:${definition.areaId}:${definition.mapPath}`,
     );
 
-    expect(SEAT_PLAN_DEFINITIONS).toHaveLength(81);
-    expect(new Set(keys).size).toBe(81);
+    expect(SEAT_PLAN_DEFINITIONS).toHaveLength(82);
+    expect(new Set(keys).size).toBe(82);
     expect(
       SEAT_PLAN_DEFINITIONS.reduce(
         (total, definition) => total + definition.hotspots.length,
         0,
       ),
-      ).toBe(2030);
+      ).toBe(2053);
   });
 
   it("resolves verified hotspots to current catalog seats", () => {

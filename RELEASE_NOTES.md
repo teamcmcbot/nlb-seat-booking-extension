@@ -1,24 +1,50 @@
-# Unreleased maintenance tooling
+# Library Seats SG - for NLB v1.5.0
 
-- Updates audit actions to their latest releases as of 20 September 2026
-  with Node.js 24 action runtimes, and pins both runners to Ubuntu 24.04
-  to avoid the upcoming ubuntu-latest OS migration.
+This release refreshes changed NLB seat maps and adds the new Bukit Batok
+Sound Pavilion to the reviewed interactive picker.
 
-- Adds reviewed Terraform configuration for a notification-only GitHub OIDC
-  role and an AWS CLI backend bootstrap. A separate job sends daily Pushover
-  audit summaries with Singapore-date titles, drift counts, and run links.
+## Highlights
+
+- Adds complete clickable coverage for Bukit Batok Library's Level 2 Sound
+  Pavilion, covering catalog seats S27–S36 with exact reviewed identities.
+- Re-annotates the redesigned Bedok Teens' Fiction, Geylang East Magazine
+  Collection, Yishun English Fiction, Yishun Digital Learning Zone, and
+  Punggol Long Study Space maps at their new 1280×720 revisions.
+- Adds the new Geylang East S63 seat and Punggol seats S224–S235. The Punggol
+  artwork prints S228 twice; the reviewed right-to-left sequence maps the right
+  label to S228 and the left label to S229, with exact catalog IDs pinned.
+- Keeps every Punggol Long Study Space hotspot on its visible blue seat tab,
+  clear of the green table cells.
+- Refreshes the reviewed baseline to 22 branches, 82 areas, and 2,053 seats,
+  with exact fingerprints for all 82 active seat plans.
+
+## Maintenance tooling
 
 - Adds anonymous Chromium catalog collection without an extension or NLB
   sign-in, plus optional bounded map discovery for one library.
 - Adds a daily/manual GitHub audit workflow and portable sanitized evidence
   artifacts. Drift, incomplete evidence, and collection failures do not alter
   reviewed annotations or baselines.
+- Adds reviewed Terraform configuration for a notification-only GitHub OIDC
+  role and an AWS CLI backend bootstrap. A separate job sends daily Pushover
+  audit summaries with Singapore-date titles, drift counts, and run links.
+- Updates audit actions to their latest releases as of 20 September 2026 with
+  Node.js 24 action runtimes and pins both runners to Ubuntu 24.04.
 - Verified anonymous catalog and Jurong map discovery locally; the routine
   81-map audit was clean. Full tests (316), typecheck, build, and seat-plan
   verification passed. GitHub-hosted anonymous collection and the clean
   81-map audit also passed on 13 September 2026.
-- Keeps extension runtime behavior and version 1.4.1 unchanged; this is a
-  repository maintenance change, not a new installable extension release.
+
+## Validation
+
+- The reconciled 82-map audit is clean with zero catalog, map, or fingerprint
+  drift.
+- Seat-plan verification passes for 82 active definitions, 82 baseline areas,
+  82 fingerprints, and one retirement record.
+- Full regression suite passed: 44 test files and 326 tests.
+- Typecheck, production build, Chrome packaging, Firefox strict lint, Firefox
+  packaging, Firefox reviewer-source packaging, and all archive-integrity
+  checks passed.
 
 # Library Seats SG - for NLB v1.4.1
 
