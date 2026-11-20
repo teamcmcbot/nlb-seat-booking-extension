@@ -1,6 +1,6 @@
 # Seat-plan inventory
 
-Generated from `docs/data/seat-plan-baseline.json`, observed 2026-10-05T14:20:42.022Z.
+Generated from `docs/data/seat-plan-baseline.json`, observed 2026-11-20T12:10:59.297Z.
 It is point-in-time evidence, not a stable NLB API contract. Run the
 maintenance capture and audit before changing or releasing annotations.
 
@@ -8,13 +8,13 @@ maintenance capture and audit before changing or releasing annotations.
 
 | Item | Count |
 | --- | ---: |
-| Branch entries | 22 |
-| Areas | 82 |
-| Areas with a seat-plan image | 82 |
-| Fully labelled plans | 80 |
+| Branch entries | 23 |
+| Areas | 86 |
+| Areas with a seat-plan image | 86 |
+| Fully labelled plans | 84 |
 | Range-only plans | 1 |
 | Hybrid plans | 1 |
-| Implemented clickable annotations | 82 |
+| Implemented clickable annotations | 86 |
 | Pending clickable annotations | 0 |
 
 The SHA-256 column is abbreviated for review. The complete digest and seat
@@ -48,6 +48,15 @@ identity set are retained in the machine-readable baseline.
 | ---: | --- | ---: | --- | --- | ---: | --- | --- |
 | 4 | Adult Zone, Level 4 | 16 | Full | `cckpl-4-adultzone-sp-full.png` | 959×202 | `bb41839ff54f…` | **Done** |
 | 5 | Study & Multimedia Zone, Level 4 | 28 | Full | `cckpl-4-studyzone-sp-full.png` | 1357×802 | `65ad21b7ee4f…` | **Done** |
+
+### Ang Mo Kio Library (branch 5)
+
+| Area ID | Area | Seats | Labels | Map asset | Size | SHA-256 | Annotation |
+| ---: | --- | ---: | --- | --- | ---: | --- | --- |
+| 104 | Zone 1 (MMS Zone), Level 4 | 8 | Full | `ampl-4-mms-zone-sp-full.png` | 1280×720 | `8aa5a2c5b506…` | **Done** |
+| 105 | Zone 2 (Between MMS Zone and Adult Collection), Level 4 | 30 | Full | `ampl-4-between-mms-zone-and-adult-collection-sp-full.png` | 1280×720 | `ed30cd1e4042…` | **Done** |
+| 106 | Zone 3 (Adult collection), Level 4 | 7 | Full | `ampl-4-adult-collection-sp-full.png` | 1280×720 | `b58791e0435c…` | **Done** |
+| 107 | Zone 4 (Study Zone), Level 4 | 49 | Full | `ampl-4-study-zone4-sp-full.png` | 1200×664 | `63f306f9bee9…` | **Done** |
 
 ### Bedok Library (branch 7)
 

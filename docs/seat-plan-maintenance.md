@@ -15,7 +15,7 @@ and are retained here as point-in-time, user-reported operational evidence:
 | Cheng San Library | Closed until the first half of 2027 |
 | Marine Parade Library | Closed until mid-2027 |
 | Queenstown Library | Closed from 31 August 2026 until late 2028 |
-| Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub |
+| Ang Mo Kio Library | Planned reopening on 20 November 2026 at AMK Hub; Seat Booking catalog and exact maps observed that day, while public opening status remains independently unconfirmed |
 
 Re-check current branch status on NLB's [Our Libraries and Locations](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations) page. These
 notices are not yet captured as a dated NLB API closure contract, so they guide
@@ -79,6 +79,11 @@ SHA-256 is authoritative for byte identity. `ETag` and `Last-Modified` are
 retained only as diagnostic hints. A future decoded-pixel or perceptual hash
 may help classify re-encoding and visual similarity, but must not authorize a
 map automatically.
+
+Image format validation uses byte signatures. This matters for AMK Zone 4,
+whose `.png` URL and `image/png` response header returned valid JPEG bytes on
+20 November 2026. Supported PNG and JPEG bytes may be captured under that
+mismatch; malformed or unsupported bytes still fail closed.
 
 ## Anonymous automated collection
 
@@ -606,3 +611,25 @@ configure-aws-credentials `v6.3.0`. Their Node.js 24 runtime is separate from
 the Node.js 22 selected to run repository scripts. npm caching remains enabled
 only for the audit; automatic package-manager caching is disabled for the
 notification job. Schedule, artifact retention, and OIDC permissions are unchanged.
+
+### Ang Mo Kio onboarding on 20 November 2026
+
+[Run 44526128739, attempt 2](https://github.com/teamcmcbot/nlb-seat-booking-extension/actions/runs/44526128739/attempts/2)
+captured 23 branches, 86 areas, and 2,147 seats at revision
+`9671be98f4bd9061e9a3d5112c91ebd780277058`. Its only drift was added AMK
+branch `5` (`AMPL`), containing areas 104–107 and 94 seats. A subsequent single
+targeted branch-5 operation made one account request and one sequential
+availability search, resolving all four exact-area map associations with no
+failed areas.
+
+All four fresh images and S1–S94 rectangles were inspected at source
+resolution. Every annotation is complete, non-overlapping, and pinned to the
+observed stable seat ID. The Zone 4 accessibility symbol is excluded. No live
+booking or cancellation was made. The accepted baseline is 23 branches, 86
+areas, and 2,147 seats with 86 implemented definitions and fingerprints.
+
+The maintainer subsequently confirmed all four maps in the local Chrome build,
+including successful booking and cancellation. Zone 2's S9–S38 click targets
+were then enlarged from 40×40 to 48×48 around their existing centres so the
+green selection borders sit farther from the printed seat numbers; identity,
+coverage, map association, and fingerprint evidence are unchanged.

@@ -151,8 +151,60 @@ function pngDimensions(buffer) {
   };
 }
 
+function jpegDimensions(buffer) {
+  if (buffer.length < 4 || buffer[0] !== 0xff || buffer[1] !== 0xd8) {
+    return undefined;
+  }
+
+  const startOfFrameMarkers = new Set([
+    0xc0, 0xc1, 0xc2, 0xc3,
+    0xc5, 0xc6, 0xc7,
+    0xc9, 0xca, 0xcb,
+    0xcd, 0xce, 0xcf,
+  ]);
+  let offset = 2;
+  while (offset + 3 < buffer.length) {
+    if (buffer[offset] !== 0xff) {
+      offset += 1;
+      continue;
+    }
+    while (offset < buffer.length && buffer[offset] === 0xff) {
+      offset += 1;
+    }
+    const marker = buffer[offset];
+    offset += 1;
+    if (marker === 0xd8 || marker === 0xd9 || (marker >= 0xd0 && marker <= 0xd7)) {
+      continue;
+    }
+    if (offset + 1 >= buffer.length) {
+      return undefined;
+    }
+    const segmentLength = buffer.readUInt16BE(offset);
+    if (segmentLength < 2 || offset + segmentLength > buffer.length) {
+      return undefined;
+    }
+    if (startOfFrameMarkers.has(marker)) {
+      if (segmentLength < 7) {
+        return undefined;
+      }
+      return {
+        width: buffer.readUInt16BE(offset + 5),
+        height: buffer.readUInt16BE(offset + 3),
+      };
+    }
+    offset += segmentLength;
+  }
+  return undefined;
+}
+
 export function imageDimensions(buffer, contentType = "") {
-  if (contentType.includes("png") || buffer.subarray(1, 4).toString() === "PNG") {
+  if (buffer.subarray(0, 8).toString("hex") === "89504e470d0a1a0a") {
+    return pngDimensions(buffer);
+  }
+  if (buffer[0] === 0xff && buffer[1] === 0xd8) {
+    return jpegDimensions(buffer);
+  }
+  if (contentType.includes("png")) {
     return pngDimensions(buffer);
   }
   return undefined;
@@ -189,7 +241,7 @@ export async function fetchMapImage(mapPath, { refresh = false } = {}) {
   if (!dimensions) {
     throw new Error(`Unsupported map image format for ${url}: ${contentType}`);
   }
-  const extension = contentType.includes("png") ? ".png" : ".bin";
+  const extension = bytes[0] === 0xff && bytes[1] === 0xd8 ? ".jpg" : ".png";
   const cacheFile = `${digest}${extension}`;
   await writeFile(path.join(IMAGE_CACHE, cacheFile), bytes);
   const pointer = {

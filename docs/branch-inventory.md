@@ -9,7 +9,8 @@ seat, fingerprint, and annotation evidence only.
 
 Renovation notices last recorded: **1 September 2026**. Operating-hours
 summary recorded: **12 September 2026**. Queenstown's
-seat-plan retirement was recorded: **5 September 2026**.
+seat-plan retirement was recorded: **5 September 2026**. Ang Mo Kio Seat
+Booking evidence and annotations were reviewed: **20 November 2026**.
 
 The notices below were supplied from the NLB chatbot and are user-reported,
 point-in-time operational evidence. They are not a captured NLB API closure
@@ -30,7 +31,7 @@ baseline change.
 | Cheng San Library | Closed until the first half of 2027 | None |
 | Marine Parade Library | Closed until mid-2027 | None |
 | Queenstown Library | Closed from 31 August 2026 until late 2028 | Retired 5 September 2026; 2 areas, 50 seats archived |
-| Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub | None |
+| Ang Mo Kio Library | Planned reopening on 20 November 2026 at AMK Hub; Seat Booking catalog and exact map discovery observed that day, while public opening status remains independently unconfirmed | 4 implemented areas, 94 seats, reviewed 20 November 2026 |
 
 NLB library pages also commonly state that libraries close at 5.00pm on the
 eves of Christmas, New Year, and Chinese New Year and close on public holidays.
@@ -81,8 +82,9 @@ Its explicit exceptions are:
 | Punggol, Level 3 Study Zone via Lift Lobby B | 09:00–22:00 |
 
 This is a normal-hours reference, not an assertion that every listed library
-is currently open. In particular, the Ang Mo Kio and Queenstown entries do not
-supersede the renovation closures recorded above. A public-library listing
+is currently open. In particular, the Queenstown entry does not supersede the
+renovation closure recorded above, and the AMK Seat Booking evidence does not
+by itself establish public opening status. A public-library listing
 also does not prove presence in the Seat Booking catalog. The general closure
 sentence must be read together with the zone exceptions; early morning access
 at another library does not establish its public-holiday exemption.
@@ -138,11 +140,28 @@ The lifecycle-aware audit now preserves that distinction:
 - The report remains drift until the accepted baseline and active annotation
   configuration are reconciled. A known explanation is not a clean result.
 
-After the retirement was applied, the accepted baseline is **22 branches, 81
+After the retirement was applied, the accepted baseline was **22 branches, 81
 areas, and 2,030 seats**. The Queenstown notice remains an operational record,
 but an identical catalog no longer produces a Queenstown drift event.
 
-## Simulated Ang Mo Kio reopening
+## Ang Mo Kio onboarding on 20 November 2026
+
+Audit run 44526128739, attempt 2, captured a complete anonymous catalog at
+revision `9671be98f4bd9061e9a3d5112c91ebd780277058`: **23 branches, 86 areas,
+and 2,147 seats**. AMK appeared as stable branch `5` (`AMPL`) with areas
+104–107 and 94 seats. A single deliberate branch-5 discovery then made one
+`SearchAvailableAreas` request and returned exact associations for all four
+areas. Every S1–S94 hotspot was reviewed at source resolution and tied to its
+stable seat ID; the accepted baseline now has **23 branches, 86 areas, and
+2,147 seats**, all 86 areas implemented.
+
+The official NLB directory was rechecked on 20 November, but its dynamic
+result text was not independently capturable in the review. Catalog presence
+and successful map discovery support seat-plan identity and association; they
+do not prove that the physical library was publicly open. No live booking or
+cancellation was made.
+
+## Retained Ang Mo Kio reopening simulation
 
 Run `npm run seat-plans:simulate-amk-reopening` to generate a deterministic,
 clearly labelled future scenario under `seat-plan-work/simulations/`. The
@@ -150,6 +169,8 @@ fixture assumes Queenstown remains absent and a synthetic Ang Mo Kio branch,
 placeholder area, and placeholder seats appear on 20 November 2026. It is not
 live NLB evidence and must never supply real IDs, counts, maps, or annotations.
 
+The simulation predates and is superseded by the 20 November live catalog for
+maintenance decisions. It remains a deterministic audit-regression fixture.
 The simulated report should show Ang Mo Kio as `branch-added`, attach the
 planned AMK Hub reopening notice, and recommend confirming live branch/area/
 seat identities, accepting the catalog branch with annotation pending, using

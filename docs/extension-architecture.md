@@ -85,6 +85,14 @@ revision-locked like individually labelled plans. See
 [`seat-plan-annotations.md`](seat-plan-annotations.md) for the annotation and
 review workflow.
 
+The 20 November 2026 AMK onboarding adds four complete definitions for branch
+`5`, areas `104`–`107`, and seats S1–S94. Each hotspot pins the stable catalog
+seat ID as well as the printed name. Zone 4's accessibility symbol is not a
+seat hotspot. Its map endpoint has a `.png` path and `image/png` response header
+but currently contains valid JPEG bytes; maintenance determines dimensions by
+the byte signature, while runtime still hashes and renders the exact fetched
+bytes.
+
 The extension has one WebExtensions permission:
 
 ```json

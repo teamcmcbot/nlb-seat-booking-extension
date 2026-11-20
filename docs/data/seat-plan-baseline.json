@@ -1,23 +1,23 @@
 {
   "schemaVersion": 1,
-  "observedAt": "2026-10-05T14:20:42.022Z",
+  "observedAt": "2026-11-20T12:10:59.297Z",
   "catalogSource": "sanitized-get-account-info",
   "imageSource": "nlb-seat-plan-assets",
   "catalogEvidence": {
-    "capturedAt": "2026-10-05T13:59:33.300Z",
-    "catalogPath": "seat-plan-work/run-37302088224-attempt-1/bukit-batok-targeted-catalog.json",
+    "capturedAt": "2026-11-20T11:59:20.646Z",
+    "catalogPath": "seat-plan-work/run-44526128739-attempt-2-artifact-14622423172/amk-targeted-discovery.json",
     "exportMetadata": {
       "source": "anonymous-browser",
       "collectorVersion": 1,
-      "repositoryVersion": "1.4.1",
-      "sourceRevision": "e6e3463d104c10905e7bb73c1c4443e0a22cd950",
+      "repositoryVersion": "1.5.0",
+      "sourceRevision": "9671be98f4bd9061e9a3d5112c91ebd780277058",
       "sourceDirty": false,
       "anonymous": true,
       "mode": "targeted-discovery"
     },
     "collectionScope": {
-      "menuBranches": 35,
-      "menuAreas": 88,
+      "menuBranches": 36,
+      "menuAreas": 93,
       "emptyBranchIds": [
         "6",
         "35",
@@ -34,6 +34,7 @@
         "29"
       ],
       "excludedFacilityAreas": [
+        "5:108",
         "2:100",
         "17:92",
         "17:93",
@@ -42,18 +43,18 @@
         "31:99"
       ],
       "seatCatalog": {
-        "branches": 22,
-        "areas": 82,
-        "seats": 2053
+        "branches": 23,
+        "areas": 86,
+        "seats": 2147
       }
     },
     "mapDiscovery": {
       "requested": true,
       "scope": "branch",
-      "branchId": "9",
+      "branchId": "5",
       "requestCount": 1,
-      "attempted": 2,
-      "succeeded": 2,
+      "attempted": 4,
+      "succeeded": 4,
       "failed": []
     }
   },
@@ -3203,6 +3204,591 @@
       ]
     },
     {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "104",
+      "areaName": "Zone 1 (MMS Zone), Level 4",
+      "floor": "4",
+      "areaMapUrls": [
+        "ampl-4-mms-zone-sp-full.png",
+        "ampl-4-mms-zone-fp.png"
+      ],
+      "seats": [
+        {
+          "id": "2513",
+          "name": "S1",
+          "disabled": false
+        },
+        {
+          "id": "2514",
+          "name": "S2",
+          "disabled": false
+        },
+        {
+          "id": "2515",
+          "name": "S3",
+          "disabled": false
+        },
+        {
+          "id": "2516",
+          "code": "AMPL.4.MMSZone.4",
+          "name": "S4",
+          "disabled": false
+        },
+        {
+          "id": "2517",
+          "code": "AMPL.4.MMSZone.5",
+          "name": "S5",
+          "disabled": false
+        },
+        {
+          "id": "2518",
+          "code": "AMPL.4.MMSZone.6",
+          "name": "S6",
+          "disabled": false
+        },
+        {
+          "id": "2519",
+          "code": "AMPL.4.MMSZone.7",
+          "name": "S7",
+          "disabled": false
+        },
+        {
+          "id": "2520",
+          "code": "AMPL.4.MMSZone.8",
+          "name": "S8",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "105",
+      "areaName": "Zone 2 (Between MMS Zone and Adult Collection), Level 4",
+      "floor": "4",
+      "areaMapUrls": [
+        "ampl-4-between-mms-zone-and-adult-collection-sp-full.png",
+        "ampl-4-between-mms-zone-and-adult-collection-fp.png"
+      ],
+      "seats": [
+        {
+          "id": "2521",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.9",
+          "name": "S9",
+          "disabled": false
+        },
+        {
+          "id": "2522",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.10",
+          "name": "S10",
+          "disabled": false
+        },
+        {
+          "id": "2523",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.11",
+          "name": "S11",
+          "disabled": false
+        },
+        {
+          "id": "2524",
+          "name": "S12",
+          "disabled": false
+        },
+        {
+          "id": "2525",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.13",
+          "name": "S13",
+          "disabled": false
+        },
+        {
+          "id": "2526",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.14",
+          "name": "S14",
+          "disabled": false
+        },
+        {
+          "id": "2527",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.15",
+          "name": "S15",
+          "disabled": false
+        },
+        {
+          "id": "2528",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.16",
+          "name": "S16",
+          "disabled": false
+        },
+        {
+          "id": "2529",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.17",
+          "name": "S17",
+          "disabled": false
+        },
+        {
+          "id": "2530",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.18",
+          "name": "S18",
+          "disabled": false
+        },
+        {
+          "id": "2531",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.19",
+          "name": "S19",
+          "disabled": false
+        },
+        {
+          "id": "2532",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.20",
+          "name": "S20",
+          "disabled": false
+        },
+        {
+          "id": "2533",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.21",
+          "name": "S21",
+          "disabled": false
+        },
+        {
+          "id": "2534",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.22",
+          "name": "S22",
+          "disabled": false
+        },
+        {
+          "id": "2535",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.23",
+          "name": "S23",
+          "disabled": false
+        },
+        {
+          "id": "2536",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.24",
+          "name": "S24",
+          "disabled": false
+        },
+        {
+          "id": "2537",
+          "name": "S25",
+          "disabled": false
+        },
+        {
+          "id": "2538",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.26",
+          "name": "S26",
+          "disabled": false
+        },
+        {
+          "id": "2539",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.27",
+          "name": "S27",
+          "disabled": false
+        },
+        {
+          "id": "2540",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.28",
+          "name": "S28",
+          "disabled": false
+        },
+        {
+          "id": "2541",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.29",
+          "name": "S29",
+          "disabled": false
+        },
+        {
+          "id": "2542",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.30",
+          "name": "S30",
+          "disabled": false
+        },
+        {
+          "id": "2543",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.31",
+          "name": "S31",
+          "disabled": false
+        },
+        {
+          "id": "2544",
+          "name": "S32",
+          "disabled": false
+        },
+        {
+          "id": "2545",
+          "name": "S33",
+          "disabled": false
+        },
+        {
+          "id": "2546",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.34",
+          "name": "S34",
+          "disabled": false
+        },
+        {
+          "id": "2547",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.35",
+          "name": "S35",
+          "disabled": false
+        },
+        {
+          "id": "2548",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.36",
+          "name": "S36",
+          "disabled": false
+        },
+        {
+          "id": "2549",
+          "name": "S37",
+          "disabled": false
+        },
+        {
+          "id": "2550",
+          "name": "S38",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "106",
+      "areaName": "Zone 3 (Adult collection), Level 4",
+      "floor": "4",
+      "areaMapUrls": [
+        "ampl-4-adult-collection-sp-full.png",
+        "ampl-4-adult-collection-fp.png"
+      ],
+      "seats": [
+        {
+          "id": "2551",
+          "code": "AMPL.4.AdultCollection.39",
+          "name": "S39",
+          "disabled": false
+        },
+        {
+          "id": "2552",
+          "code": "AMPL.4.AdultCollection.40",
+          "name": "S40",
+          "disabled": false
+        },
+        {
+          "id": "2553",
+          "name": "S41",
+          "disabled": false
+        },
+        {
+          "id": "2554",
+          "name": "S42",
+          "disabled": false
+        },
+        {
+          "id": "2555",
+          "name": "S43",
+          "disabled": false
+        },
+        {
+          "id": "2556",
+          "name": "S44",
+          "disabled": false
+        },
+        {
+          "id": "2557",
+          "name": "S45",
+          "disabled": false
+        }
+      ]
+    },
+    {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "107",
+      "areaName": "Zone 4 (Study Zone), Level 4",
+      "floor": "4",
+      "areaMapUrls": [
+        "ampl-4-study-zone4-sp-full.png",
+        "ampl-4-study-zone4-fp.png"
+      ],
+      "seats": [
+        {
+          "id": "2558",
+          "code": "AMPL.4.StudyZone4.46",
+          "name": "S46",
+          "disabled": false
+        },
+        {
+          "id": "2559",
+          "code": "AMPL.4.StudyZone4.47",
+          "name": "S47",
+          "disabled": false
+        },
+        {
+          "id": "2560",
+          "name": "S48",
+          "disabled": false
+        },
+        {
+          "id": "2561",
+          "name": "S49",
+          "disabled": false
+        },
+        {
+          "id": "2562",
+          "name": "S50",
+          "disabled": false
+        },
+        {
+          "id": "2563",
+          "name": "S51",
+          "disabled": false
+        },
+        {
+          "id": "2564",
+          "code": "AMPL.4.StudyZone4.52",
+          "name": "S52",
+          "disabled": false
+        },
+        {
+          "id": "2565",
+          "name": "S53",
+          "disabled": false
+        },
+        {
+          "id": "2566",
+          "name": "S54",
+          "disabled": false
+        },
+        {
+          "id": "2567",
+          "code": "AMPL.4.StudyZone4.55",
+          "name": "S55",
+          "disabled": false
+        },
+        {
+          "id": "2568",
+          "name": "S56",
+          "disabled": false
+        },
+        {
+          "id": "2569",
+          "name": "S57",
+          "disabled": false
+        },
+        {
+          "id": "2570",
+          "name": "S58",
+          "disabled": false
+        },
+        {
+          "id": "2571",
+          "name": "S59",
+          "disabled": false
+        },
+        {
+          "id": "2572",
+          "code": "AMPL.4.StudyZone4.60",
+          "name": "S60",
+          "disabled": false
+        },
+        {
+          "id": "2573",
+          "code": "AMPL.4.StudyZone4.61",
+          "name": "S61",
+          "disabled": false
+        },
+        {
+          "id": "2574",
+          "code": "AMPL.4.StudyZone4.62",
+          "name": "S62",
+          "disabled": false
+        },
+        {
+          "id": "2575",
+          "code": "AMPL.4.StudyZone4.63",
+          "name": "S63",
+          "disabled": false
+        },
+        {
+          "id": "2576",
+          "name": "S64",
+          "disabled": false
+        },
+        {
+          "id": "2577",
+          "code": "AMPL.4.StudyZone4.65",
+          "name": "S65",
+          "disabled": false
+        },
+        {
+          "id": "2578",
+          "code": "AMPL.4.StudyZone4.66",
+          "name": "S66",
+          "disabled": false
+        },
+        {
+          "id": "2579",
+          "code": "AMPL.4.StudyZone4.67",
+          "name": "S67",
+          "disabled": false
+        },
+        {
+          "id": "2580",
+          "code": "AMPL.4.StudyZone4.68",
+          "name": "S68",
+          "disabled": false
+        },
+        {
+          "id": "2581",
+          "code": "AMPL.4.StudyZone4.69",
+          "name": "S69",
+          "disabled": false
+        },
+        {
+          "id": "2582",
+          "code": "AMPL.4.StudyZone4.70",
+          "name": "S70",
+          "disabled": false
+        },
+        {
+          "id": "2583",
+          "code": "AMPL.4.StudyZone4.71",
+          "name": "S71",
+          "disabled": false
+        },
+        {
+          "id": "2584",
+          "code": "AMPL.4.StudyZone4.72",
+          "name": "S72",
+          "disabled": false
+        },
+        {
+          "id": "2585",
+          "code": "AMPL.4.StudyZone4.73",
+          "name": "S73",
+          "disabled": false
+        },
+        {
+          "id": "2586",
+          "code": "AMPL.4.StudyZone4.74",
+          "name": "S74",
+          "disabled": false
+        },
+        {
+          "id": "2587",
+          "code": "AMPL.4.StudyZone4.75",
+          "name": "S75",
+          "disabled": false
+        },
+        {
+          "id": "2588",
+          "code": "AMPL.4.StudyZone4.76",
+          "name": "S76",
+          "disabled": false
+        },
+        {
+          "id": "2589",
+          "code": "AMPL.4.StudyZone4.77",
+          "name": "S77",
+          "disabled": false
+        },
+        {
+          "id": "2590",
+          "code": "AMPL.4.StudyZone4.78",
+          "name": "S78",
+          "disabled": false
+        },
+        {
+          "id": "2591",
+          "name": "S79",
+          "disabled": false
+        },
+        {
+          "id": "2592",
+          "name": "S80",
+          "disabled": false
+        },
+        {
+          "id": "2593",
+          "code": "AMPL.4.StudyZone4.81",
+          "name": "S81",
+          "disabled": false
+        },
+        {
+          "id": "2594",
+          "name": "S82",
+          "disabled": false
+        },
+        {
+          "id": "2595",
+          "name": "S83",
+          "disabled": false
+        },
+        {
+          "id": "2596",
+          "name": "S84",
+          "disabled": false
+        },
+        {
+          "id": "2597",
+          "name": "S85",
+          "disabled": false
+        },
+        {
+          "id": "2598",
+          "code": "AMPL.4.StudyZone4.86",
+          "name": "S86",
+          "disabled": false
+        },
+        {
+          "id": "2599",
+          "code": "AMPL.4.StudyZone4.87",
+          "name": "S87",
+          "disabled": false
+        },
+        {
+          "id": "2600",
+          "name": "S88",
+          "disabled": false
+        },
+        {
+          "id": "2601",
+          "name": "S89",
+          "disabled": false
+        },
+        {
+          "id": "2602",
+          "code": "AMPL.4.StudyZone4.90",
+          "name": "S90",
+          "disabled": false
+        },
+        {
+          "id": "2603",
+          "code": "AMPL.4.StudyZone4.91",
+          "name": "S91",
+          "disabled": false
+        },
+        {
+          "id": "2604",
+          "code": "AMPL.4.StudyZone4.92",
+          "name": "S92",
+          "disabled": false
+        },
+        {
+          "id": "2605",
+          "name": "S93",
+          "disabled": false
+        },
+        {
+          "id": "2606",
+          "name": "S94",
+          "disabled": false
+        }
+      ]
+    },
+    {
       "branchId": "7",
       "branchCode": "BEPL",
       "branchName": "Bedok Library",
@@ -4126,10 +4712,7 @@
       "areaId": "97",
       "areaName": "Study Zone, Level 2",
       "floor": "2",
-      "areaMapUrls": [
-        "bbpl-2-studyzone-fp.png",
-        "bbpl-2-studyzone-sp-full.png"
-      ],
+      "areaMapUrls": [],
       "seats": [
         {
           "id": "2441",
@@ -4153,13 +4736,11 @@
         },
         {
           "id": "2445",
-          "code": "BBPL.2.StudyZone.5",
           "name": "S5",
           "disabled": false
         },
         {
           "id": "2446",
-          "code": "BBPL.2.StudyZone.6",
           "name": "S6",
           "disabled": false
         },
@@ -4170,13 +4751,11 @@
         },
         {
           "id": "2448",
-          "code": "BBPL.2.StudyZone.8",
           "name": "S8",
           "disabled": false
         },
         {
           "id": "2449",
-          "code": "BBPL.2.StudyZone.9",
           "name": "S9",
           "disabled": false
         },
@@ -4192,7 +4771,6 @@
         },
         {
           "id": "2452",
-          "code": "BBPL.2.StudyZone.12",
           "name": "S12",
           "disabled": false
         },
@@ -4203,7 +4781,6 @@
         },
         {
           "id": "2454",
-          "code": "BBPL.2.StudyZone.14",
           "name": "S14",
           "disabled": false
         },
@@ -4234,13 +4811,11 @@
         },
         {
           "id": "2460",
-          "code": "BBPL.2.StudyZone.20",
           "name": "S20",
           "disabled": false
         },
         {
           "id": "2461",
-          "code": "BBPL.2.StudyZone.21",
           "name": "S21",
           "disabled": false
         },
@@ -4256,7 +4831,6 @@
         },
         {
           "id": "2464",
-          "code": "BBPL.2.StudyZone.24",
           "name": "S24",
           "disabled": false
         },
@@ -4279,10 +4853,7 @@
       "areaId": "103",
       "areaName": "Sound Pavilion, Level 2",
       "floor": "2",
-      "areaMapUrls": [
-        "bbpl-2-sound-pavilion-sp-full.png",
-        "bbpl-2-sound-pavilion-fp.png"
-      ],
+      "areaMapUrls": [],
       "seats": [
         {
           "id": "2491",
@@ -4291,7 +4862,6 @@
         },
         {
           "id": "2492",
-          "code": "BBPL.2.SoundPavilion.28",
           "name": "S28",
           "disabled": false
         },
@@ -4307,7 +4877,6 @@
         },
         {
           "id": "2495",
-          "code": "BBPL.2.SoundPavilion.31",
           "name": "S31",
           "disabled": false
         },
@@ -4323,7 +4892,6 @@
         },
         {
           "id": "2498",
-          "code": "BBPL.2.SoundPavilion.34",
           "name": "S34",
           "disabled": false
         },
@@ -14586,6 +15154,647 @@
       "annotationStatus": "implemented"
     },
     {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "104",
+      "areaName": "Zone 1 (MMS Zone), Level 4",
+      "floor": "4",
+      "labelType": "full",
+      "mapPath": "ampl-4-mms-zone-sp-full.png",
+      "observedMapUrls": [
+        "ampl-4-mms-zone-sp-full.png",
+        "ampl-4-mms-zone-fp.png"
+      ],
+      "image": {
+        "width": 1280,
+        "height": 720,
+        "sha256": "8aa5a2c5b506501215e175b24040841a3b8027cddbe0d3729c126ba0735f1549",
+        "byteLength": 13797,
+        "contentType": "image/png",
+        "etag": "\"044b5d3de65dd1:0\"",
+        "lastModified": "Tue, 27 Oct 2026 06:46:00 GMT"
+      },
+      "seats": [
+        {
+          "id": "2513",
+          "name": "S1",
+          "disabled": false
+        },
+        {
+          "id": "2514",
+          "name": "S2",
+          "disabled": false
+        },
+        {
+          "id": "2515",
+          "name": "S3",
+          "disabled": false
+        },
+        {
+          "id": "2516",
+          "code": "AMPL.4.MMSZone.4",
+          "name": "S4",
+          "disabled": false
+        },
+        {
+          "id": "2517",
+          "code": "AMPL.4.MMSZone.5",
+          "name": "S5",
+          "disabled": false
+        },
+        {
+          "id": "2518",
+          "code": "AMPL.4.MMSZone.6",
+          "name": "S6",
+          "disabled": false
+        },
+        {
+          "id": "2519",
+          "code": "AMPL.4.MMSZone.7",
+          "name": "S7",
+          "disabled": false
+        },
+        {
+          "id": "2520",
+          "code": "AMPL.4.MMSZone.8",
+          "name": "S8",
+          "disabled": false
+        }
+      ],
+      "catalogState": "present",
+      "seatSource": "catalog",
+      "annotationStatus": "implemented"
+    },
+    {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "105",
+      "areaName": "Zone 2 (Between MMS Zone and Adult Collection), Level 4",
+      "floor": "4",
+      "labelType": "full",
+      "mapPath": "ampl-4-between-mms-zone-and-adult-collection-sp-full.png",
+      "observedMapUrls": [
+        "ampl-4-between-mms-zone-and-adult-collection-sp-full.png",
+        "ampl-4-between-mms-zone-and-adult-collection-fp.png"
+      ],
+      "image": {
+        "width": 1280,
+        "height": 720,
+        "sha256": "ed30cd1e4042aa7ce0da79b5636feb87ee124d379597a6446226eec3bb0925fe",
+        "byteLength": 34742,
+        "contentType": "image/png",
+        "etag": "\"044b5d3de65dd1:0\"",
+        "lastModified": "Tue, 27 Oct 2026 06:46:00 GMT"
+      },
+      "seats": [
+        {
+          "id": "2521",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.9",
+          "name": "S9",
+          "disabled": false
+        },
+        {
+          "id": "2522",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.10",
+          "name": "S10",
+          "disabled": false
+        },
+        {
+          "id": "2523",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.11",
+          "name": "S11",
+          "disabled": false
+        },
+        {
+          "id": "2524",
+          "name": "S12",
+          "disabled": false
+        },
+        {
+          "id": "2525",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.13",
+          "name": "S13",
+          "disabled": false
+        },
+        {
+          "id": "2526",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.14",
+          "name": "S14",
+          "disabled": false
+        },
+        {
+          "id": "2527",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.15",
+          "name": "S15",
+          "disabled": false
+        },
+        {
+          "id": "2528",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.16",
+          "name": "S16",
+          "disabled": false
+        },
+        {
+          "id": "2529",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.17",
+          "name": "S17",
+          "disabled": false
+        },
+        {
+          "id": "2530",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.18",
+          "name": "S18",
+          "disabled": false
+        },
+        {
+          "id": "2531",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.19",
+          "name": "S19",
+          "disabled": false
+        },
+        {
+          "id": "2532",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.20",
+          "name": "S20",
+          "disabled": false
+        },
+        {
+          "id": "2533",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.21",
+          "name": "S21",
+          "disabled": false
+        },
+        {
+          "id": "2534",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.22",
+          "name": "S22",
+          "disabled": false
+        },
+        {
+          "id": "2535",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.23",
+          "name": "S23",
+          "disabled": false
+        },
+        {
+          "id": "2536",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.24",
+          "name": "S24",
+          "disabled": false
+        },
+        {
+          "id": "2537",
+          "name": "S25",
+          "disabled": false
+        },
+        {
+          "id": "2538",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.26",
+          "name": "S26",
+          "disabled": false
+        },
+        {
+          "id": "2539",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.27",
+          "name": "S27",
+          "disabled": false
+        },
+        {
+          "id": "2540",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.28",
+          "name": "S28",
+          "disabled": false
+        },
+        {
+          "id": "2541",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.29",
+          "name": "S29",
+          "disabled": false
+        },
+        {
+          "id": "2542",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.30",
+          "name": "S30",
+          "disabled": false
+        },
+        {
+          "id": "2543",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.31",
+          "name": "S31",
+          "disabled": false
+        },
+        {
+          "id": "2544",
+          "name": "S32",
+          "disabled": false
+        },
+        {
+          "id": "2545",
+          "name": "S33",
+          "disabled": false
+        },
+        {
+          "id": "2546",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.34",
+          "name": "S34",
+          "disabled": false
+        },
+        {
+          "id": "2547",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.35",
+          "name": "S35",
+          "disabled": false
+        },
+        {
+          "id": "2548",
+          "code": "AMPL.4.BetweenMMSAndAdultCollection.36",
+          "name": "S36",
+          "disabled": false
+        },
+        {
+          "id": "2549",
+          "name": "S37",
+          "disabled": false
+        },
+        {
+          "id": "2550",
+          "name": "S38",
+          "disabled": false
+        }
+      ],
+      "catalogState": "present",
+      "seatSource": "catalog",
+      "annotationStatus": "implemented"
+    },
+    {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "106",
+      "areaName": "Zone 3 (Adult collection), Level 4",
+      "floor": "4",
+      "labelType": "full",
+      "mapPath": "ampl-4-adult-collection-sp-full.png",
+      "observedMapUrls": [
+        "ampl-4-adult-collection-sp-full.png",
+        "ampl-4-adult-collection-fp.png"
+      ],
+      "image": {
+        "width": 1280,
+        "height": 720,
+        "sha256": "b58791e0435c105dacc612f714e05dd95c3d70ff7496881da116ea202972f3eb",
+        "byteLength": 15042,
+        "contentType": "image/png",
+        "etag": "\"044b5d3de65dd1:0\"",
+        "lastModified": "Tue, 27 Oct 2026 06:46:00 GMT"
+      },
+      "seats": [
+        {
+          "id": "2551",
+          "code": "AMPL.4.AdultCollection.39",
+          "name": "S39",
+          "disabled": false
+        },
+        {
+          "id": "2552",
+          "code": "AMPL.4.AdultCollection.40",
+          "name": "S40",
+          "disabled": false
+        },
+        {
+          "id": "2553",
+          "name": "S41",
+          "disabled": false
+        },
+        {
+          "id": "2554",
+          "name": "S42",
+          "disabled": false
+        },
+        {
+          "id": "2555",
+          "name": "S43",
+          "disabled": false
+        },
+        {
+          "id": "2556",
+          "name": "S44",
+          "disabled": false
+        },
+        {
+          "id": "2557",
+          "name": "S45",
+          "disabled": false
+        }
+      ],
+      "catalogState": "present",
+      "seatSource": "catalog",
+      "annotationStatus": "implemented"
+    },
+    {
+      "branchId": "5",
+      "branchCode": "AMPL",
+      "branchName": "Ang Mo Kio Library",
+      "areaId": "107",
+      "areaName": "Zone 4 (Study Zone), Level 4",
+      "floor": "4",
+      "labelType": "full",
+      "mapPath": "ampl-4-study-zone4-sp-full.png",
+      "observedMapUrls": [
+        "ampl-4-study-zone4-sp-full.png",
+        "ampl-4-study-zone4-fp.png"
+      ],
+      "image": {
+        "width": 1200,
+        "height": 664,
+        "sha256": "63f306f9bee9b61d2297046669fbd56344cf5a432d47c65191dfb48a92c89cb5",
+        "byteLength": 88318,
+        "contentType": "image/png",
+        "etag": "\"0ad37331675dd1:0\"",
+        "lastModified": "Sun, 15 Nov 2026 15:30:10 GMT"
+      },
+      "seats": [
+        {
+          "id": "2558",
+          "code": "AMPL.4.StudyZone4.46",
+          "name": "S46",
+          "disabled": false
+        },
+        {
+          "id": "2559",
+          "code": "AMPL.4.StudyZone4.47",
+          "name": "S47",
+          "disabled": false
+        },
+        {
+          "id": "2560",
+          "name": "S48",
+          "disabled": false
+        },
+        {
+          "id": "2561",
+          "name": "S49",
+          "disabled": false
+        },
+        {
+          "id": "2562",
+          "name": "S50",
+          "disabled": false
+        },
+        {
+          "id": "2563",
+          "name": "S51",
+          "disabled": false
+        },
+        {
+          "id": "2564",
+          "code": "AMPL.4.StudyZone4.52",
+          "name": "S52",
+          "disabled": false
+        },
+        {
+          "id": "2565",
+          "name": "S53",
+          "disabled": false
+        },
+        {
+          "id": "2566",
+          "name": "S54",
+          "disabled": false
+        },
+        {
+          "id": "2567",
+          "code": "AMPL.4.StudyZone4.55",
+          "name": "S55",
+          "disabled": false
+        },
+        {
+          "id": "2568",
+          "name": "S56",
+          "disabled": false
+        },
+        {
+          "id": "2569",
+          "name": "S57",
+          "disabled": false
+        },
+        {
+          "id": "2570",
+          "name": "S58",
+          "disabled": false
+        },
+        {
+          "id": "2571",
+          "name": "S59",
+          "disabled": false
+        },
+        {
+          "id": "2572",
+          "code": "AMPL.4.StudyZone4.60",
+          "name": "S60",
+          "disabled": false
+        },
+        {
+          "id": "2573",
+          "code": "AMPL.4.StudyZone4.61",
+          "name": "S61",
+          "disabled": false
+        },
+        {
+          "id": "2574",
+          "code": "AMPL.4.StudyZone4.62",
+          "name": "S62",
+          "disabled": false
+        },
+        {
+          "id": "2575",
+          "code": "AMPL.4.StudyZone4.63",
+          "name": "S63",
+          "disabled": false
+        },
+        {
+          "id": "2576",
+          "name": "S64",
+          "disabled": false
+        },
+        {
+          "id": "2577",
+          "code": "AMPL.4.StudyZone4.65",
+          "name": "S65",
+          "disabled": false
+        },
+        {
+          "id": "2578",
+          "code": "AMPL.4.StudyZone4.66",
+          "name": "S66",
+          "disabled": false
+        },
+        {
+          "id": "2579",
+          "code": "AMPL.4.StudyZone4.67",
+          "name": "S67",
+          "disabled": false
+        },
+        {
+          "id": "2580",
+          "code": "AMPL.4.StudyZone4.68",
+          "name": "S68",
+          "disabled": false
+        },
+        {
+          "id": "2581",
+          "code": "AMPL.4.StudyZone4.69",
+          "name": "S69",
+          "disabled": false
+        },
+        {
+          "id": "2582",
+          "code": "AMPL.4.StudyZone4.70",
+          "name": "S70",
+          "disabled": false
+        },
+        {
+          "id": "2583",
+          "code": "AMPL.4.StudyZone4.71",
+          "name": "S71",
+          "disabled": false
+        },
+        {
+          "id": "2584",
+          "code": "AMPL.4.StudyZone4.72",
+          "name": "S72",
+          "disabled": false
+        },
+        {
+          "id": "2585",
+          "code": "AMPL.4.StudyZone4.73",
+          "name": "S73",
+          "disabled": false
+        },
+        {
+          "id": "2586",
+          "code": "AMPL.4.StudyZone4.74",
+          "name": "S74",
+          "disabled": false
+        },
+        {
+          "id": "2587",
+          "code": "AMPL.4.StudyZone4.75",
+          "name": "S75",
+          "disabled": false
+        },
+        {
+          "id": "2588",
+          "code": "AMPL.4.StudyZone4.76",
+          "name": "S76",
+          "disabled": false
+        },
+        {
+          "id": "2589",
+          "code": "AMPL.4.StudyZone4.77",
+          "name": "S77",
+          "disabled": false
+        },
+        {
+          "id": "2590",
+          "code": "AMPL.4.StudyZone4.78",
+          "name": "S78",
+          "disabled": false
+        },
+        {
+          "id": "2591",
+          "name": "S79",
+          "disabled": false
+        },
+        {
+          "id": "2592",
+          "name": "S80",
+          "disabled": false
+        },
+        {
+          "id": "2593",
+          "code": "AMPL.4.StudyZone4.81",
+          "name": "S81",
+          "disabled": false
+        },
+        {
+          "id": "2594",
+          "name": "S82",
+          "disabled": false
+        },
+        {
+          "id": "2595",
+          "name": "S83",
+          "disabled": false
+        },
+        {
+          "id": "2596",
+          "name": "S84",
+          "disabled": false
+        },
+        {
+          "id": "2597",
+          "name": "S85",
+          "disabled": false
+        },
+        {
+          "id": "2598",
+          "code": "AMPL.4.StudyZone4.86",
+          "name": "S86",
+          "disabled": false
+        },
+        {
+          "id": "2599",
+          "code": "AMPL.4.StudyZone4.87",
+          "name": "S87",
+          "disabled": false
+        },
+        {
+          "id": "2600",
+          "name": "S88",
+          "disabled": false
+        },
+        {
+          "id": "2601",
+          "name": "S89",
+          "disabled": false
+        },
+        {
+          "id": "2602",
+          "code": "AMPL.4.StudyZone4.90",
+          "name": "S90",
+          "disabled": false
+        },
+        {
+          "id": "2603",
+          "code": "AMPL.4.StudyZone4.91",
+          "name": "S91",
+          "disabled": false
+        },
+        {
+          "id": "2604",
+          "code": "AMPL.4.StudyZone4.92",
+          "name": "S92",
+          "disabled": false
+        },
+        {
+          "id": "2605",
+          "name": "S93",
+          "disabled": false
+        },
+        {
+          "id": "2606",
+          "name": "S94",
+          "disabled": false
+        }
+      ],
+      "catalogState": "present",
+      "seatSource": "catalog",
+      "annotationStatus": "implemented"
+    },
+    {
       "branchId": "7",
       "branchCode": "BEPL",
       "branchName": "Bedok Library",
@@ -15609,10 +16818,7 @@
       "floor": "2",
       "labelType": "full",
       "mapPath": "bbpl-2-studyzone-sp-full.png",
-      "observedMapUrls": [
-        "bbpl-2-studyzone-fp.png",
-        "bbpl-2-studyzone-sp-full.png"
-      ],
+      "observedMapUrls": [],
       "image": {
         "width": 657,
         "height": 811,
@@ -15645,13 +16851,11 @@
         },
         {
           "id": "2445",
-          "code": "BBPL.2.StudyZone.5",
           "name": "S5",
           "disabled": false
         },
         {
           "id": "2446",
-          "code": "BBPL.2.StudyZone.6",
           "name": "S6",
           "disabled": false
         },
@@ -15662,13 +16866,11 @@
         },
         {
           "id": "2448",
-          "code": "BBPL.2.StudyZone.8",
           "name": "S8",
           "disabled": false
         },
         {
           "id": "2449",
-          "code": "BBPL.2.StudyZone.9",
           "name": "S9",
           "disabled": false
         },
@@ -15684,7 +16886,6 @@
         },
         {
           "id": "2452",
-          "code": "BBPL.2.StudyZone.12",
           "name": "S12",
           "disabled": false
         },
@@ -15695,7 +16896,6 @@
         },
         {
           "id": "2454",
-          "code": "BBPL.2.StudyZone.14",
           "name": "S14",
           "disabled": false
         },
@@ -15726,13 +16926,11 @@
         },
         {
           "id": "2460",
-          "code": "BBPL.2.StudyZone.20",
           "name": "S20",
           "disabled": false
         },
         {
           "id": "2461",
-          "code": "BBPL.2.StudyZone.21",
           "name": "S21",
           "disabled": false
         },
@@ -15748,7 +16946,6 @@
         },
         {
           "id": "2464",
-          "code": "BBPL.2.StudyZone.24",
           "name": "S24",
           "disabled": false
         },
@@ -15776,10 +16973,7 @@
       "floor": "2",
       "labelType": "full",
       "mapPath": "bbpl-2-sound-pavilion-sp-full.png",
-      "observedMapUrls": [
-        "bbpl-2-sound-pavilion-sp-full.png",
-        "bbpl-2-sound-pavilion-fp.png"
-      ],
+      "observedMapUrls": [],
       "image": {
         "width": 1280,
         "height": 720,
@@ -15797,7 +16991,6 @@
         },
         {
           "id": "2492",
-          "code": "BBPL.2.SoundPavilion.28",
           "name": "S28",
           "disabled": false
         },
@@ -15813,7 +17006,6 @@
         },
         {
           "id": "2495",
-          "code": "BBPL.2.SoundPavilion.31",
           "name": "S31",
           "disabled": false
         },
@@ -15829,7 +17021,6 @@
         },
         {
           "id": "2498",
-          "code": "BBPL.2.SoundPavilion.34",
           "name": "S34",
           "disabled": false
         },

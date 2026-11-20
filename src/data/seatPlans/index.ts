@@ -1,4 +1,5 @@
 import type { SeatPlanDefinition } from "../../models/seatPlan";
+import { ANG_MO_KIO_LIBRARY_SEAT_PLANS } from "./angMoKioLibrary";
 import {
   BEDOK_LEVEL_2_ADULT_NON_FICTION_SEAT_PLAN,
   BEDOK_LEVEL_2_LARGE_PRINT_AV_SEAT_PLAN,
@@ -49,6 +50,7 @@ import { WOODLANDS_LIBRARY_ZONES_KP_SEAT_PLANS } from "./woodlandsLibraryZonesKP
 import { YISHUN_LIBRARY_SEAT_PLANS } from "./yishunLibrary";
 
 export const SEAT_PLAN_DEFINITIONS: readonly SeatPlanDefinition[] = [
+  ...ANG_MO_KIO_LIBRARY_SEAT_PLANS,
   BEDOK_LEVEL_2_ADULT_NON_FICTION_SEAT_PLAN,
   BEDOK_LEVEL_2_LARGE_PRINT_AV_SEAT_PLAN,
   BEDOK_LEVEL_2_LEARNING_ZONE_SEAT_PLAN,

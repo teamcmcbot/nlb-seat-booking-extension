@@ -1,3 +1,43 @@
+# Library Seats SG - for NLB v1.6.0
+
+This release onboards the newly returned Ang Mo Kio seat catalog with complete,
+reviewed interactive coverage across all four Level 4 areas.
+
+## Highlights
+
+- Adds exact-area map associations and complete clickable annotations for Ang
+  Mo Kio Library Zones 1–4, covering all 94 catalog seats (S1–S94).
+- Pins every hotspot to its observed stable catalog seat ID and preserves the
+  Zone 4 accessibility gap without treating its wheelchair symbol as a seat.
+- Enlarges every Zone 2 hotspot from 40×40 to 48×48 around the same seat
+  centre, keeping selection borders clear of printed seat numbers.
+- Refreshes the reviewed baseline to 23 branches, 86 areas, and 2,147 seats,
+  with exact fingerprints for all 86 active seat plans.
+- Records the 20 November 2026 catalog and targeted discovery evidence while
+  keeping public opening-status claims separate from API map evidence.
+
+## Maintenance tooling
+
+- Accepts JPEG map bytes by signature when NLB serves them from a `.png` URL
+  with an incorrect `image/png` content type, while malformed bytes continue
+  to fail closed.
+- Adds regression coverage for image signature detection and independent AMK
+  seat-name, stable-ID, bounds, overlap, and resolution checks.
+
+## Validation
+
+- Seat-plan verification passes for 86 active definitions, 86 baseline areas,
+  86 fingerprints, and one retirement record.
+- The reconciled 86-map audit is clean with zero catalog, map, or fingerprint
+  drift; the fresh routine catalog contains 23 branches, 86 areas, and 2,147
+  seats.
+- Full regression suite passed: 46 test files and 343 tests, plus typecheck,
+  production builds, Chrome packaging, Firefox strict lint, Firefox packaging,
+  Firefox reviewer-source packaging, and all archive-integrity checks.
+- The maintainer confirmed all AMK annotations, booking, and cancellation in
+  the local Chrome build. Firefox smoke testing remains pending before
+  publication.
+
 # Library Seats SG - for NLB v1.5.0
 
 This release refreshes changed NLB seat maps and adds the new Bukit Batok

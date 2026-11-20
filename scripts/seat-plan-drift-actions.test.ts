@@ -61,7 +61,7 @@ describe("seat-plan drift actions", () => {
     ]));
   });
 
-  it("matches Ang Mo Kio context by normalized branch name without authorizing identity", async () => {
+  it("matches accepted Ang Mo Kio context by normalized branch name", async () => {
     const inventory = JSON.parse(
       await readFile(
         path.join(repositoryRoot, "docs/data/branch-status.json"),
@@ -84,8 +84,8 @@ describe("seat-plan drift actions", () => {
     expect(context).toMatchObject({
       branchName: "Ang Mo Kio Library",
       expectedReopenDate: "2026-11-20",
-      evidenceLevel: "user-reported",
+      evidenceLevel: "observed-sanitized-api-and-user-reported-notice",
     });
-    expect(context.branchId).toBeUndefined();
+    expect(context.branchId).toBe("5");
   });
 });

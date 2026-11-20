@@ -33,6 +33,8 @@ By installing or using the extension, you agree to the [Terms of Use](TERMS.md).
   seats.
 - Search by seat number or use a reviewed interactive seat plan where one is
   available.
+- Use reviewed interactive maps for all four Ang Mo Kio Level 4 zones,
+  covering seats S1–S94.
 - Plan multiple non-overlapping seats and time blocks—including separate
   sessions with a break—in one view.
 - Keep the favourite-seat list stable while booking options, validation
@@ -100,6 +102,29 @@ Chrome Web Store.
 
 Keeping the same installation folder avoids creating a separate unpacked
 installation and preserves the extension's existing Chrome storage.
+
+### Switch to a local development build
+
+Build the shared Chrome/Firefox extension first:
+
+```bash
+npm ci
+npm run build
+```
+
+For Chrome, open `chrome://extensions`, enable **Developer mode**, disable the
+store or extracted release copy to avoid two content scripts on the same NLB
+page, then choose **Load unpacked** and select this repository's `dist/`
+directory. After later builds, click **Reload** on that local extension and
+refresh the Seat Booking tab. To switch back, disable or remove the unpacked
+copy and re-enable the release copy.
+
+For Firefox Desktop, first disable the installed AMO/release copy, then open
+`about:debugging#/runtime/this-firefox`, choose **Load Temporary Add-on**, and
+select `dist/manifest.json`. Rebuild and use **Reload** on the temporary add-on
+after changes. Removing it—or restarting Firefox—returns to the installed copy,
+which can then be re-enabled. Alternatively, `npm run firefox:run` builds and
+starts the extension in an isolated temporary Firefox profile.
 
 ## Feature reference
 
@@ -187,7 +212,7 @@ npm run seat-plans:full-audit  # Capture and generate JSON + HTML reports
 npm run seat-plans:prepare  # Generate an ignored visual review packet
 npm run seat-plans:prepare-drift  # Prepare all drifted annotation packets
 npm run seat-plans:archive-proposal  # Preserve removal evidence for review
-npm run seat-plans:simulate-amk-reopening  # Generate the future AMK report fixture
+npm run seat-plans:simulate-amk-reopening  # Generate the retained AMK audit-regression fixture
 npm run seat-plans:verify   # Verify definitions, baseline, and fingerprints
 ```
 

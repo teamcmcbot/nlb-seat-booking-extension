@@ -135,7 +135,7 @@ The following point-in-time notices were supplied from the NLB chatbot on
 | Cheng San Library | Closed until the first half of 2027 |
 | Marine Parade Library | Closed until mid-2027 |
 | Queenstown Library | Closed from 31 August 2026 until late 2028 |
-| Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub |
+| Ang Mo Kio Library | Planned reopening on 20 November 2026 at AMK Hub; Seat Booking catalog and exact map associations observed that day, but public opening status was not independently confirmed |
 
 Re-check these notices against NLB's [Our Libraries and Locations](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations) page before
 using them as current operational truth. The public directory is the preferred
@@ -146,10 +146,10 @@ The extension does not automatically consume this table. A validated NLB
 closure signal or separately reviewed implementation is required before planned
 revamp dates can affect runtime availability.
 
-The reviewed seat-plan baseline currently contains no active plan for these
-five libraries. Queenstown's two areas and 50 annotated seats were retired on
-5 September 2026 and preserved in the retirement ledger. The other four
-libraries do not currently have reviewed seat-plan definitions. A branch's presence in the
+The reviewed seat-plan baseline contains four active AMK plans covering 94
+seats. Queenstown's two areas and 50 annotated seats were retired on 5
+September 2026 and preserved in the retirement ledger. Orchard, Cheng San,
+and Marine Parade do not currently have reviewed seat-plan definitions. A branch's presence in the
 Seat Booking catalog is not proof that it is open or bookable, and a planned
 closure must not by itself remove a baseline or alter seat geometry.
 
