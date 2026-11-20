@@ -143,18 +143,18 @@ and [source-code submission guidance](https://extensionworkshop.com/documentatio
 
 ## Publish
 
-For version `1.5.0`:
+For version `1.6.0`:
 
 ```bash
-git tag v1.5.0
-git push origin v1.5.0
-gh release create v1.5.0 \
+git tag v1.6.0
+git push origin v1.6.0
+gh release create v1.6.0 \
   nlb-seat-helper.zip \
   nlb-seat-helper-firefox.zip \
   nlb-seat-helper-firefox-source.zip \
   --repo teamcmcbot/nlb-seat-booking-extension \
-  --title "Library Seats SG - for NLB v1.5.0" \
-  --notes-file /tmp/release-notes-v1.5.0.md
+  --title "Library Seats SG - for NLB v1.6.0" \
+  --notes-file /tmp/release-notes-v1.6.0.md
 ```
 
 `RELEASE_NOTES.md` is the cumulative repository changelog. Create a

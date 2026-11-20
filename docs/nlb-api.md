@@ -160,6 +160,14 @@ The sanitized seat catalog contained 22 branches, 81 areas, and 2,030 seats;
 the broader menu contained 35 branches and 87 areas, including empty branch
 menus and six facility-2 areas excluded by the existing seat parser.
 
+On 20 November 2026, audit run 44526128739 attempt 2 observed a complete
+anonymous catalog with 23 branches, 86 areas, and 2,147 seats. The added AMK
+branch was stable ID `5`, code `AMPL`, with areas `104`–`107` and 94 seats. A
+separate bounded branch-5 discovery used one `SearchAvailableAreas` request
+and returned exact-area associations for all four areas. This is observed
+seat-catalog and map-association evidence, not proof of physical opening or a
+booking result.
+
 `accountInfo: null` means the catalog may still be available but the extension
 does not consider the user signed in. A non-null `accountInfo` with a non-empty
 `userId` becomes the active account session.
@@ -949,6 +957,13 @@ provide this digest; the maintenance capture computes it from the resolved map
 asset. Each annotation must resolve to one current catalog seat before the
 overlay is enabled. These hotspots modify local favourites only and are not an
 availability or booking authority.
+
+The AMK Zone 4 `ampl-4-study-zone4-sp-full.png` endpoint was observed returning
+valid 1200×664 JPEG bytes with a `.png` filename and `Content-Type: image/png`.
+Maintenance therefore identifies supported PNG and JPEG images from their byte
+signatures and still fails closed for malformed or unsupported bytes. The
+recorded response content type remains diagnostic metadata rather than image
+identity authority.
 
 ## Privacy and safe fixture capture
 

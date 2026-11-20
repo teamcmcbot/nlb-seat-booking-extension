@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "lastReviewed": "2026-09-01",
+  "lastReviewed": "2026-11-20",
   "sources": [
     {
       "id": "nlb-locations",
@@ -21,6 +21,13 @@
       "title": "NLB chatbot response recorded 1 September 2026",
       "authority": "user-reported chatbot response",
       "note": "Point-in-time evidence supplied by the maintainer; re-check against a dated official branch page or response before accepting lifecycle changes."
+    },
+    {
+      "id": "seat-plan-audit-2026-11-20",
+      "title": "Seat-plan audit run 44526128739 attempt 2 and targeted branch-5 discovery",
+      "authority": "sanitized observed NLB Seat Booking API evidence",
+      "url": "https://github.com/teamcmcbot/nlb-seat-booking-extension/actions/runs/44526128739/attempts/2",
+      "note": "The complete anonymous catalog observed AMK branch 5 with four areas and 94 seats. A separate bounded SearchAvailableAreas request returned exact map associations for all four areas. This evidence does not by itself prove public opening status."
     }
   ],
   "branches": [
@@ -71,17 +78,18 @@
       "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01"]
     },
     {
+      "branchId": "5",
       "branchName": "Ang Mo Kio Library",
       "aliases": ["Ang Mo Kio Public Library"],
-      "status": "closed-for-renovation",
-      "notice": "Reported closed from 1 August 2026 with a planned reopening on 20 November 2026 at AMK Hub.",
+      "status": "reopening-evidence-observed",
+      "notice": "Reported closed from 1 August 2026 with a planned reopening on 20 November 2026 at AMK Hub. On 20 November, the complete Seat Booking catalog returned four AMK areas and 94 seats, and bounded targeted discovery returned all four exact map associations; the dynamic public directory did not provide independently capturable opening-status text.",
       "effectiveFrom": "2026-08-01",
       "expectedReopenDate": "2026-11-20",
       "plannedLocation": "AMK Hub",
-      "expectedCatalogState": "unknown",
-      "evidenceLevel": "user-reported",
-      "recommendedDisposition": "investigate",
-      "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01"]
+      "expectedCatalogState": "present",
+      "evidenceLevel": "observed-sanitized-api-and-user-reported-notice",
+      "recommendedDisposition": "accepted",
+      "sourceIds": ["nlb-locations", "branch-inventory", "nlb-chatbot-2026-09-01", "seat-plan-audit-2026-11-20"]
     }
   ]
 }

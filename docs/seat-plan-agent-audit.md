@@ -15,7 +15,7 @@ The following notices were supplied from the NLB chatbot on 1 September 2026:
 | Cheng San Library | Closed until the first half of 2027 |
 | Marine Parade Library | Closed until mid-2027 |
 | Queenstown Library | Closed from 31 August 2026 until late 2028 |
-| Ang Mo Kio Library | Closed from 1 August 2026; planned reopening on 20 November 2026 at AMK Hub |
+| Ang Mo Kio Library | Planned reopening on 20 November 2026 at AMK Hub; Seat Booking catalog and exact maps observed that day, while public opening status remains independently unconfirmed |
 
 Treat these as user-reported, point-in-time notices until rechecked against
 NLB's [Our Libraries and Locations](https://www.nlb.gov.sg/main/visit-us/our-libraries-and-locations) page or a
